@@ -159,7 +159,7 @@ class CritsQuerySet(QS):
                        'schema_version',
                        ]
         if not fields:
-            fields = self[0]._data.keys()
+            fields = list(self[0]._data.keys())
         # Create a local copy
         fields = fields[:]
         for key in filter_keys:
@@ -560,11 +560,11 @@ class CritsDocument(BaseDocument):
         """
 
         if not fields:
-            fields = self._data.keys()
-        csv_string = io.BytesIO()
+            fields = list(self._data.keys())
+        csv_string = io.StringIO()
         csv_wr = csv.writer(csv_string)
         if headers:
-            csv_wr.writerow([f.encode('utf-8') for f in fields])
+            csv_wr.writerow(list(fields))
         # Build the CSV Row
         row = []
         for field in fields:
@@ -587,7 +587,7 @@ class CritsDocument(BaseDocument):
                             data = ";".join(data)
                         except Exception: # Convert non-string data types
                             data = str(data)
-                row.append(data.encode('utf-8'))
+                row.append(data)
             else:
                 row.append('')
 

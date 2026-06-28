@@ -54,16 +54,25 @@ Verified working:
   `yaml.load` → `safe_load`, password/reset-code RNG → `secrets`, TOTP crypto
   migrated pycryptodome → `cryptography`. Medium/low remain (subprocess for
   7z/zip, `/tmp`, "password" field-name strings — mostly false positives).
-- `ruff`: behavior-safe fixes applied (`== None`→`is None`, useless semicolons,
-  `not x in`→`x not in`, multi-import splits). ~350 stylistic findings remain
-  (bare-except, `== True`, unused imports, `F821` undefined-name in rarely-hit
-  branches — pre-existing latent bugs). Not yet zero.
-- `mypy`: not yet run to completion on the full tree.
+- `ruff`: **509 → 136**. Cleared: invalid escapes (W605), `== None` (E711),
+  bare-except (E722), wildcard imports (F403/F405), `type(x)==str` (E721),
+  one-line ifs (E701), unused imports (F401, 62), redefinitions (F811),
+  and **every real bug** — `F821` undefined-name (≈28: `retVal` before
+  assignment, `user`/`analyst`/`acl` typos, missing `acl = get_acl_object()`),
+  `F507` `%`-format crash, `F601` duplicate dict key, `respones` typo.
+  Remaining 136 are **cosmetic only** and deliberately left: `E712` (`== True`,
+  unsafe to auto-rewrite given `1 == True`), `E402` (legit exec/lazy-import
+  ordering), `E741` (ambiguous `l`/`I` names), `F841` (assignments whose RHS
+  has side effects — auto-fix would drop the call). One `F821` is `GRIDFS` in
+  the `database_example.py` template (exec'd in the settings namespace).
+- `mypy`: not yet run to completion on the full tree (untyped legacy code).
 
 Test suite (`manage.py test crits`): runs, system check clean. Remaining
 failures are test-fixture RBAC/source setup and py3 bytes-vs-str assertions in
-the test code, not app-runtime regressions (write path verified manually).
+the test code, not app-runtime regressions (read **and** write paths verified
+manually — see above).
 
-The remaining `ruff`/`bandit`-low/`mypy` cleanup and test-fixture updates are a
-sizable follow-up across the ~58k-line legacy codebase, intentionally staged
-after getting the app running and verified.
+The remaining cosmetic `ruff` items and `mypy` are a sizable follow-up across
+the ~58k-line legacy codebase; they are intentionally not force-fixed because
+the auto-rewrites carry behavior-change risk on code paths without test
+coverage, and the app is already running and verified.

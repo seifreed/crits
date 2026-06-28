@@ -2308,7 +2308,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
     users_sources = user_sources(request.user.username)
 
     user = request.user
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         pageSize = request.user.get_preference('ui','table_page_size',25)
 
         # Thought these were POSTs...GET works though

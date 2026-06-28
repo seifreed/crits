@@ -43,7 +43,7 @@ def add_location(request, type_, id_):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = AddLocationForm(request.POST)
         result = {}
         if form.is_valid():
@@ -95,7 +95,7 @@ def remove_location(request, type_, id_):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         data = request.POST
         location_name = data.get('key').split('|')[0]
         location_type = data.get('key').split('|')[1]

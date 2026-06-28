@@ -150,7 +150,7 @@ def bulk_add_md5_sample(request):
     formdict = form_to_dict(UploadFileForm(request.user, request.POST, request.FILES))
     objectformdict = form_to_dict(AddObjectForm(request.user))
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         response = process_bulk_add_md5_sample(request, formdict)
 
         return HttpResponse(json.dumps(response,
@@ -344,7 +344,7 @@ def strings(request, sample_md5):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         strings_data = make_ascii_strings(md5=sample_md5)
         strings_data += make_unicode_strings(md5=sample_md5)
         result = {"strings": strings_data}
@@ -365,7 +365,7 @@ def stackstrings(request, sample_md5):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         strings = make_stackstrings(md5=sample_md5)
         result = {"strings": strings}
         return HttpResponse(json.dumps(result),
@@ -385,7 +385,7 @@ def hex(request,sample_md5):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         hex_data = make_hex(md5=sample_md5)
         result = {"strings": hex_data}
         return HttpResponse(json.dumps(result),
@@ -405,7 +405,7 @@ def xor(request,sample_md5):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         key = request.GET.get('key')
         key = int(key)
         xor_data = xor_string(md5=sample_md5,
@@ -429,7 +429,7 @@ def xor_searcher(request, sample_md5):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = XORSearchForm(request.POST)
         if form.is_valid():
             try:
@@ -558,7 +558,7 @@ def set_sample_filenames(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         tags = request.POST.get('tags', "").split(",")
         id_ = request.POST.get('id', None)
         return HttpResponse(json.dumps(modify_sample_filenames(id_,

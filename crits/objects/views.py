@@ -45,7 +45,7 @@ def add_new_object(request):
                 response = json.dumps({'message': message,
                                        'form': form,
                                        'success': False})
-                if request.is_ajax():
+                if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
                     return HttpResponse(response, content_type="application/json")
                 else:
                     return render(request, "file_upload_response.html",
@@ -119,7 +119,7 @@ def add_new_object(request):
         else:
             message = "Error adding object: %s" % results['message']
             result = {'success': False, 'message': message}
-        if request.is_ajax():
+        if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             return HttpResponse(json.dumps(result),
                                 content_type="application/json")
         else:
@@ -142,7 +142,7 @@ def bulk_add_object(request):
 
     formdict = form_to_dict(AddObjectForm(request.user))
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         acl = get_acl_object(request.POST['otype'])
         user = request.user
         if user.has_access_to(acl.OBJECTS_ADD):
@@ -176,7 +176,7 @@ def bulk_add_object_inline(request):
 
     formdict = form_to_dict(AddObjectForm(request.user))
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         acl = get_acl_object(request.POST['otype'])
 
@@ -271,7 +271,7 @@ def update_objects_value(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['coll']
         oid = request.POST['oid']
         object_type = request.POST.get('type')
@@ -311,7 +311,7 @@ def update_objects_source(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['coll']
         oid = request.POST['oid']
         object_type = request.POST.get('type')
@@ -351,7 +351,7 @@ def get_object_type_dropdown(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         dd_types = ObjectTypes.values(sort=True)
         dd_final = {}
         for obj_type in dd_types:
@@ -376,7 +376,7 @@ def delete_this_object(request):
 
     error = ""
     if request.method == 'POST':
-        if request.is_ajax():
+        if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             type_ = request.POST['coll']
             oid = request.POST['oid']
             user = request.user
@@ -420,7 +420,7 @@ def indicator_from_object(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         rel_type = request.POST.get('rel_type', None)
         rel_id = request.POST.get('rel_id', None)
         ind_type = request.POST.get('ind_type', None)

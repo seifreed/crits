@@ -452,7 +452,7 @@ def get_table_data(request=None,obj=None,user=None,searchTerm="",
         resp['Result'] = "ERROR"
         resp['msg'] = "User does not have permission to view object."
         resp['Records'] = ""
-    elif request and request.is_ajax():
+    elif request and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         resp = get_query(obj_type, request)
     #if its calling to get data for the dashbaord
     elif user and search_type:

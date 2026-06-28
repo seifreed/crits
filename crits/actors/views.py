@@ -127,7 +127,7 @@ def add_actor(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
         data = request.POST
@@ -215,7 +215,7 @@ def get_actor_identifier_types(request):
 
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if user.has_access_to(ActorACL.ACTOR_IDENTIFIERS_READ):
             result = actor_identifier_types(True)
         else:
@@ -237,7 +237,7 @@ def get_actor_identifier_type_values(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         type_ = request.POST.get('type', None)
         result = actor_identifier_type_values(type_, request.user)
@@ -257,7 +257,7 @@ def new_actor_identifier_type(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
         identifier_type = request.POST.get('identifier_type', None)
@@ -287,7 +287,7 @@ def actor_tags_modify(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
 
@@ -331,7 +331,7 @@ def get_actor_tags(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         tag_type = request.POST.get('type', None)
         if not tag_type:
             return HttpResponse(json.dumps({'success': False,
@@ -354,7 +354,7 @@ def add_identifier(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
         form = AddActorIdentifierForm(request.user.username, request.POST)
@@ -400,7 +400,7 @@ def attribute_identifier(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
 
@@ -437,7 +437,7 @@ def edit_attributed_identifier(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
         id_ = request.POST.get('id', None)
@@ -471,7 +471,7 @@ def remove_attributed_identifier(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
 
@@ -506,7 +506,7 @@ def edit_actor_name(request, id_):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
         if user.has_access_to(ActorACL.NAME_EDIT):
@@ -537,7 +537,7 @@ def edit_actor_aliases(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         user = request.user
         aliases = request.POST.get('aliases', None)

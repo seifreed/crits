@@ -56,7 +56,7 @@ def add_event(request):
 
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if user.has_access_to(EventACL.WRITE):
             event_form = EventForm(request.user, request.POST)
             if event_form.is_valid():
@@ -230,7 +230,7 @@ def get_event_type_dropdown(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         e_types = EventTypes.values(sort=True)
         result = {'types': e_types}
         return HttpResponse(json.dumps(result),

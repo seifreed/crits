@@ -36,7 +36,7 @@ def get_screenshots(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         analyst = request.user.username
         type_ = request.POST.get('type', None)
         _id = request.POST.get('id', None)

@@ -245,7 +245,7 @@ def upload_indicator(request):
         elif result is not None:
             message['success'] = result['success']
 
-        if request.is_ajax():
+        if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             return HttpResponse(json.dumps(message),
                                 content_type="application/json")
         else: #file upload
@@ -265,7 +265,7 @@ def add_update_activity(request, method, indicator_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         form = IndicatorActivityForm(request.POST)
         if form.is_valid():
@@ -310,7 +310,7 @@ def remove_activity(request, indicator_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         date = datetime.datetime.strptime(request.POST['key'],
                                             settings.PY_DATETIME_FORMAT)
@@ -334,7 +334,7 @@ def update_ci(request, indicator_id, ci_type):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         value = request.POST['value']
         user = request.user
         return HttpResponse(json.dumps(ci_update(indicator_id,
@@ -352,7 +352,7 @@ def indicator_and_ip(request):
     :type request: :class:`django.http.HttpRequest`
     :returns: :class:`django.http.HttpResponse`
     """
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = None
         id_ = None
         ip = None
@@ -400,7 +400,7 @@ def indicator_from_tlo(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         ind_type = request.POST.get('ind_type', None)
         tlo_type = request.POST.get('obj_type', None)
         tlo_id = request.POST.get('oid', None)
@@ -449,7 +449,7 @@ def get_indicator_type_dropdown(request):
     """
 
     if request.method == 'POST':
-        if request.is_ajax():
+        if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             dd_final = {}
             list_type = request.POST.get('type', None)
             if list_type == 'indicator_type':
@@ -483,7 +483,7 @@ def update_indicator_type(request, indicator_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if 'type' in request.POST and len(request.POST['type']) > 0:
             result = set_indicator_type(indicator_id,
                                         request.POST['type'],
@@ -512,7 +512,7 @@ def threat_type_modify(request, indicator_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         threat_types = request.POST['threat_types'].split(",")
         result = modify_threat_types(indicator_id, threat_types,
                                      user=request.user)
@@ -534,7 +534,7 @@ def attack_type_modify(request, indicator_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         attack_types = request.POST['attack_types'].split(",")
         result = modify_attack_types(indicator_id, attack_types,
                                      user=request.user)
@@ -554,7 +554,7 @@ def get_available_threat_types(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         return HttpResponse(
             json.dumps(IndicatorThreatTypes.values(sort=True),
                        default=json_handler),
@@ -572,7 +572,7 @@ def get_available_attack_types(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         return HttpResponse(
             json.dumps(IndicatorAttackTypes.values(sort=True),
                        default=json_handler),

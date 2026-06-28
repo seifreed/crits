@@ -107,7 +107,7 @@ def bulk_add_ip(request):
 
     formdict = form_to_dict(AddIPForm(request.user, None))
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         response = process_bulk_add_ip(request, formdict)
 
         return HttpResponse(json.dumps(response,
@@ -132,7 +132,7 @@ def add_update_ip(request, method):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         request.user._setup()
         data = request.POST
         form = AddIPForm(request.user, None, data)
@@ -203,7 +203,7 @@ def remove_ip(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         result = ip_remove(request.POST['key'],
                             request.user.username)
         return HttpResponse(json.dumps(result),

@@ -73,7 +73,7 @@ def bulk_add_domain(request):
     formdict = form_to_dict(AddDomainForm(request.user))
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if user.has_access_to(DomainACL.WRITE):
             response = process_bulk_add_domain(request, formdict)
         else:
@@ -139,7 +139,7 @@ def add_domain(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.is_ajax() and request.method == "POST":
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest') and request.method == "POST":
         add_form = AddDomainForm(request.user, request.POST)
         result = False
         retVal = {}
@@ -194,7 +194,7 @@ def edit_domain(request, domain):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         new_name = request.POST.get('value')
         analyst = request.user.username
         if edit_domain_name(domain, new_name, analyst):

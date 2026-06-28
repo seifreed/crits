@@ -70,7 +70,7 @@ def add_update_comment(request, method, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = AddCommentForm(request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data
@@ -115,7 +115,7 @@ def remove_comment(request, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         date = datetime.datetime.strptime(request.POST['key'],
                                           settings.PY_DATETIME_FORMAT)
@@ -138,7 +138,7 @@ def get_new_comments(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         atype = 'all'
         value = None
         if 'atype' in request.POST:
@@ -187,7 +187,7 @@ def activity(request, atype=None, value=None):
     analyst = user.username
     if not user.has_access_to(GeneralACL.RECENT_ACTIVITY_READ):
         return render(request, "error.html", {'error':'User does not have permission to view Recent Activity.'})
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         atype = request.POST.get('atype', 'all')
         value = request.POST.get('value', None)
         date = request.POST.get('date', None)

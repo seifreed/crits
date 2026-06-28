@@ -143,12 +143,12 @@ def edit_config(request, name):
     """
 
     request.user._setup()
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         results = do_edit_config(name, request.user, post_data=request.POST)
         if 'service' in results:
             del results['service']
         return HttpResponse(json.dumps(results), content_type="application/json")
-    elif request.method == "POST" and not request.is_ajax():
+    elif request.method == "POST" and not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         error = results['config_error']
         return render(request, 'error.html',
                                   {'error': "Expected AJAX POST."})

@@ -122,7 +122,7 @@ def update_object_description(request):
 
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['type']
         id_ = request.POST['id']
         description = request.POST['description']
@@ -149,7 +149,7 @@ def update_object_data(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['type']
         id_ = request.POST['id']
         data = request.POST['data']
@@ -172,7 +172,7 @@ def toggle_favorite(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['type']
         id_ = request.POST['id']
         user = request.user
@@ -193,7 +193,7 @@ def favorites(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         return HttpResponse(json.dumps(get_favorites(user)),
                             content_type="application/json")
@@ -349,7 +349,7 @@ def update_status(request, type_, id_):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         value = request.POST['value']
         user = request.user
 
@@ -460,7 +460,7 @@ def login(request):
     user = request.user
 
     # Is the user already authenticated?
-    if request.user.is_authenticated and user.has_access_to(GeneralACL.WEB_INTERFACE) and not request.is_ajax():
+    if request.user.is_authenticated and user.has_access_to(GeneralACL.WEB_INTERFACE) and not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         resp = validate_next(next_url)
         if not resp['success']:
             return render(request, 'error.html',
@@ -508,7 +508,7 @@ If you are already setup with TOTP, please enter your PIN + Key above."""
                                        'token_message': token_message})
 
     # Attempt authentication
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         next_url = request.POST.get('next_url', None)
         # Get username from form if this is not Remote User
         if not crits_config.remote_user:
@@ -571,7 +571,7 @@ def reset_password(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         action = request.POST.get('action', None)
         username = request.POST.get('username', None)
         email = request.POST.get('email', None)
@@ -649,7 +649,7 @@ def source_releasability(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST.get('type', None)
         id_ = request.POST.get('id', None)
         name = request.POST.get('name', None)
@@ -724,7 +724,7 @@ def source_access(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = SourceAccessForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -752,7 +752,7 @@ def source_add(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         source_form = AddSourceForm(request.POST)
         user = request.user
         if source_form.is_valid():
@@ -787,7 +787,7 @@ def role_add(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         role_form = AddRoleForm(request.POST)
         user = request.user
         if role_form.is_valid():
@@ -832,7 +832,7 @@ def role_graph(request):
         start_type = request.GET.get('start_type', 'roles')
         start_node = request.GET.get('start_node', None)
         expansion_node = request.GET.get('expansion_node', None)
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         start_type = request.POST.get('start_type', 'roles')
         start_node = request.POST.get('start_node', None)
         expansion_node = request.POST.get('expansion_node', None)
@@ -864,7 +864,7 @@ def add_update_source(request, method, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = SourceForm(request.user, request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -947,7 +947,7 @@ def remove_source(request, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         date = datetime.datetime.strptime(request.POST['key'],
                                             settings.PY_DATETIME_FORMAT)
         name = request.POST['name']
@@ -982,7 +982,7 @@ def remove_all_source(request, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         name = request.POST['key']
         result = source_remove_all(obj_type,
                                     obj_id,
@@ -1030,7 +1030,7 @@ def bucket_modify(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         tags = request.POST['tags'].split(",")
         oid = request.POST['oid']
         itype = request.POST['itype']
@@ -1395,7 +1395,7 @@ def get_user_source_list(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user_source_access = user_sources('%s' % request.user.username)
         message = {'success': True,
                    'data': user_source_access}
@@ -1417,7 +1417,7 @@ def user_source_access(request, username=None):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if not username:
             username = request.POST.get('username', None)
         user = get_user_info(username)
@@ -1452,7 +1452,7 @@ def user_preference_toggle(request, section, setting):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         pref = generate_user_preference(request, section, 'toggle', setting)
         if not pref or 'toggle' not in pref:
             error = "Unexpected Preference Toggle Received in AJAX POST"
@@ -1490,7 +1490,7 @@ def user_preference_update(request, section):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         result = {}
 
         pref = generate_user_preference(request,section)
@@ -1556,7 +1556,7 @@ def delete_user_notification(request, type_, oid):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         result = remove_user_from_notification("%s" % request.user.username,
                                                oid,
                                                type_)
@@ -1583,7 +1583,7 @@ def change_subscription(request, stype, oid):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = "%s" % request.user.username
         message = ""
         if is_user_subscribed(username, stype, oid):
@@ -1612,7 +1612,7 @@ def source_subscription(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = "%s" % request.user.username
         user_source_access = user_sources(username)
         source = request.POST['source']
@@ -1668,7 +1668,7 @@ def change_password(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = request.user.username
         current_p = request.POST['current_p']
         new_p = request.POST['new_p']
@@ -1693,7 +1693,7 @@ def change_totp_pin(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = request.user.username
         new_pin = request.POST.get('new_pin', None)
         if new_pin:
@@ -1764,7 +1764,7 @@ def toggle_user_active(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.POST.get('username', None)
         analyst = request.user.username
         if not user:
@@ -1848,7 +1848,7 @@ def toggle_item_active(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST.get('coll', None)
         oid = request.POST.get('oid', None)
         analyst = request.user.username
@@ -1896,7 +1896,7 @@ def role_value_change(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         rid = request.POST.get('rid', None)
         name = request.POST.get('name', None)
         value = request.POST.get('value', None)
@@ -1922,7 +1922,7 @@ def role_add_source(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         rid = request.POST.get('rid', None)
         name = request.POST.get('name', None)
         analyst = request.user.username
@@ -1946,7 +1946,7 @@ def update_role_name(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         rid = request.POST.get('rid', None)
         name = request.POST.get('name', None)
         old_name = request.POST.get('old_name', None)
@@ -1971,7 +1971,7 @@ def update_role_description(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         rid = request.POST.get('rid', None)
         description = request.POST.get('description', None)
         analyst = request.user.username
@@ -1995,7 +1995,7 @@ def role_remove_source(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         rid = request.POST.get('rid', None)
         name = request.POST.get('name', None)
         analyst = request.user.username
@@ -2085,7 +2085,7 @@ def add_update_ticket(request, method, type_=None, id_=None):
 
     acl = get_acl_object(type_)
 
-    if method =="remove" and request.method == "POST" and request.is_ajax():
+    if method =="remove" and request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         date = datetime.datetime.strptime(request.POST['key'],
                                             settings.PY_DATETIME_FORMAT)
         date = date.replace(microsecond=date.microsecond/1000*1000)
@@ -2097,7 +2097,7 @@ def add_update_ticket(request, method, type_=None, id_=None):
         return HttpResponse(json.dumps(result),
                             content_type="application/json")
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = TicketForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -2170,7 +2170,7 @@ def get_api_key(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = request.user.username
         name = request.POST.get('name', None)
         if not name:
@@ -2200,7 +2200,7 @@ def create_api_key(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = request.user.username
         name = request.POST.get('name', None)
         if not name:
@@ -2224,7 +2224,7 @@ def make_default_api_key(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = request.user.username
         name = request.POST.get('name', None)
         if not name:
@@ -2248,7 +2248,7 @@ def revoke_api_key(request):
     :returns: :class:`django.http.HttpResponseRedirect`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         username = request.user.username
         name = request.POST.get('name', None)
         if not name:
@@ -2272,7 +2272,7 @@ def sector_modify(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         acl = get_acl_object(request.POST['itype'])
         if user.has_access_to(acl.SECTORS_EDIT):
@@ -2309,7 +2309,7 @@ def get_available_sectors(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         return HttpResponse(
             json.dumps(Sectors.values(sort=True), default=json_handler),
             content_type='application/json'
@@ -2326,7 +2326,7 @@ def bucket_autocomplete(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         term = request.POST.get('term', None)
         if term:
             return get_bucket_autocomplete(term)
@@ -2342,7 +2342,7 @@ def tlp_modify(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         tlp = request.POST['tlp']
         oid = request.POST['oid']
         itype = request.POST['itype']
@@ -2362,7 +2362,7 @@ def add_preferred_actions(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if 'obj_type' not in request.POST and 'obj_id' not in request.POST:
             result = {'success': False, 'message': "Invalid parameters."}
         else:
@@ -2391,7 +2391,7 @@ def new_action(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = NewActionForm(request.POST)
         user = request.user
         if form.is_valid():
@@ -2432,7 +2432,7 @@ def add_update_action(request, method, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         acl = get_acl_object(obj_type)
         form = ActionsForm(request.POST)
@@ -2491,7 +2491,7 @@ def remove_action(request, obj_type, obj_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         user = request.user
         acl = get_acl_object(obj_type)
         if user.has_access_to(acl.ACTIONS_DELETE):

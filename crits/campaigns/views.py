@@ -45,7 +45,7 @@ def campaign_stats(request):
     campaign = request.GET.get("campaign", "all")
     if refresh == "yes":
         campaign_date_stats()
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         data_list = get_campaign_stats(campaign)
         return HttpResponse(json.dumps(data_list,
                                        default=json_util.default),
@@ -134,7 +134,7 @@ def add_campaign(request):
     request.user._setup()
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         campaign_form = AddCampaignForm(request.POST)
         if campaign_form.is_valid():
             if user.has_access_to(CampaignACL.WRITE):
@@ -188,7 +188,7 @@ def campaign_add(request, ctype, objectid):
     """
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = CampaignForm(request.POST)
         result = {}
         acl = get_acl_object(ctype)
@@ -241,7 +241,7 @@ def edit_campaign(request, ctype, objectid):
     """
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = CampaignForm(request.POST)
         acl = get_acl_object(ctype)
         if user.has_access_to(acl.CAMPAIGNS_EDIT):
@@ -301,7 +301,7 @@ def remove_campaign(request, ctype, objectid):
     """
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         data = request.POST
         acl = get_acl_object(ctype)
         if user.has_access_to(acl.CAMPAIGNS_DELETE):
@@ -328,7 +328,7 @@ def campaign_ttp(request, cid):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         action = request.POST['action']
         user = request.user
         if action == "add":
@@ -377,7 +377,7 @@ def campaign_aliases(request):
     """
     user = request.user
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if user.has_access_to(CampaignACL.ALIASES_EDIT):
             tags = request.POST.get('tags', "").split(",")
             name = request.POST.get('name', None)

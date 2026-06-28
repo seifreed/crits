@@ -242,7 +242,7 @@ def update_data_type_dependency(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['type']
         id_ = request.POST['id']
         data_deps = request.POST['data_type_dependency']
@@ -270,7 +270,7 @@ def update_data_type_min_version(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['type']
         id_ = request.POST['id']
         data_type_min_version = request.POST['data_type_min_version']
@@ -298,7 +298,7 @@ def update_data_type_max_version(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST['type']
         id_ = request.POST['id']
         data_type_max_version = request.POST['data_type_max_version']
@@ -328,7 +328,7 @@ def remove_signature_dependency(request):
     """
 
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST.get('coll', None)
         oid = request.POST.get('oid', None)
 
@@ -377,7 +377,7 @@ def new_signature_dependency(request):
     """
 
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = NewSignatureDependencyForm(request.POST)
         user = request.user
         if form.is_valid():
@@ -412,7 +412,7 @@ def new_signature_type(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = NewSignatureTypeForm(request.POST)
         user = request.user
         if form.is_valid():
@@ -448,7 +448,7 @@ def get_signature_dependency_dropdown(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         dt_deps = get_item_names(SignatureDependency)
         dt_final = []
         for dt in dt_deps:
@@ -470,7 +470,7 @@ def get_signature_type_dropdown(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         dt_types = get_item_names(SignatureType)
         dt_final = []
         for dt in dt_types:
@@ -491,7 +491,7 @@ def dependency_autocomplete(request):
     :return: HttpResponse with JSON with list of options
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         term = request.POST.get('term', None)
         if term:
             return get_dependency_autocomplete(term)

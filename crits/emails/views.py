@@ -198,7 +198,7 @@ def email_fields_add(request):
             if result['status']:
                 redirect = reverse('crits-emails-views-email_detail',
                                    args=[result['object'].id])
-                if not request.is_ajax():
+                if not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
                     return HttpResponseRedirect(redirect)
                 json_reply['success'] = True
                 del json_reply['form']
@@ -209,7 +209,7 @@ def email_fields_add(request):
             else:
                 message = result['reason']
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         json_reply['message'] = message
         return HttpResponse(json.dumps(json_reply),
                             content_type="application/json")
@@ -268,7 +268,7 @@ def email_yaml_add(request, email_id=None):
             if result['status']:
                 redirect = reverse('crits-emails-views-email_detail',
                                    args=[result['object'].id])
-                if not request.is_ajax():
+                if not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
                     return HttpResponseRedirect(redirect)
                 json_reply['success'] = True
                 message = 'Email uploaded successfully'
@@ -278,7 +278,7 @@ def email_yaml_add(request, email_id=None):
             else:
                 message = result['reason']
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         json_reply['message'] = message
         return HttpResponse(json.dumps(json_reply),
                             content_type="application/json")
@@ -334,7 +334,7 @@ def email_raw_add(request):
             if result['status']:
                 redirect = reverse('crits-emails-views-email_detail',
                                    args=[result['object'].id])
-                if not request.is_ajax():
+                if not (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
                     return HttpResponseRedirect(redirect)
                 json_reply['success'] = True
                 del json_reply['form']
@@ -346,7 +346,7 @@ def email_raw_add(request):
                 message = result['reason']
 
 
-    if request.is_ajax():
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         json_reply['message'] = message
         return HttpResponse(json.dumps(json_reply),
                             content_type="application/json")
@@ -501,7 +501,7 @@ def email_detail(request, email_id):
     if not user.has_access_to(EmailACL.READ):
         return render(request, 'error.html',
                                   {'error':'User does not have permission to view email.'})
-    if request.method == "GET" and request.is_ajax():
+    if request.method == "GET" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         return get_email_formatted(email_id,
                                    user.username,
                                    request.GET.get("format", "json"))
@@ -523,7 +523,7 @@ def indicator_from_header_field(request, email_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if 'type' in request.POST:
             header_field = request.POST.get('field')
             header_type = request.POST.get('type')
@@ -565,7 +565,7 @@ def update_header_value(request, email_id):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         type_ = request.POST.get('type', None)
         value = request.POST.get('value', None)
         analyst = request.user.username

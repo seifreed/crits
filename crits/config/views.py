@@ -83,7 +83,7 @@ def modify_config(request):
     errors = []
     permission_error = False
 
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         if user.has_access_to(GeneralACL.CONTROL_PANEL_GENERAL_EDIT):
             config_general_form = ConfigGeneralForm(request.POST)
         else:

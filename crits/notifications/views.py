@@ -20,7 +20,7 @@ def poll(request):
     is_user_toast_enabled = request.user.get_preference('toast_notifications', 'enabled', True)
 
     if is_user_toast_enabled and settings.ENABLE_TOASTS:
-        if request.method == 'POST' and request.is_ajax():
+        if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             newer_than = request.POST.get("newer_than", None)
 
             if newer_than == "":
@@ -53,7 +53,7 @@ def acknowledge(request):
     is_user_toast_enabled = request.user.get_preference('toast_notifications', 'enabled', True)
 
     if is_user_toast_enabled and settings.ENABLE_TOASTS:
-        if request.method == 'POST' and request.is_ajax():
+        if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             id = request.POST.get("id", None)
 
             remove_user_from_notification_id(request.user.username, id)

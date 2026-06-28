@@ -435,7 +435,7 @@ def new_raw_data_type(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         form = NewRawDataTypeForm(request.POST)
         user = request.user
         if form.is_valid():
@@ -469,7 +469,7 @@ def get_raw_data_type_dropdown(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST' and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         dt_types = get_item_names(RawDataType)
         dt_final = []
         for dt in dt_types:

@@ -123,7 +123,7 @@ def add_update_target(request):
         else:
             result = {'message': ['<div>Form is invalid!</div>']}
             result['form'] = form.as_table()
-        if request.is_ajax():
+        if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             return HttpResponse(json.dumps(result), content_type="application/json")
         else:
             return HttpResponseRedirect(reverse('crits-targets-views-target_info',

@@ -29,8 +29,9 @@ def generate_yara_hits():
     m = Code(map_code, {})
     r = Code('function(k,v) { var count=0; v.forEach(function(v) { count += v["count"]; }); return {count: count}; }', {})
     try:
-        yarahits = samples.inline_map_reduce(m, r,
-                                             query={'analysis.service_name': 'yara'})
+        yarahits = samples.database.command(
+            'mapReduce', samples.name, map=m, reduce=r, out={'inline': 1},
+            query={'analysis.service_name': 'yara'})['results']
     except Exception:
         return
     yarahits_col = mongo_connector(settings.COL_YARAHITS)
@@ -54,8 +55,9 @@ def generate_sources():
     m = Code('function() { this.source.forEach(function(z) {emit({name: z.name}, {count: 1});}) }', {})
     r = Code('function(k,v) { var count=0; v.forEach(function(v) { count += v["count"]; }); return {count: count}; }', {})
     try:
-        sources = samples.inline_map_reduce(m,r,
-                                            query={"source.name": {"$exists": 1}})
+        sources = samples.database.command(
+            'mapReduce', samples.name, map=m, reduce=r, out={'inline': 1},
+            query={"source.name": {"$exists": 1}})['results']
     except Exception:
         return
     source_access = mongo_connector(settings.COL_SOURCE_ACCESS)
@@ -72,7 +74,8 @@ def generate_filetypes():
     m = Code('function() emit({filetype: this.mimetype} ,{count: 1});}) }', {})
     r = Code('function(k,v) { var count = 0; v.forEach(function(v) { count += v["count"]; }); return {count: count}; }', {})
     try:
-        samples.map_reduce(m,r, settings.COL_FILETYPES)
+        samples.database.command('mapReduce', samples.name, map=m, reduce=r,
+                                 out=settings.COL_FILETYPES)
     except Exception:
         return
 
@@ -114,7 +117,9 @@ def update_results(collection, m, r, stat_query, field, campaign_stats):
     """
 
     if collection.count_documents({}) > 0:
-        results = collection.inline_map_reduce(m,r, query=stat_query)
+        results = collection.database.command(
+            'mapReduce', collection.name, map=m, reduce=r, out={'inline': 1},
+            query=stat_query)['results']
         for result in results:
             if result["_id"] is not None:
                 if result["_id"] not in campaign_stats:

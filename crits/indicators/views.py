@@ -105,7 +105,7 @@ def remove_indicator(request, _id):
     :returns: :class:`django.http.HttpResponse`,
               :class:`django.http.HttpResponseRedirect`
     """
-    print('%s' % (request.user.username))
+    print(('%s' % (request.user.username)))
     result = indicator_remove(_id, username=(
                               '%s' % request.user.username))
     if result['success']:

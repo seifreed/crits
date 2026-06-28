@@ -502,7 +502,7 @@ def update_config(service_name, config, user):
         #update_status(service_name)
         service.save(username=user.username)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def get_service_config(name):
@@ -622,7 +622,7 @@ def set_enabled(service_name, enabled=True, user=None):
         else:
             url = reverse('crits-services-views-enable', args=(service_name,))
         return {'success': True, 'url': url}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def set_triage(service_name, enabled=True, user=None):
@@ -645,7 +645,7 @@ def set_triage(service_name, enabled=True, user=None):
             url = reverse('crits-services-views-enable_triage',
                           args=(service_name,))
         return {'success': True, 'url': url}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': e}
 

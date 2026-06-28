@@ -2,7 +2,7 @@
 *.pyc
 *.swp
 *.swo
-
+CLAUDE.md
 # Ignore custom config files and logs
 crits/config/database.py
 crits/config/overrides.py
@@ -30,3 +30,10 @@ INSTALL_RECEIPT.json
 
 # Ignore VirtualEnv
 venv/*
+
+# Tooling / caches
+.codegraph/
+.cursor/
+.mypy_cache/
+.ruff_cache/
+__pycache__/

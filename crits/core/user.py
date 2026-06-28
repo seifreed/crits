@@ -856,7 +856,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                               config.ldap_userdn)
         elif "@" in config.ldap_userdn:
             un = "%s%s" % (self.username, config.ldap_userdn)
-	try:
+        try:
             # Try auth bind first
             l.simple_bind_s(un, password)
             logger.info("Bound to LDAP for: %s" % un)
@@ -1234,15 +1234,15 @@ class CRITsAuthBackend(object):
                     l.set_option(ldap.OPT_TIMEOUT, 10)
                     # two-step ldap binding
                     if len(config.ldap_bind_dn) > 0:
-                    	try:
-                    		logger.info("binding with bind_dn: %s" % config.ldap_bind_dn)
-                    		l.simple_bind_s(config.ldap_bind_dn, config.ldap_bind_password)
-                    		filter = '(|(cn='+fusername+')(uid='+fusername+')(mail='+fusername+'))'
-                    		# use the retrieved dn for the second bind
-                        	un = l.search_s(config.ldap_userdn,ldap.SCOPE_SUBTREE,filter,['dn'])[0][0]
+                        try:
+                                logger.info("binding with bind_dn: %s" % config.ldap_bind_dn)
+                                l.simple_bind_s(config.ldap_bind_dn, config.ldap_bind_password)
+                                filter = '(|(cn='+fusername+')(uid='+fusername+')(mail='+fusername+'))'
+                                # use the retrieved dn for the second bind
+                                un = l.search_s(config.ldap_userdn,ldap.SCOPE_SUBTREE,filter,['dn'])[0][0]
                         except Exception as err:
-            			#logger.error("Error binding to LDAP for: %s" % config.ldap_bind_dn)
-            			logger.error("authenticate ERR: %s" % err)
+                                #logger.error("Error binding to LDAP for: %s" % config.ldap_bind_dn)
+                                logger.error("authenticate ERR: %s" % err)
                         l.unbind()
                         if len(ldap_server) == 2:
                             l = ldap.initialize('%s:%s' % (url.unparse(),
@@ -1305,7 +1305,7 @@ Please contact a site administrator to resolve.
 """
                 try:
                     user.email_user(subject, body)
-                except Exception, err:
+                except Exception as err:
                     logger.warning("Error sending email: %s" % str(err))
             self.track_login_attempt(user, e)
             user.reload()

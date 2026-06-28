@@ -52,7 +52,7 @@ class Command(BaseCommand):
         uberadmin = options.get('uberadmin')
 
         if mall or drop:
-            print "Drop protection disabled. Dropping all Roles!"
+            print("Drop protection disabled. Dropping all Roles!")
             Role.drop_collection()
         if mall or uberadmin:
             add_uber_admin_role()
@@ -87,13 +87,13 @@ def add_uber_admin_role(drop=False):
     """
 
     if drop:
-        print "Drop protection disabled. Dropping all Roles!"
+        print("Drop protection disabled. Dropping all Roles!")
         Role.drop_collection()
     else:
-        print "Drop protection enabled!\nResetting 'UberAdmin' Role to defaults!"
+        print("Drop protection enabled!\nResetting 'UberAdmin' Role to defaults!")
     role = Role.objects(name=settings.ADMIN_ROLE).first()
     if not role:
-        print "Could not find UberAdmin Role. Creating it!"
+        print("Could not find UberAdmin Role. Creating it!")
         role = Role()
         role.name = settings.ADMIN_ROLE
         role.description = "Default role with full system access."
@@ -210,10 +210,10 @@ def migrate_roles():
             elif 'unsupported_attrs' in user and 'role' in user['unsupported_attrs']:
                 role = user['unsupported_attrs']['role']
             else:
-                print "Error migrating legacy roles for user %s. No legacy role found to migrate." % user
+                print("Error migrating legacy roles for user %s. No legacy role found to migrate." % user)
                 sys.exit()
         except:
-            print "Error migrating legacy roles for user %s. No legacy role found to migrate." % user
+            print("Error migrating legacy roles for user %s. No legacy role found to migrate." % user)
             sys.exit()
 
 

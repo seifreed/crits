@@ -338,8 +338,8 @@ def save_data(userId, columns, tableName, searchTerm="", objType="", sortBy=None
         if oldDashId:
             deleteDashboardIfEmpty(oldDashId)
     except Exception as e:
-        print "ERROR: "
-        print e
+        print("ERROR: ")
+        print(e)
         return {'success': False,
                 'message': "An unexpected error occurred while saving table. Please refresh and try again"}
     return {'success': True,'message': tableName+" Saved Successfully!"}
@@ -392,7 +392,7 @@ def clear_dashboard(dashId):
             else:
                 search.update(unset__col=1,unset__row=1,unset__sizex=1)
     except Exception as e:
-        print e
+        print(e)
         return {'success': False,
                 'message': "An unexpected error occurred while resetting dash. Please refresh and try again"}
     return {'success': True,
@@ -423,7 +423,7 @@ def delete_table(userId, id):
             savedSearch.delete()
             deleteDashboardIfEmpty(dashId)
     except Exception as e:
-        print e
+        print(e)
         return {'success': False,
                 'message': "Search could not be found. Please refresh and try again."}
     return {'success': True,'message': message, 'wasDeleted': doDelete}
@@ -716,7 +716,7 @@ def setPublic(id, makePublic):
         else:#if making public, remove parent
             Dashboard.objects(id=id).update_one(unset__parent=1)
     except Exception as e:
-        print e
+        print(e)
         return "An error occured while updating table. Please try again later."
     return True
 
@@ -743,7 +743,7 @@ def deleteDashboard(id):
         SavedSearch.objects(dashboard=id).delete_one()
         Dashboard.objects(id=id).delete_one()
     except Exception as e:
-        print e
+        print(e)
         return False
     return name
 
@@ -766,7 +766,7 @@ def changeTheme(id, theme):
     try:
         Dashboard.objects(id=id).update_one(set__theme=theme)
     except Exception as e:
-        print e
+        print(e)
         return False
     return "Dashboard updated successfully."
 

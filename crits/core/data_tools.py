@@ -37,7 +37,7 @@ def get_file_fs(sample_md5):
         data = fin.read()
         fin.close()
     except Exception as e:
-        raise("error: %s" % e)
+        raise "error: %s"
     return data
 
 def put_file_fs(data):
@@ -62,7 +62,7 @@ def put_file_fs(data):
         fout.write(data)
         fout.close()
     except Exception as e:
-        raise("error: %s" % e)
+        raise "error: %s"
     return sample_md5
 
 def create_zip(files, pw_protect=True):
@@ -137,24 +137,24 @@ def create_zip(files, pw_protect=True):
         zipdata = ""
         if proc.returncode:     # zip spit out an error
             errmsg = "Error while creating archive\n" + proc.stdout.read()
-            raise ZipFileError, errmsg
+            raise ZipFileError(errmsg)
         elif not waitSeconds:   # Process timed out
             proc.terminate()
-            raise ZipFileError, "Error:\nProcess failed to terminate"
+            raise ZipFileError("Error:\nProcess failed to terminate")
         else:
             with open(dumpdir + "/" + zipname, "rb") as fh:
                 zipdata = fh.read()
         if not len(zipdata):
-            raise ZipFileError, "Error:\nThe zip archive contains no data"
+            raise ZipFileError("Error:\nThe zip archive contains no data")
         return zipdata
 
     except ZipFileError:
         raise
-    except Exception, ex:
+    except Exception as ex:
         errmsg = ""
         for err in ex.args:
             errmsg = errmsg + " " + unicode(err)
-        raise ZipFileError, errmsg
+        raise ZipFileError(errmsg)
     finally:
         if os.path.isdir(dumpdir):
             shutil.rmtree(dumpdir)
@@ -315,7 +315,7 @@ def format_object(obj_type, obj_id, data_format="yaml", cleanse=True,
         del data["campaign"]
 
     del data["_id"]
-    if data.has_key("modified"):
+    if "modified" in data:
         del data["modified"]
 
     if remove_buckets and 'bucket_list' in data:

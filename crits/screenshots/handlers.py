@@ -202,7 +202,7 @@ def add_screenshot(description, tags, source, method, reference, tlp, analyst,
         try:
             s.save(username=analyst)
             final_screenshots.append(s)
-        except Exception, e:
+        except Exception as e:
             result['message'] = str(e)
             return result
         obj.screenshots.append(str(s.id))
@@ -277,7 +277,7 @@ def delete_screenshot_from_object(obj, oid, sid, analyst):
         klass.save(username=analyst)
         result['success'] = True
         return result
-    except Exception, e:
+    except Exception as e:
         result['message'] = str(e)
         return result
 

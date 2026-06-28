@@ -684,7 +684,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
             root_domain.save(username=username)
         if fqdn_domain:
             fqdn_domain.save(username=username)
-    except Exception, e:
+    except Exception as e:
         return {'success': False, 'message': e}
 
     #Add relationships between fqdn, root

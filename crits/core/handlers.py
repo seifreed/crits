@@ -125,7 +125,7 @@ def action_add(type_, id_, tlo_action, user=None, **kwargs):
                        date = datetime.datetime.now())
         obj.save(username=user)
         return {'success': True, 'object': tlo_action}
-    except (ValidationError, TypeError, KeyError), e:
+    except (ValidationError, TypeError, KeyError) as e:
         return {'success': False, 'message': e}
 
 def action_remove(type_, id_, date, action_type, user, **kwargs):
@@ -165,7 +165,7 @@ def action_remove(type_, id_, date, action_type, user, **kwargs):
         obj.delete_action(date, action_type)
         obj.save(username=user)
         return {'success': True}
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success': False, 'message': e}
 
 def action_update(type_, id_, tlo_action, user=None, **kwargs):
@@ -212,7 +212,7 @@ def action_update(type_, id_, tlo_action, user=None, **kwargs):
                         tlo_action['date'])
         obj.save(username=user)
         return {'success': True, 'object': tlo_action}
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success': False, 'message': e}
 
 def description_update(type_, id_, description, user, **kwargs):
@@ -250,7 +250,7 @@ def description_update(type_, id_, description, user, **kwargs):
         obj.description = description
         obj.save(username=user)
         return {'success': True, 'message': "Description set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def data_update(type_, id_, data, analyst):
@@ -288,7 +288,7 @@ def data_update(type_, id_, data, analyst):
         obj.data = data
         obj.save(username=analyst)
         return {'success': True, 'message': "Data set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def get_favorites(analyst):
@@ -406,7 +406,7 @@ def status_update(type_, id_, value="In Progress", user=None, **kwargs):
 
         obj.save(username=user)
         return {'success': True, 'value': value}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 
@@ -489,7 +489,7 @@ def add_releasability(type_, id_, name, user, **kwargs):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not add releasability: %s" % e}
 
@@ -522,7 +522,7 @@ def add_releasability_instance(type_, _id, name, analyst, note=None):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not add releasability instance: %s" % e}
 
@@ -553,7 +553,7 @@ def remove_releasability_instance(type_, _id, name, date, analyst):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not remove releasability instance: %s" % e}
 
@@ -582,7 +582,7 @@ def remove_releasability(type_, _id, name, analyst):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not remove releasability: %s" % e}
 
@@ -774,7 +774,7 @@ def source_add_update(type_, id_, action_type, source, method='',
         return {'success': False,
                 'message': ('Could not make source changes. '
                             'Refresh page and try again.')}
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success':False, 'message': e}
 
 def source_remove(type_, id_, name, date, user=None, **kwargs):
@@ -804,7 +804,7 @@ def source_remove(type_, id_, name, date, user=None, **kwargs):
                                    date=date)
         obj.save(username=user)
         return result
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success':False, 'message': e}
 
 def source_remove_all(obj_type, obj_id, name, analyst=None):
@@ -831,7 +831,7 @@ def source_remove_all(obj_type, obj_id, name, analyst=None):
                                    remove_all=True)
         obj.save(username=analyst)
         return result
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success':False, 'message': e}
 
 def get_sources(obj_type, obj_id, analyst):
@@ -1407,7 +1407,7 @@ def modify_source_access(analyst, data):
     try:
         user.save(username=analyst)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': format_error(e)}
 
@@ -1536,7 +1536,7 @@ def do_add_preferred_actions(obj_type, obj_id, username):
 
     try:
         obj.save(username=username)
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
     return {'success': True, 'object': actions}
@@ -1587,7 +1587,7 @@ def generate_regex(val):
 
     try:
         return {'$regex': re.compile('%s' % remove_quotes(val), re.I)}
-    except Exception, e:
+    except Exception as e:
         return {'error': 'Invalid Regular Expression: %s\n\n\t%s' % (val,
                                                                         str(e))}
 
@@ -2055,7 +2055,7 @@ def data_query(col_obj, user, limit=25, skip=0, sort=[], query={},
             if hasattr(doc, "sanitize_sources"):
                 doc.sanitize_sources(username="%s" % user, sources=sourcefilt)
 
-    except Exception, e:
+    except Exception as e:
         results['msg'] = "ERROR: %s. Sort performed on: %s" % (e,
                                                                ', '.join(sort))
         return results
@@ -4057,7 +4057,7 @@ def ticket_add(type_, id_, ticket, user, **kwargs):
                              ticket['date'])
         obj.save(username=user)
         return {'success': True, 'object': ticket}
-    except (ValidationError, TypeError, KeyError), e:
+    except (ValidationError, TypeError, KeyError) as e:
         return {'success': False, 'message': e}
 
 def ticket_update(type_, id_, ticket, user=None, **kwargs):
@@ -4090,7 +4090,7 @@ def ticket_update(type_, id_, ticket, user=None, **kwargs):
                         ticket['date'])
         obj.save(username=user)
         return {'success': True, 'object': ticket}
-    except (ValidationError, TypeError, KeyError), e:
+    except (ValidationError, TypeError, KeyError) as e:
         return {'success': False, 'message': e}
 
 
@@ -4120,7 +4120,7 @@ def ticket_remove(type_, id_, date, user, **kwargs):
         obj.delete_ticket(date)
         obj.save(username=user)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def unflatten(dictionary):

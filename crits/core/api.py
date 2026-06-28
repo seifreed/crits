@@ -191,7 +191,7 @@ class CRITsSerializer(Serializer):
                     response['Content-Disposition'] = 'attachment; filename="results.zip"'
                 else:
                     response = BadRequest("No files found!")
-            except Exception, e:
+            except Exception as e:
                 response = BadRequest(str(e))
         return response
 
@@ -736,7 +736,7 @@ class CRITsAPIResource(MongoEngineResource):
                     content['message'] = message
                 else:
                     content['message'] = "success!"
-            except Exception, e:
+            except Exception as e:
                 content['return_code'] = 1
                 content['message'] = str(e)
         else:

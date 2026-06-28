@@ -167,10 +167,10 @@ class Command(BaseCommand):
             try:
                 user.save()
                 if reset:
-                    print "New temporary password for %s: %s" % (username,
-                                                                 password)
-                print "User %s has been updated!" % username
-            except Exception, e:
+                    print("New temporary password for %s: %s" % (username,
+                                                                 password))
+                print("User %s has been updated!" % username)
+            except Exception as e:
                 raise CommandError("Error saving changes: %s" % str(e))
             if adduser:
                 raise CommandError("User '%s' exists in CRITs!" % username)

@@ -469,7 +469,7 @@ def handle_indicator_csv(csv_data, ctype, user, source, source_method=None,
                                                related_id=related_id,
                                                related_type=related_type,
                                                relationship_type=relationship_type)
-        except Exception, e:
+        except Exception as e:
             result['success'] = False
             result_message += msg % (processed + 1, e)
             continue
@@ -605,7 +605,7 @@ def handle_indicator_ind(value, source, ctype, threat_type, attack_type,
                                            add_relationship=add_relationship, cache=cache,
                                            related_id=related_id, related_type=related_type,
                                            relationship_type=relationship_type)
-        except Exception, e:
+        except Exception as e:
             return {'success': False, 'message': repr(e)}
 
     return result
@@ -1093,7 +1093,7 @@ def activity_add(id_, activity, user, **kwargs):
         indicator.save(username=user.username)
         return {'success': True, 'object': activity,
                 'id': str(indicator.id)}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e,
                 'id': str(indicator.id)}
 
@@ -1129,7 +1129,7 @@ def activity_update(id_, activity, user=None, **kwargs):
                                 activity['date'])
         indicator.save(username=user.username)
         return {'success': True, 'object': activity}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def activity_remove(id_, date, user, **kwargs):
@@ -1155,7 +1155,7 @@ def activity_remove(id_, date, user, **kwargs):
         indicator.delete_activity(date)
         indicator.save(username=user.username)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def ci_update(id_, ci_type, value, user, **kwargs):
@@ -1185,7 +1185,7 @@ def ci_update(id_, ci_type, value, user, **kwargs):
                 indicator.set_impact(user.username, value)
             indicator.save(username=user.username)
             return {'success': True}
-        except ValidationError, e:
+        except ValidationError as e:
             return {'success': False, "message": e}
     else:
         return {'success': False, 'message': 'Invalid CI type'}
@@ -1261,7 +1261,7 @@ def create_indicator_and_ip(type_, id_, ip, user):
                 return {'success': True, 'message': rels, 'value': obj_class.id}
             else:
                 return {'success': False, 'message': message['message']}
-        except Exception, e:
+        except Exception as e:
             return {'success': False, 'message': e}
     else:
         return {'success': False,

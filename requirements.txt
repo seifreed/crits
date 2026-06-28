@@ -7,7 +7,7 @@ mongoengine>=0.29,<0.30
 pymongo>=4.6,<5
 
 # --- Core libraries ---
-Pillow>=11,<12
+Pillow>=12.2,<13
 requests>=2.32,<3
 lxml>=6,<7
 defusedxml>=0.7

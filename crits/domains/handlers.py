@@ -45,7 +45,7 @@ def get_valid_root_domain(domain):
     """
 
     root = fqdn = error = ""
-    black_list = "/:@\ "
+    black_list = r"/:@\ "
     domain = domain.strip()
 
     if any(c in black_list for c in domain):
@@ -775,7 +775,7 @@ class etld(object):
                                   '\\.').replace('*',
                                                  '[^\\.]*').replace('!',
                                                                     '')
-        return '^(%s)\.(.*)$' % etld
+        return r'^(%s)\.(.*)$' % etld
 
     def parse(self, hostname):
         """

@@ -1625,7 +1625,7 @@ def parse_search_term(term, force_full=False):
     # setup lexer, parse our term, and define operators
     try:
         sh = shlex.shlex(term.strip())
-        sh.wordchars += '!@#$%^&*()-_=+[]{}|\:;<,>.?/~`'
+        sh.wordchars += r'!@#$%^&*()-_=+[]{}|\:;<,>.?/~`'
         sh.commenters = ''
         parsed = list(iter(sh.get_token, ''))
     except Exception as e:

@@ -981,8 +981,8 @@ def handle_pasted_eml(data, sourcename, reference, method, tlp,  user,
 
     # Try to fix headers where we lost whitespace indents
     # Split by newline, parse/fix headers, join by newline
-    hfieldre = re.compile('^\S+:\s')
-    boundaryre = re.compile('boundary="?([^\s"\']+)"?')
+    hfieldre = re.compile(r'^\S+:\s')
+    boundaryre = re.compile('boundary="?([^\\s"\']+)"?')
     emldata = []
     boundary = None
     isbody = False
@@ -1279,8 +1279,8 @@ def dict_to_email(d, save_unsupported=True):
     """
 
     for key in d:
-        newkey = re.sub('[\s-]', '_', key)
-        newkey = re.sub('[\W]', '', newkey)
+        newkey = re.sub(r'[\s-]', '_', key)
+        newkey = re.sub(r'[\W]', '', newkey)
         newkey = re.sub('_+', '_', newkey)
         newkey = newkey.lower()
         if key != newkey:
@@ -1347,7 +1347,7 @@ def update_email_header_value(email_id, type_, value, analyst):
     """
 
     if type_ in ('to', 'cc'):
-        bad_chars = "<>^&(){}[]!#$%=+;:'/\|?~`"
+        bad_chars = r"<>^&(){}[]!#$%=+;:'/\|?~`"
         if any((bad_char in value) for bad_char in bad_chars):
             return {'success': False, 'message': "Invalid characters in list"}
     email = Email.objects(id=email_id).first()

@@ -142,35 +142,52 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         except Exception:
             self.impfuzzy = None
 
+    def _read_magic(self, length):
+        """
+        Read the first ``length`` bytes of the backing binary, resetting the
+        read position afterwards. Returns ``b''`` when there is no backing file
+        (e.g. a dangling GridFS reference whose object no longer exists), so
+        callers can treat a missing binary as "type not detected" rather than
+        crashing during migration.
+
+        :param length: Number of bytes to read.
+        :type length: int
+        :returns: bytes
+        """
+
+        if self.filedata.grid_id is None:
+            return b''
+        try:
+            data = self.filedata.read(length) or b''
+        except Exception:
+            return b''
+        finally:
+            try:
+                self.filedata.seek(0)
+            except Exception:
+                pass
+        return data
+
     def is_office(self):
         """
         Is this a Office file.
         """
 
-        ret = self.filedata.grid_id is not None and self.filedata.read(8) == "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
-        if self.filedata.grid_id:
-            self.filedata.seek(0)
-        return ret
+        return self._read_magic(8) == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
     def is_pe(self):
         """
         Is this a PE file.
         """
 
-        ret = self.filedata.grid_id is not None and self.filedata.read(2) == "MZ"
-        if self.filedata.grid_id:
-            self.filedata.seek(0)
-        return ret
+        return self._read_magic(2) == b"MZ"
 
     def is_pdf(self):
         """
         Is this a PDF.
         """
 
-        ret = self.filedata.grid_id is not None and "%PDF-" in self.filedata.read(1024)
-        if self.filedata.grid_id:
-            self.filedata.seek(0)
-        return ret
+        return b"%PDF-" in self._read_magic(1024)
 
     def discover_binary(self):
         """

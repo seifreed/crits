@@ -109,7 +109,7 @@ def populate_signature_types(drop):
     """
 
     # define your signature types here
-    data_types = ['Bro', 'Snort', 'Yara']
+    data_types = ['ClamAV', 'CybOX', 'OpenIOC', 'Regex', 'Snort', 'Suricata', 'YARA', 'Zeek']
     if drop:
         SignatureType.drop_collection()
     if SignatureType.objects().count() < 1:

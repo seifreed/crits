@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import SimpleTestCase
 from django.test.client import RequestFactory
 
@@ -6,6 +7,7 @@ import crits.ips.handlers as handlers
 from crits.ips.ip import IP
 from crits.core.user import CRITsUser
 from crits.core.handlers import add_new_source
+from crits.core.management.commands.create_roles import add_uber_admin_role
 from crits.core.source_access import SourceAccess
 from crits.vocabulary.ips import IPTypes
 
@@ -32,13 +34,17 @@ def prep_db():
 
     clean_db()
     # Add Source
-    add_new_source(TSRC, "RandomUser")
-    # Add User
+    add_new_source(TSRC, TUSER_NAME)
+    # Ensure the UberAdmin role exists with access to all sources (incl. the
+    # one just added) and all ACLs, so the test user can use the web views.
+    add_uber_admin_role(drop=False)
+    # Add User and grant the admin role.
     user = CRITsUser.create_user(
         username=TUSER_NAME,
         password=TUSER_PASS,
         email=TUSER_EMAIL,
     )
+    user.roles = [settings.ADMIN_ROLE]
     user.save()
 
 
@@ -64,6 +70,8 @@ class IPHandlerTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
 
     def tearDown(self):
@@ -72,17 +80,20 @@ class IPHandlerTests(SimpleTestCase):
     def testIPAdd(self):
         data = {
             'source_reference': IP_REF,
-            'source': IP_SRC,
+            'source_name': IP_SRC,
+            'source_tlp': 'red',
             'ip_type': IP_TYPE,
             'ip': IPADDR,
             'analyst': TUSER_NAME,
             'bucket_list': IP_BUCKET,
             'ticket': IP_TICKET,
         }
+        request = self.factory.post('/ips/add/', data)
+        request.user = self.user
         errors = []
         (result, errors, retVal) = handlers.add_new_ip(data, rowData={},
-                                                       request=self.factory,
-                                                       errors="")
+                                                       request=request,
+                                                       errors=errors)
         self.assertTrue(result)
         self.assertTrue(retVal['success'])
 
@@ -104,20 +115,25 @@ class IPViewTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
         data = {
             'source_reference': IP_REF,
-            'source': IP_SRC,
+            'source_name': IP_SRC,
+            'source_tlp': 'red',
             'ip_type': IP_TYPE,
             'ip': IPADDR,
             'analyst': TUSER_NAME,
             'bucket_list': IP_BUCKET,
             'ticket': IP_TICKET,
         }
+        request = self.factory.post('/ips/add/', data)
+        request.user = self.user
         errors = []
         (result, errors, retVal) = handlers.add_new_ip(data, rowData={},
-                                                       request=self.factory,
-                                                       errors="")
+                                                       request=request,
+                                                       errors=errors)
 
     def tearDown(self):
         clean_db()
@@ -138,7 +154,7 @@ class IPViewTests(SimpleTestCase):
         self.req.user = self.user
         response = views.ips_listing(self.req)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("#ip_listing" in response.content)
+        self.assertTrue(b"#ip_listing" in response.content)
 
     def testIPsjtList(self):
         self.req = self.factory.post('/ips/list/jtlist/',

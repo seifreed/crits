@@ -1,0 +1,8 @@
+# Optional analysis / auth dependencies. These build against system libraries
+# (libfuzzy, libldap, ssdeep, libmagic) and are imported lazily by CRITs, so
+# the core app runs without them.
+
+pydeep2>=0.5.1          # ssdeep fuzzy hashing (needs libfuzzy-dev)
+python-ldap>=3.4        # LDAP auth backend (needs libldap2-dev, libsasl2-dev)
+pyimpfuzzy>=0.5         # import fuzzy hashing for PE samples (needs ssdeep + pefile)
+boto3>=1.34             # Amazon S3 storage backend

@@ -307,7 +307,7 @@ def process_changed_fields(initial_message, changed_fields, obj):
                 elif len(new_value) > 0:
                     list_value = new_value[0]
 
-                if isinstance(list_value, basestring):
+                if isinstance(list_value, str):
                     change_field_handler = ChangeParser.generic_list_change_handler
                 elif isinstance(list_value, EmbeddedDocument):
                     change_field_handler = ChangeParser.generic_list_json_change_handler
@@ -510,7 +510,7 @@ def get_user_notifications(username, count=False, newer_than=None):
     """
     n = None
 
-    if newer_than is None or newer_than == None:
+    if newer_than is None or newer_than is None:
         if count:
             n = Notification.objects(users=username).order_by('-created').count()
         else:

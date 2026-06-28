@@ -1,13 +1,13 @@
 import datetime
 import json
-import urllib
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -105,7 +105,7 @@ def remove_indicator(request, _id):
     :returns: :class:`django.http.HttpResponse`,
               :class:`django.http.HttpResponseRedirect`
     """
-    print('%s' % (request.user.username))
+    print(('%s' % (request.user.username)))
     result = indicator_remove(_id, username=(
                               '%s' % request.user.username))
     if result['success']:
@@ -128,7 +128,7 @@ def indicator_search(request):
     query[request.GET.get('search_type', '')] = request.GET.get('q', '').strip()
     #return render(request, 'error.html', {'error': query})
     return HttpResponseRedirect(reverse('crits-indicators-views-indicators_listing')
-                                + "?%s" % urllib.urlencode(query))
+                                + "?%s" % urlencode(query))
 
 @user_passes_test(user_can_view_data)
 def upload_indicator(request):
@@ -238,11 +238,11 @@ def upload_indicator(request):
                 else:
                     failed_msg = result['message'] + ' - '
 
-        if result == None or not result['success']:
+        if result is None or not result['success']:
             failed_msg += ('<a href="%s"> Go to all indicators</a></div>'
                            % reverse('crits-indicators-views-indicators_listing'))
             message = {'message': failed_msg, 'form': form.as_table()}
-        elif result != None:
+        elif result is not None:
             message['success'] = result['success']
 
         if request.is_ajax():

@@ -1,33 +1,49 @@
-import cgi
+import html
 import os
 import datetime
-import HTMLParser
 import json
 import logging
 import re
-import ushlex as shlex
-import urllib
+import shlex
+from urllib.parse import unquote
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 from bson.objectid import ObjectId
 from django.conf import settings
 
-from django.contrib.auth.signals import user_logged_in
-#from django.contrib.auth import login as user_login
 from django.middleware.csrf import rotate_token
 from django.contrib.auth import authenticate
-from django.contrib.auth import login as user_login
-# we implement django.contrib.auth.login as user_login in here to accomodate mongoengine/pymongo
+from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY
+
+
+def user_login(request, user):
+    """Log a CRITsUser in.
+
+    Reimplements ``django.contrib.auth.login`` without touching
+    ``user._meta.pk`` (Django's User Options), which on a mongoengine Document
+    is the ``_meta`` dict and has no ``pk``. CRITsAuthBackend.get_user reloads
+    the user from the id stored in the session.
+    """
+    if user is None:
+        user = request.user
+    if SESSION_KEY in request.session and request.session[SESSION_KEY] != str(user.id):
+        request.session.flush()
+    else:
+        request.session.cycle_key()
+    request.session[SESSION_KEY] = str(user.id)
+    request.session[BACKEND_SESSION_KEY] = 'crits.core.user.CRITsAuthBackend'
+    request.user = user
+    rotate_token(request)
 
 try:
     from django.urls import reverse, resolve, get_script_prefix
 except ImportError:
-    from django.core.urlresolvers import reverse, resolve, get_script_prefix
+    from django.urls import reverse, resolve, get_script_prefix
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.html import escape as html_escape
-from django.utils.http import urlencode, urlunquote, is_safe_url
+from django.utils.http import urlencode, url_has_allowed_host_and_scheme
 
 try:
     from mongoengine.base import ValidationError
@@ -77,7 +93,7 @@ from crits.indicators.indicator import Indicator
 
 from crits.core.totp import valid_totp
 
-from crits.vocabulary.acls import *
+from crits.vocabulary.acls import ActorACL, Common
 
 
 logger = logging.getLogger(__name__)
@@ -125,7 +141,7 @@ def action_add(type_, id_, tlo_action, user=None, **kwargs):
                        date = datetime.datetime.now())
         obj.save(username=user)
         return {'success': True, 'object': tlo_action}
-    except (ValidationError, TypeError, KeyError), e:
+    except (ValidationError, TypeError, KeyError) as e:
         return {'success': False, 'message': e}
 
 def action_remove(type_, id_, date, action_type, user, **kwargs):
@@ -165,7 +181,7 @@ def action_remove(type_, id_, date, action_type, user, **kwargs):
         obj.delete_action(date, action_type)
         obj.save(username=user)
         return {'success': True}
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success': False, 'message': e}
 
 def action_update(type_, id_, tlo_action, user=None, **kwargs):
@@ -212,7 +228,7 @@ def action_update(type_, id_, tlo_action, user=None, **kwargs):
                         tlo_action['date'])
         obj.save(username=user)
         return {'success': True, 'object': tlo_action}
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success': False, 'message': e}
 
 def description_update(type_, id_, description, user, **kwargs):
@@ -244,13 +260,12 @@ def description_update(type_, id_, description, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    description = h.unescape(description)
+    description = html.unescape(description)
     try:
         obj.description = description
         obj.save(username=user)
         return {'success': True, 'message': "Description set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def data_update(type_, id_, data, analyst):
@@ -282,13 +297,12 @@ def data_update(type_, id_, data, analyst):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data = h.unescape(data)
+    data = html.unescape(data)
     try:
         obj.data = data
         obj.save(username=analyst)
         return {'success': True, 'message': "Data set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def get_favorites(analyst):
@@ -333,7 +347,7 @@ def get_favorites(analyst):
                   <tbody>
               '''
 
-    for type_, attr in field_dict.iteritems():
+    for type_, attr in field_dict.items():
         if type_ in favorites:
             ids = [ObjectId(s) for s in favorites[type_]]
             objs = class_from_type(type_).objects(id__in=ids).only(attr)
@@ -374,7 +388,7 @@ def favorite_update(type_, id_, analyst):
 
     try:
         user.save()
-    except:
+    except Exception:
         pass
 
     return {'success': True}
@@ -406,7 +420,7 @@ def status_update(type_, id_, value="In Progress", user=None, **kwargs):
 
         obj.save(username=user)
         return {'success': True, 'value': value}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 
@@ -443,7 +457,7 @@ def get_data_for_item(item_type, item_id):
     if not item_id or not item_type:
         response['Msg'] = "No item data provided"
         return response
-    if not item_type in type_to_fields:
+    if item_type not in type_to_fields:
         response['Msg'] = "Invalid item type: %s" % item_type
         return response
 
@@ -489,7 +503,7 @@ def add_releasability(type_, id_, name, user, **kwargs):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not add releasability: %s" % e}
 
@@ -522,7 +536,7 @@ def add_releasability_instance(type_, _id, name, analyst, note=None):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not add releasability instance: %s" % e}
 
@@ -553,7 +567,7 @@ def remove_releasability_instance(type_, _id, name, date, analyst):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not remove releasability instance: %s" % e}
 
@@ -582,7 +596,7 @@ def remove_releasability(type_, _id, name, analyst):
         obj.reload()
         return {'success': True,
                 'obj': obj.to_dict()['releasability']}
-    except Exception, e:
+    except Exception as e:
         return {'success': False,
                 'message': "Could not remove releasability: %s" % e}
 
@@ -774,7 +788,7 @@ def source_add_update(type_, id_, action_type, source, method='',
         return {'success': False,
                 'message': ('Could not make source changes. '
                             'Refresh page and try again.')}
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success':False, 'message': e}
 
 def source_remove(type_, id_, name, date, user=None, **kwargs):
@@ -804,7 +818,7 @@ def source_remove(type_, id_, name, date, user=None, **kwargs):
                                    date=date)
         obj.save(username=user)
         return result
-    except (ValidationError, TypeError), e:
+    except (ValidationError, TypeError) as e:
         return {'success':False, 'message': e}
 
 def source_remove_all(obj_type, obj_id, name, analyst=None):
@@ -831,7 +845,7 @@ def source_remove_all(obj_type, obj_id, name, analyst=None):
                                    remove_all=True)
         obj.save(username=analyst)
         return result
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success':False, 'message': e}
 
 def get_sources(obj_type, obj_id, analyst):
@@ -1205,7 +1219,7 @@ def download_object_handler(total_limit, depth_limit, rel_limit, rst_fmt,
                 try:
                     exclude = [] if need_filedata else ['filedata']
                     json_docs.append((oid, otype, obj.to_json(exclude)))
-                except:
+                except Exception:
                     pass
 
     stamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -1407,7 +1421,7 @@ def modify_source_access(analyst, data):
     try:
         user.save(username=analyst)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': format_error(e)}
 
@@ -1423,12 +1437,12 @@ def datetime_parser(value):
     """
     if isinstance(value,datetime.datetime):
         return value
-    elif isinstance(value,basestring) and value:
+    elif isinstance(value,str) and value:
         return datetime.datetime.strptime(value, settings.PY_DATETIME_FORMAT)
     elif isinstance(value,dict):
         for k,v in value.items():
             # Make sure that date is in the key, value is a string, and val is not ''
-            if "date" in k and isinstance(v,basestring) and v:
+            if "date" in k and isinstance(v,str) and v:
                 value[k] = datetime.datetime.strptime(v, settings.PY_DATETIME_FORMAT)
         return value
     else:
@@ -1443,7 +1457,7 @@ def format_error(e):
     :returns: str
     """
 
-    return e.__class__.__name__+": "+unicode(e)
+    return e.__class__.__name__+": "+str(e)
 
 def toggle_item_state(type_, oid, analyst):
     """
@@ -1536,7 +1550,7 @@ def do_add_preferred_actions(obj_type, obj_id, username):
 
     try:
         obj.save(username=username)
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
     return {'success': True, 'object': actions}
@@ -1587,7 +1601,7 @@ def generate_regex(val):
 
     try:
         return {'$regex': re.compile('%s' % remove_quotes(val), re.I)}
-    except Exception, e:
+    except Exception as e:
         return {'error': 'Invalid Regular Expression: %s\n\n\t%s' % (val,
                                                                         str(e))}
 
@@ -1603,14 +1617,14 @@ def parse_search_term(term, force_full=False):
 
     # decode the term so we aren't dealing with weird encoded characters
     if force_full == False:
-        term = urllib.unquote(term)
+        term = unquote(term)
 
     search = {}
 
     # setup lexer, parse our term, and define operators
     try:
         sh = shlex.shlex(term.strip())
-        sh.wordchars += '!@#$%^&*()-_=+[]{}|\:;<,>.?/~`'
+        sh.wordchars += r'!@#$%^&*()-_=+[]{}|\:;<,>.?/~`'
         sh.commenters = ''
         parsed = list(iter(sh.get_token, ''))
     except Exception as e:
@@ -1939,10 +1953,10 @@ def check_query(qparams,user,obj):
         try:
             indx = key.index('.')
             field = key[:indx]
-        except:
+        except Exception:
             field = key
         # Check for mapping, reverse because we're going the other way
-        invmap = dict((v,k) for k, v in obj._db_field_map.iteritems())
+        invmap = dict((v,k) for k, v in obj._db_field_map.items())
         if field in invmap:
             field = invmap[field]
         # Only allow query keys that exist in the object
@@ -1999,9 +2013,9 @@ def data_query(col_obj, user, limit=25, skip=0, sort=[], query={},
     results['msg'] = ""
     results['crits_type'] = col_obj._meta['crits_type']
     sourcefilt = user_sources(user)
-    if isinstance(sort,basestring):
+    if isinstance(sort,str):
         sort = sort.split(',')
-    if isinstance(projection,basestring):
+    if isinstance(projection,str):
         projection = projection.split(',')
     if not projection:
         projection = []
@@ -2055,7 +2069,7 @@ def data_query(col_obj, user, limit=25, skip=0, sort=[], query={},
             if hasattr(doc, "sanitize_sources"):
                 doc.sanitize_sources(username="%s" % user, sources=sourcefilt)
 
-    except Exception, e:
+    except Exception as e:
         results['msg'] = "ERROR: %s. Sort performed on: %s" % (e,
                                                                ', '.join(sort))
         return results
@@ -2114,7 +2128,7 @@ def parse_query_request(request,col_obj):
     if resp['fields']:
         try:
             resp['fields'] = resp['fields'].split(',')
-        except:
+        except Exception:
             return render(request, "error.html", {"error": "Invalid fields specified"})
         goodfields = []
         for field in resp['fields']:
@@ -2126,11 +2140,11 @@ def parse_query_request(request,col_obj):
                 indx = field.index('.')
                 base = field[:indx]
                 extra = field[indx:]
-            except:
+            except Exception:
                 base = field
                 extra = ""
             # Check for mapping, reverse because we're going the other way
-            invmap = dict((v,k) for k, v in col_obj._db_field_map.iteritems())
+            invmap = dict((v,k) for k, v in col_obj._db_field_map.items())
             if base in invmap:
                 base = invmap[base]
             # Only allow query keys that exist in the object
@@ -2167,7 +2181,7 @@ def csv_export(request, col_obj, query={}):
     result = csv_query(col_obj, request.user, fields=opts['fields'],
                         sort=opts['sort'], query=query, limit=opts['limit'],
                         skip=opts['skip'])
-    if isinstance(result, basestring):
+    if isinstance(result, str):
         response = HttpResponse(result, content_type="text/csv")
         response['Content-Disposition'] = "attachment;filename=crits-%s-export.csv" % col_obj._meta['crits_type']
     else:
@@ -2214,7 +2228,7 @@ def get_query(col_obj,request):
         otype = request.GET.get('otype', None)
         if otype:
             search_type = search_type + "_" + otype
-        term = HTMLParser.HTMLParser().unescape(term)
+        term = html.unescape(term)
         qdict = gen_global_query(col_obj,
                                  request.user.username,
                                  term,
@@ -2273,7 +2287,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
     :param url: Base URL for objects. Ex ``crits.domains.views.domain_detail``
     :type url: str
     :param urlfieldparam: Field to use for the item detail's URL key.  Passed
-        as arg with ``url`` to :func:`django.core.urlresolvers.reverse`
+        as arg with ``url`` to :func:`django.urls.reverse`
     :type urlfieldparam: str
     :param request: Django request object (Required)
     :type request: :class:`django.http.HttpRequest`
@@ -2338,7 +2352,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
             return {'Result': "ERROR", 'Message': response['msg']}
         response['crits_type'] = col_obj._meta['crits_type']
         # Escape term for rendering in the UI.
-        response['term'] = cgi.escape(term)
+        response['term'] = html.escape(term)
         response['data'] = response['data'].to_dict(excludes, includes)
         # Convert data_query to jtable stuff
         response['Records'] = response.pop('data')
@@ -2407,7 +2421,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
                 elif isinstance(value, list):
                     if value:
                         for item in value:
-                            if not isinstance(item, basestring):
+                            if not isinstance(item, str):
                                 break
                         else:
                             doc[key] = ",".join(value)
@@ -2438,7 +2452,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
             elif not url:
                 doc['url'] = None
             else:
-                doc['url'] = reverse(url, args=(unicode(doc[urlfieldparam]),))
+                doc['url'] = reverse(url, args=(str(doc[urlfieldparam]),))
     return response
 
 def jtable_ajax_delete(obj,request):
@@ -2453,7 +2467,7 @@ def jtable_ajax_delete(obj,request):
     """
 
     # Make sure we are supplied _id
-    if not "id" in request.POST:
+    if "id" not in request.POST:
         return False
     docid = request.POST['id']
     if not docid:
@@ -3029,7 +3043,7 @@ def email_timeline(query, analyst, sources):
                 try:
                     if "name" in email["campaign"][0]:
                         e['title'] += " (%s)" % email["campaign"][0]["name"]
-                except:
+                except Exception:
                     pass
             if "source" in email:
                 if "name" in email["source"][0]:
@@ -3646,8 +3660,8 @@ def validate_next(next_url=None):
         tmp_url = next_url
         if next_url.startswith(prefix):
             tmp_url = tmp_url.replace(prefix, '/', 1)
-        next_url = urlunquote(tmp_url)
-        if not is_safe_url(next_url):
+        next_url = unquote(tmp_url)
+        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
             raise Exception
         resolve(urlparse(next_url).path)
         response['success'] = True
@@ -4057,7 +4071,7 @@ def ticket_add(type_, id_, ticket, user, **kwargs):
                              ticket['date'])
         obj.save(username=user)
         return {'success': True, 'object': ticket}
-    except (ValidationError, TypeError, KeyError), e:
+    except (ValidationError, TypeError, KeyError) as e:
         return {'success': False, 'message': e}
 
 def ticket_update(type_, id_, ticket, user=None, **kwargs):
@@ -4090,7 +4104,7 @@ def ticket_update(type_, id_, ticket, user=None, **kwargs):
                         ticket['date'])
         obj.save(username=user)
         return {'success': True, 'object': ticket}
-    except (ValidationError, TypeError, KeyError), e:
+    except (ValidationError, TypeError, KeyError) as e:
         return {'success': False, 'message': e}
 
 
@@ -4120,7 +4134,7 @@ def ticket_remove(type_, id_, date, user, **kwargs):
         obj.delete_ticket(date)
         obj.save(username=user)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def unflatten(dictionary):
@@ -4133,7 +4147,7 @@ def unflatten(dictionary):
     """
 
     resultDict = dict()
-    for key, value in dictionary.iteritems():
+    for key, value in dictionary.items():
         parts = key.split(".")
         d = resultDict
         for part in parts[:-1]:
@@ -4339,7 +4353,7 @@ def get_role_details(rid, roles, analyst):
             return template, args
         show_roles = None
     if roles:
-        if isinstance(roles, basestring):
+        if isinstance(roles, str):
             roles = roles.split(',')
             roles = [r.strip() for r in roles]
         tmp = CRITsUser()
@@ -4349,7 +4363,7 @@ def get_role_details(rid, roles, analyst):
         show_roles = roles
 
     do_not_render = ['_id', 'schema_version']
-    if role != None:
+    if role is not None:
         from crits.core.forms import RoleSourceEdit
         d = {'sources': [s['name'] for s in role['sources']]}
         source_form = RoleSourceEdit(initial=d)

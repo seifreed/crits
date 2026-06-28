@@ -63,7 +63,7 @@ def add_new_object(request):
             if 'value' in request.FILES:
                 data = request.FILES['value']
             value = request.POST.get('value', None)
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 value = value.strip()
             results = add_object(my_type,
                                  oid,
@@ -248,7 +248,7 @@ def bulk_add_object_inline(request):
                         # Get the earliest source, compared by date
                         for source in obj.source:
                             for source_instance in source.instances:
-                                if earliest_source == None or source_instance.date < earliest_date:
+                                if earliest_source is None or source_instance.date < earliest_date:
                                     earliest_date = source_instance.date
                                     earliest_source = source
 

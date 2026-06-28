@@ -99,15 +99,15 @@ def migrate_1_to_2(self):
                 for c in old_analysis['campaign']:
                     (analyst, description) = ('', '')
                     (date, confidence, name) = (None, 'low', '')
-                    if not 'analyst' in c:
+                    if 'analyst' not in c:
                         c['analyst'] = analyst
-                    if not 'description' in c:
+                    if 'description' not in c:
                         c['description'] = description
-                    if not 'date' in c:
+                    if 'date' not in c:
                         c['date'] = date
-                    if not 'confidence' in c:
+                    if 'confidence' not in c:
                         c['confidence'] = confidence
-                    if not 'name' in c:
+                    if 'name' not in c:
                         c['name'] = name
                     ec = EmbeddedCampaign(
                         analyst=c['analyst'],

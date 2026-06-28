@@ -110,7 +110,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
             self.filetype = magic.from_buffer(data)
             if len(self.filetype) > 1000:
                 self.filetype = self.filetype[0:1000] + '<TRUNCATED>'
-        except:
+        except Exception:
             self.filetype = "Unavailable"
         try:
             mimetype = magic.from_buffer(data, mime=True)
@@ -118,23 +118,23 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
                 self.mimetype = mimetype.split(";")[0]
             if not mimetype:
                 self.mimetype = "unknown"
-        except:
+        except Exception:
             self.mimetype = "Unavailable"
         self.size = len(data)
         # this is a shard key. you can't modify it once it's set.
         # MongoEngine will still mark the field as modified even if you set it
         # to the same value.
         if not self.md5:
-            self.md5 = md5(data).hexdigest()
-        self.sha1 = sha1(data).hexdigest()
+            self.md5 = md5(data, usedforsecurity=False).hexdigest()
+        self.sha1 = sha1(data, usedforsecurity=False).hexdigest()
         self.sha256 = sha256(data).hexdigest()
         try:
             self.ssdeep = pydeep.hash_bytes(data)
-        except:
+        except Exception:
             self.ssdeep = None
         try:
             self.impfuzzy = pyimpfuzzy.get_impfuzzy_data(data)
-        except:
+        except Exception:
             self.impfuzzy = None
 
     def is_office(self):
@@ -142,7 +142,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         Is this a Office file.
         """
 
-        ret = self.filedata.grid_id != None and self.filedata.read(8) == "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        ret = self.filedata.grid_id is not None and self.filedata.read(8) == "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
         if self.filedata.grid_id:
             self.filedata.seek(0)
         return ret
@@ -152,7 +152,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         Is this a PE file.
         """
 
-        ret = self.filedata.grid_id != None and self.filedata.read(2) == "MZ"
+        ret = self.filedata.grid_id is not None and self.filedata.read(2) == "MZ"
         if self.filedata.grid_id:
             self.filedata.seek(0)
         return ret
@@ -162,7 +162,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         Is this a PDF.
         """
 
-        ret = self.filedata.grid_id != None and "%PDF-" in self.filedata.read(1024)
+        ret = self.filedata.grid_id is not None and "%PDF-" in self.filedata.read(1024)
         if self.filedata.grid_id:
             self.filedata.seek(0)
         return ret

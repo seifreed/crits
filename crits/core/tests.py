@@ -13,7 +13,6 @@ from mongoengine import StringField
 from crits.config.config import CRITsConfig
 from crits.core.user import CRITsUser
 
-from crits.core.role import Role
 
 from crits.core.crits_mongoengine import CritsBaseAttributes, CritsQuerySet
 from crits.core.crits_mongoengine import CritsSourceDocument
@@ -31,7 +30,7 @@ TUNKSRC = "UnknownSource"
 TRANDUSER = "RandomUser"
 TUSER_NAME = "test_user"
 TUSER_PASS = "!@#j54kfeimn?>S<D"
-TUSER_PASS_HASH_RE = re.compile('^[\d\w]+\$(\d+\$)?(\w+\$)?\S+$')
+TUSER_PASS_HASH_RE = re.compile(r'^[\d\w]+\$(\d+\$)?(\w+\$)?\S+$')
 TUSER_EMAIL = "test_user@example.com"
 TUSER_FNAME = "Testfirst"
 TUSER_LNAME = "Testlast"

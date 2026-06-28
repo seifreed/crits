@@ -11,7 +11,7 @@ from crits.core.handlers import get_item_names
 from crits.core import form_consts
 
 from crits.vocabulary.relationships import RelationshipTypes
-from crits.vocabulary.acls import Common, ActorACL
+from crits.vocabulary.acls import Common
 relationship_choices = [(c, c) for c in RelationshipTypes.values(sort=True)]
 
 class AddActorForm(SourceInForm):
@@ -66,7 +66,7 @@ class AddActorForm(SourceInForm):
 
             if not confidence or confidence == '':
                 self._errors.setdefault('confidence', ErrorList())
-                self._errors['confidence'].append(u'This field is required if campaign is specified.')
+                self._errors['confidence'].append('This field is required if campaign is specified.')
 
         return cleaned_data
 

@@ -1,0 +1,28 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - crits-mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  crits:
+    build: .
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGO_HOST: mongo
+      MONGO_PORT: "27017"
+      MONGO_DATABASE: crits
+    volumes:
+      - .:/crits
+      - /crits/venv
+    ports:
+      - "8081:8080"
+
+volumes:
+  crits-mongo:

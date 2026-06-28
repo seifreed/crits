@@ -13,7 +13,7 @@ from django.conf import settings
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 
 from crits.core.user import CRITsUser
 from crits.core.fields import CritsDateTimeField
@@ -172,7 +172,7 @@ class Comment(CritsDocument, CritsSchemaDocument, CritsSourceDocument, Document)
         :type url_key: str
         """
 
-        if isinstance(url_key, basestring):
+        if isinstance(url_key, str):
                 self.url_key = url_key
 
 def parse_comment(comment):

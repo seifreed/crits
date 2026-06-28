@@ -2,7 +2,7 @@ import csv
 import datetime
 import json
 import logging
-import urlparse
+import urllib.parse as urlparse
 
 from io import BytesIO
 from django.conf import settings
@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.core.validators import validate_ipv4_address, validate_ipv46_address
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -290,11 +290,11 @@ def get_indicator_type_value_pair(field):
     """
 
     # this is an object
-    if field.get("type") != None and field.get("value") != None:
+    if field.get("type") is not None and field.get("value") is not None:
         return (field.get("type"), field.get("value").lower().strip())
 
     # this is an email field
-    if field.get("field_type") != None and field.get("field_value") != None:
+    if field.get("field_type") is not None and field.get("field_value") is not None:
         return (field.get("field_type"), field.get("field_value").lower().strip())
 
     # otherwise the logic to extract the type/value pair from this
@@ -324,7 +324,7 @@ def get_verified_field(data, valid_values, field=None, default=None):
     else:
         value_list = [data]
     for i, item in enumerate(value_list):
-        if isinstance(item, basestring):
+        if isinstance(item, str):
             item = item.lower().strip().replace(' - ', '-')
             if item in valid_values:
                 value_list[i] = valid_values[item]
@@ -469,7 +469,7 @@ def handle_indicator_csv(csv_data, ctype, user, source, source_method=None,
                                                related_id=related_id,
                                                related_type=related_type,
                                                relationship_type=relationship_type)
-        except Exception, e:
+        except Exception as e:
             result['success'] = False
             result_message += msg % (processed + 1, e)
             continue
@@ -568,10 +568,10 @@ def handle_indicator_ind(value, source, ctype, threat_type, attack_type,
     if status is None:
         status = Status.NEW
 
-    if value == None or value.strip() == "":
+    if value is None or value.strip() == "":
         result = {'success': False,
                   'message': "Can't create indicator with an empty value field"}
-    elif ctype == None or ctype.strip() == "":
+    elif ctype is None or ctype.strip() == "":
         result = {'success': False,
                   'message': "Can't create indicator with an empty type field"}
     else:
@@ -605,7 +605,7 @@ def handle_indicator_ind(value, source, ctype, threat_type, attack_type,
                                            add_relationship=add_relationship, cache=cache,
                                            related_id=related_id, related_type=related_type,
                                            relationship_type=relationship_type)
-        except Exception, e:
+        except Exception as e:
             return {'success': False, 'message': repr(e)}
 
     return result
@@ -666,7 +666,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
     for a in ind['attack_types']:
         if a not in IndicatorAttackTypes.values():
             return {'success': False,
-                    'message': "Not a valid Indicator Attack Type: " % a}
+                    'message': "Not a valid Indicator Attack Type: %s" % a}
 
     given_val = ind['value'] # Preserve the original value for later
     (ind['value'], error) = validate_indicator_value(ind['value'], ind['type'])
@@ -728,7 +728,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
                                        append=True)
 
     if 'campaign' in ind:
-        if isinstance(ind['campaign'], basestring) and len(ind['campaign']) > 0:
+        if isinstance(ind['campaign'], str) and len(ind['campaign']) > 0:
             confidence = ind.get('campaign_confidence', 'low')
             ind['campaign'] = EmbeddedCampaign(name=ind['campaign'],
                                                confidence=confidence,
@@ -764,7 +764,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
             indicator.add_ticket(ticket, user.username)
 
     # generate new source information and add to indicator
-    if isinstance(source, basestring) and source:
+    if isinstance(source, str) and source:
         if user.check_source_write(source):
             indicator.add_source(source=source, method=source_method,
                                  reference=source_reference, analyst=user.username, tlp=source_tlp)
@@ -814,7 +814,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
                     if not success['success']:
                         return {'success': False, 'message': success['message']}
 
-                if not success or not 'object' in success:
+                if not success or 'object' not in success:
                     dmain = Domain.objects(domain=domain_or_ip).first()
                 else:
                     dmain = success['object']
@@ -841,7 +841,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
                 if not success['success']:
                     return {'success': False, 'message': success['message']}
 
-            if not success or not 'object' in success:
+            if not success or 'object' not in success:
                 ip = IP.objects(ip=indicator.value).first()
             else:
                 ip = success['object']
@@ -911,11 +911,11 @@ def does_indicator_relationship_exist(field, indicator_relationships):
 
     type, value = get_indicator_type_value_pair(field)
 
-    if indicator_relationships != None:
-        if type != None and value != None:
+    if indicator_relationships is not None:
+        if type is not None and value is not None:
             for indicator_relationship in indicator_relationships:
 
-                if indicator_relationship == None:
+                if indicator_relationship is None:
                     logger.error('Indicator relationship is not valid: ' +
                                  str(indicator_relationship))
                     continue
@@ -1002,7 +1002,7 @@ def modify_threat_types(id_, threat_types, user, **kwargs):
     """
 
     indicator = Indicator.objects(id=id_).first()
-    if isinstance(threat_types, basestring):
+    if isinstance(threat_types, str):
         threat_types = threat_types.split(',')
     for t in threat_types:
         if t not in IndicatorThreatTypes.values():
@@ -1029,7 +1029,7 @@ def modify_attack_types(id_, attack_types, user, **kwargs):
     """
 
     indicator = Indicator.objects(id=id_).first()
-    if isinstance(attack_types, basestring):
+    if isinstance(attack_types, str):
         attack_types = attack_types.split(',')
     for a in attack_types:
         if a not in IndicatorAttackTypes.values():
@@ -1093,7 +1093,7 @@ def activity_add(id_, activity, user, **kwargs):
         indicator.save(username=user.username)
         return {'success': True, 'object': activity,
                 'id': str(indicator.id)}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e,
                 'id': str(indicator.id)}
 
@@ -1129,7 +1129,7 @@ def activity_update(id_, activity, user=None, **kwargs):
                                 activity['date'])
         indicator.save(username=user.username)
         return {'success': True, 'object': activity}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def activity_remove(id_, date, user, **kwargs):
@@ -1155,7 +1155,7 @@ def activity_remove(id_, date, user, **kwargs):
         indicator.delete_activity(date)
         indicator.save(username=user.username)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def ci_update(id_, ci_type, value, user, **kwargs):
@@ -1185,7 +1185,7 @@ def ci_update(id_, ci_type, value, user, **kwargs):
                 indicator.set_impact(user.username, value)
             indicator.save(username=user.username)
             return {'success': True}
-        except ValidationError, e:
+        except ValidationError as e:
             return {'success': False, "message": e}
     else:
         return {'success': False, 'message': 'Invalid CI type'}
@@ -1261,7 +1261,7 @@ def create_indicator_and_ip(type_, id_, ip, user):
                 return {'success': True, 'message': rels, 'value': obj_class.id}
             else:
                 return {'success': False, 'message': message['message']}
-        except Exception, e:
+        except Exception as e:
             return {'success': False, 'message': e}
     else:
         return {'success': False,

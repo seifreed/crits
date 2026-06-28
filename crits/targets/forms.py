@@ -6,7 +6,7 @@ from crits.core import form_consts
 from crits.core.forms import add_bucketlist_to_form, add_ticket_to_form
 from crits.core.handlers import get_item_names
 from crits.vocabulary.relationships import RelationshipTypes
-from crits.vocabulary.acls import Common, TargetACL
+from crits.vocabulary.acls import Common
 
 
 relationship_choices = [(c, c) for c in RelationshipTypes.values(sort=True)]
@@ -68,6 +68,6 @@ class TargetInfoForm(forms.Form):
 
             if not confidence or confidence == '':
                 self._errors.setdefault('camp_conf', ErrorList())
-                self._errors['camp_conf'].append(u'This field is required if campaign is specified.')
+                self._errors['camp_conf'].append('This field is required if campaign is specified.')
 
         return cleaned_data

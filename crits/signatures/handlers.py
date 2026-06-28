@@ -1,12 +1,12 @@
 import datetime
 import hashlib
 import json
-import HTMLParser
+import html
 
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 try:
@@ -22,7 +22,7 @@ from crits.core.user_tools import user_sources, is_user_favorite
 from crits.core.user_tools import is_user_subscribed
 from crits.notifications.handlers import remove_user_from_notification
 from crits.signatures.signature import Signature, SignatureType, SignatureDependency
-from crits.services.handlers import run_triage, get_supported_services
+from crits.services.handlers import get_supported_services
 from crits.vocabulary.relationships import RelationshipTypes
 from crits.vocabulary.acls import SignatureACL
 
@@ -351,7 +351,7 @@ def handle_signature_file(data, source_name, user=None,
         return status
 
     # generate md5 and timestamp
-    md5 = hashlib.md5(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate signature
@@ -366,7 +366,7 @@ def handle_signature_file(data, source_name, user=None,
     signature.data_type_max_version = data_type_max_version
 
     if data_type_dependency:
-        if type(data_type_dependency) == unicode:
+        if isinstance(data_type_dependency, str):
             data_type_dependency = data_type_dependency.split(",")
 
         for item in data_type_dependency:
@@ -377,7 +377,7 @@ def handle_signature_file(data, source_name, user=None,
         data_type_dependency = []
 
     # generate new source information and add to sample
-    if isinstance(source_name, basestring) and len(source_name) > 0:
+    if isinstance(source_name, str) and len(source_name) > 0:
         if user.check_source_write(source_name):
             source = create_embedded_source(source_name,
                                        date=timestamp,
@@ -420,7 +420,7 @@ def handle_signature_file(data, source_name, user=None,
         signature.add_bucket_list(bucket_list, user)
 
     if ticket:
-        signature.add_ticket(ticket, user);
+        signature.add_ticket(ticket, user)
 
     related_obj = None
     if related_id and related_type:
@@ -495,7 +495,7 @@ def update_signature_type(type_, id_, data_type, user, **kwargs):
         try:
             signature.save(username=user.username)
             return {'success': True}
-        except ValidationError, e:
+        except ValidationError as e:
             return {'success': False, 'message': str(e)}
 
 
@@ -508,7 +508,7 @@ def delete_signature_dependency(_id, username=None):
     """
     signature_dependency = SignatureDependency.objects(id=_id).first()
     if signature_dependency:
-        signature_dependency.delete(username=user.usernamename)
+        signature_dependency.delete(username=username)
         return {'success': True}
     else:
         return {'success': False}
@@ -528,7 +528,7 @@ def delete_signature(_id, username=None):
 
     signature = Signature.objects(id=_id).first()
     if signature:
-        signature.delete(username=user.usernamename)
+        signature.delete(username=username)
         return True
     else:
         return False
@@ -549,7 +549,7 @@ def add_new_signature_dependency(data_type, analyst):
     if not data_type:
         return False
 
-    data_type = str(data_type).strip();
+    data_type = str(data_type).strip()
 
     try:
         signature_dependency = SignatureDependency.objects(name=data_type).first()
@@ -619,8 +619,7 @@ def update_dependency(type_, id_, dep, user, append=False, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data_type_dependency = h.unescape(dep)
+    data_type_dependency = html.unescape(dep)
     try:
         deps = data_type_dependency.split(',')
         if append is False:
@@ -634,7 +633,7 @@ def update_dependency(type_, id_, dep, user, append=False, **kwargs):
 
         obj.save(username=user.username)
         return {'success': True, 'message': "Data type dependency set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 
@@ -668,13 +667,12 @@ def update_min_version(type_, id_, data_type_min_version, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data_type_min_version = h.unescape(data_type_min_version)
+    data_type_min_version = html.unescape(data_type_min_version)
     try:
         obj.data_type_min_version = data_type_min_version
         obj.save(username=user.username)
         return {'success': True, 'message': "Data type min version set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 
@@ -707,13 +705,12 @@ def update_max_version(type_, id_, data_type_max_version, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data_type_max_version = h.unescape(data_type_max_version)
+    data_type_max_version = html.unescape(data_type_max_version)
     try:
         obj.data_type_max_version = data_type_max_version
         obj.save(username=user.username)
         return {'success': True, 'message': "Data type max version set."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 
@@ -759,13 +756,12 @@ def update_signature_data(type_, id_, data, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data = h.unescape(data)
+    data = html.unescape(data)
     try:
         obj.data = data
         obj.save(username=user.username)
         return {'success': True, 'message': "Signature value updated."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def update_title(type_, id_, title, user, **kwargs):
@@ -797,11 +793,10 @@ def update_title(type_, id_, title, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data = h.unescape(title)
+    data = html.unescape(title)
     try:
         obj.title = data
         obj.save(username=title)
         return {'success': True, 'message': "Signature title updated."}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}

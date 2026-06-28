@@ -6,7 +6,7 @@ import uuid
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 try:
@@ -169,7 +169,7 @@ def generate_event_jtable(request, option):
             try:
                 oid = ObjectId(request.GET.get('related'))
                 query = {'relationships.value': oid}
-            except:
+            except Exception:
                 pass
 
         response = jtable_ajax_list(obj_type,
@@ -337,7 +337,7 @@ def add_new_event(title, description, event_type, source_name, source_method,
         valid_campaigns[c['name'].lower()] = c['name']
 
     if campaign:
-        if isinstance(campaign, basestring) and len(campaign) > 0:
+        if isinstance(campaign, str) and len(campaign) > 0:
             if campaign.lower() not in valid_campaigns:
                 result = {'success':False, 'message':'{} is not a valid campaign.'.format(campaign)}
             else:
@@ -359,9 +359,7 @@ def add_new_event(title, description, event_type, source_name, source_method,
     if related_id:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     try:
         event.save(username=user.username)
@@ -387,7 +385,7 @@ def add_new_event(title, description, event_type, source_name, source_method,
                   'id': str(event.id),
                   'object': event}
 
-    except ValidationError, e:
+    except ValidationError as e:
         result = {'success': False,
                   'message': e}
     return result
@@ -428,7 +426,7 @@ def update_event_title(event_id, title, analyst):
     try:
         event.save(username=analyst)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def update_event_type(event_id, type_, analyst):
@@ -451,7 +449,7 @@ def update_event_type(event_id, type_, analyst):
     try:
         event.save(username=analyst)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def add_sample_for_event(event_id, data, analyst, filedata=None, filename=None,
@@ -541,7 +539,7 @@ def add_sample_for_event(event_id, data, analyst, filedata=None, filename=None,
                                           ticket=ticket,
                                           inherited_source=inherited_source,
                                           is_return_only_md5=False)
-    except ZipFileError, zfe:
+    except ZipFileError as zfe:
         return {'success': False, 'message': zfe.value}
     else:
         if len(result) > 1:

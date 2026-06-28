@@ -1,0 +1,11 @@
+venv/
+.git/
+.codegraph/
+.cursor/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+logs/*.log*
+crits/config/database.py
+crits/config/overrides.py

@@ -1,5 +1,6 @@
 import datetime
-import json, yaml
+import json
+import yaml
 import io
 import csv
 
@@ -10,7 +11,7 @@ from django.conf import settings
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.template.loader import render_to_string
 
 try:
@@ -392,7 +393,7 @@ class CritsDocument(BaseDocument):
         # here and how to stop it from happening.
         try:
             self.unsupported_attrs.__delattr__('get_tlp_display')
-        except:
+        except Exception:
             pass
 
         if hasattr(super(self.__class__, self).save(), 'w'):
@@ -448,8 +449,8 @@ class CritsDocument(BaseDocument):
         #Make sure name is a valid field for MongoDB. Also, name cannot begin with
         #   underscore because that indicates a private MongoEngine attribute.
         if (not self._dynamic and hasattr(self, 'unsupported_attrs')
-            and not name in self._fields and not name.startswith('_')
-            and not name.startswith('$') and not '.' in name
+            and name not in self._fields and not name.startswith('_')
+            and not name.startswith('$') and '.' not in name
             and name not in ('save', 'delete')):
             if not self.unsupported_attrs:
                 self.unsupported_attrs = UnsupportedAttrs()
@@ -483,9 +484,9 @@ class CritsDocument(BaseDocument):
         #Make sure any fields that are unsupported but exist in the database
         #   get added to the document's unsupported_attributes field.
         #Get database names for all fields that *should* exist on the object.
-        db_fields = [val.db_field for key,val in cls._fields.iteritems()]
+        db_fields = [val.db_field for key,val in cls._fields.items()]
         #custom __setattr__ does logic of moving fields to unsupported_fields
-        [doc.__setattr__("%s"%key, val) for key,val in son.iteritems()
+        [doc.__setattr__("%s"%key, val) for key,val in son.items()
             if key not in db_fields]
 
         #After a document is retrieved from the database, and any unsupported
@@ -584,8 +585,8 @@ class CritsDocument(BaseDocument):
                     if not hasattr(data, 'encode'):
                         try: # convert list of strings
                             data = ";".join(data)
-                        except: # Convert non-string data types
-                            data = unicode(data)
+                        except Exception: # Convert non-string data types
+                            data = str(data)
                 row.append(data.encode('utf-8'))
             else:
                 row.append('')
@@ -690,7 +691,7 @@ class CritsDocument(BaseDocument):
                   :class:`crits.core.crits_mongoengine.CritsBaseAttributes`
         """
 
-        return cls._from_son(yaml.load(yaml_data))
+        return cls._from_son(yaml.safe_load(yaml_data))
 
     def to_yaml(self, exclude=[]):
         """
@@ -701,7 +702,7 @@ class CritsDocument(BaseDocument):
         :returns: json
         """
 
-        return yaml.dump(yaml.load(self._json_yaml_convert(exclude)),
+        return yaml.dump(yaml.safe_load(self._json_yaml_convert(exclude)),
             default_flow_style=False)
 
     def __str__(self):
@@ -1127,9 +1128,9 @@ class EmbeddedTickets(BaseDocument):
 
         for ticket in self.tickets:
             if ticket_number == ticket.ticket_number:
-                return True;
+                return True
 
-        return False;
+        return False
 
     def add_ticket(self, tickets, analyst=None, date=None):
         """
@@ -1144,7 +1145,7 @@ class EmbeddedTickets(BaseDocument):
         :type date: datetime.datetime.
         """
 
-        if isinstance(tickets, basestring):
+        if isinstance(tickets, str):
             tickets = tickets.split(',')
         elif not isinstance(tickets, list):
             tickets = [tickets]
@@ -1153,7 +1154,7 @@ class EmbeddedTickets(BaseDocument):
             if isinstance(ticket, EmbeddedTicket):
                 if not self.is_ticket_exist(ticket.ticket_number): # stop dups
                     self.tickets.append(ticket)
-            elif isinstance(ticket, basestring):
+            elif isinstance(ticket, str):
                 if ticket and not self.is_ticket_exist(ticket):  # stop dups
                     et = EmbeddedTicket()
                     et.analyst = analyst
@@ -1369,7 +1370,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         """
 
         if isinstance(campaign_item, EmbeddedCampaign):
-            if campaign_item.name != None and campaign_item.name.strip() != '':
+            if campaign_item.name is not None and campaign_item.name.strip() != '':
                 campaign_item.confidence = campaign_item.confidence.strip().lower()
                 if campaign_item.confidence == '':
                     campaign_item.confidence = 'low'
@@ -1427,7 +1428,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         """
 
         if isinstance(location_item, EmbeddedLocation):
-            if (location_item.location != None and
+            if (location_item.location is not None and
                 location_item.location.strip() != ''):
                 for l, location in enumerate(self.locations):
                     if (location.location == location_item.location and
@@ -1461,7 +1462,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         :type longitude: str
         """
 
-        if isinstance(date, basestring):
+        if isinstance(date, str):
             date = parse(date, fuzzy=True)
         for location in self.locations:
             if (location.location == location_name and
@@ -1487,7 +1488,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         :type date: str
         """
 
-        if isinstance(date, basestring):
+        if isinstance(date, str):
             date = parse(date, fuzzy=True)
         for location in self.locations:
             if (location.location == location_name and
@@ -1514,7 +1515,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         # or subtraction of a bucket_list.
         if isinstance(tags, list) and len(tags) == 1 and tags[0] == '':
             parsed_tags = []
-        elif isinstance(tags, (str, unicode)):
+        elif isinstance(tags, (str, str)):
             parsed_tags = tags.split(',')
         else:
             parsed_tags = tags
@@ -1566,7 +1567,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         # or subtraction of a sector.
         if isinstance(sectors, list) and len(sectors) == 1 and sectors[0] == '':
             parsed_sectors = []
-        elif isinstance(sectors, (str, unicode)):
+        elif isinstance(sectors, (str, str)):
             parsed_sectors = sectors.split(',')
         else:
             parsed_sectors = sectors
@@ -2036,12 +2037,12 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         got_rel = True
         if not rel_item:
             got_rel = False
-            if isinstance(rel_id, basestring) and isinstance(type_, basestring):
+            if isinstance(rel_id, str) and isinstance(type_, str):
                 rel_item = class_from_id(type_, rel_id)
             else:
                 return {'success': False,
                         'message': 'Could not find object'}
-        if isinstance(new_date, basestring):
+        if isinstance(new_date, str):
             new_date = parse(new_date, fuzzy=True)
         if rel_item and rel_type and modification:
             # get reverse relationship
@@ -2402,7 +2403,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         for ty in set(rel.to_dict()['type'] for rel in self.relationships):
             obj_class = class_from_type(ty)
             objids = [ty_o.to_dict()['value'] for ty_o in filter(lambda o: o.to_dict()['type'] == ty, self.relationships)]
-            if r.rel_type not in ['Campaign', 'Target']:
+            if ty not in ['Campaign', 'Target']:
                 obj = obj_class.objects(id__in=objids, source__name__in=sources)
             else:
                 obj = obj_class.objects(id__in=objids)
@@ -2474,7 +2475,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         :type name: str
         """
 
-        if isinstance(name, basestring):
+        if isinstance(name, str):
             for r in self.releasability:
                 if r.name == name and len(r.instances) == 0:
                     self.releasability.remove(r)
@@ -2603,7 +2604,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
             details_url_key = mapper['details_url_key']
 
             try:
-                return reverse(details_url, args=(unicode(self[details_url_key]),))
+                return reverse(details_url, args=(str(self[details_url_key]),))
             except Exception:
                 return None
         else:
@@ -2720,7 +2721,7 @@ def merge(self, arg_dict=None, overwrite=False, **kwargs):
     if not arg_dict:
         arg_dict = kwargs
     if isinstance(arg_dict, dict):
-        iterator = arg_dict.iteritems()
+        iterator = arg_dict.items()
     else:
         iterator = arg_dict
 
@@ -2781,7 +2782,7 @@ def create_embedded_source(name, source_instance=None, date=None,
     if tlp not in ('white', 'green', 'amber', 'red', None):
         return None
 
-    if isinstance(name, basestring):
+    if isinstance(name, str):
         s = EmbeddedSource()
         s.name = name
         if isinstance(source_instance, EmbeddedSource.SourceInstance):

@@ -3,7 +3,7 @@ import json
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 try:
@@ -110,9 +110,7 @@ def upsert_target(data, analyst):
     if related_id:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     try:
         target.save(username=analyst)
@@ -132,7 +130,7 @@ def upsert_target(data, analyst):
         return {'success': True,
                 'message': "Target saved successfully",
                 'id': str(target.id)}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': "Target save failed: %s" % e}
 
@@ -183,14 +181,14 @@ def get_target_details(email_address, user):
     if not target:
         target = Target()
         target.email_address = email_address.strip().lower()
-        form = TargetInfoForm(analyst, initial={'email_address': email_address})
+        form = TargetInfoForm(user, initial={'email_address': email_address})
     email_list = target.find_emails(user)
     form = TargetInfoForm(user, initial=target.to_dict())
 
-    if form.fields.get(form_consts.Common.BUCKET_LIST_VARIABLE_NAME) != None:
+    if form.fields.get(form_consts.Common.BUCKET_LIST_VARIABLE_NAME) is not None:
         form.fields.pop(form_consts.Common.BUCKET_LIST_VARIABLE_NAME)
 
-    if form.fields.get(form_consts.Common.TICKET_VARIABLE_NAME) != None:
+    if form.fields.get(form_consts.Common.TICKET_VARIABLE_NAME) is not None:
         form.fields.pop(form_consts.Common.TICKET_VARIABLE_NAME)
 
     subscription = {

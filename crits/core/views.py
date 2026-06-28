@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -104,7 +104,7 @@ from crits.signatures.signature import SignatureDependency
 from crits.targets.forms import TargetInfoForm
 
 from crits.vocabulary.sectors import Sectors
-from crits.vocabulary.acls import *
+from crits.vocabulary.acls import GeneralACL, ReadACL
 
 logger = logging.getLogger(__name__)
 
@@ -327,7 +327,7 @@ def get_dialog(request):
             dialog = 'error'
             params['error'] = "Dialog does not exist"
 
-    except Exception, e:
+    except Exception as e:
         dialog = 'error'
         params['error'] = 'Error preparing requested dialog'
         logger.warning("Dialog error: %s" % e)
@@ -425,7 +425,7 @@ def about(request):
     """
 
     # All loaded modules without dot in the name, with __path__, and with __version__
-    mods = [(m.__name__.lower(), getattr(m, '__version__', ''), m.__path__[0]) for m in sys.modules.values() if getattr(m, '__path__', '') and getattr(m, '__version__', '') and not '.' in m.__name__]
+    mods = [(m.__name__.lower(), getattr(m, '__version__', ''), m.__path__[0]) for m in sys.modules.values() if getattr(m, '__path__', '') and getattr(m, '__version__', '') and '.' not in m.__name__]
     mods=sorted(mods)
     return render(request, 'about.html', {"loaded_mods": mods,})
 
@@ -460,7 +460,7 @@ def login(request):
     user = request.user
 
     # Is the user already authenticated?
-    if (request.user.is_authenticated if django_version >= (1, 10) else request.user.is_authenticated()) and user.has_access_to(GeneralACL.WEB_INTERFACE) and not request.is_ajax:
+    if request.user.is_authenticated and user.has_access_to(GeneralACL.WEB_INTERFACE) and not request.is_ajax():
         resp = validate_next(next_url)
         if not resp['success']:
             return render(request, 'error.html',
@@ -1094,7 +1094,7 @@ def download_object(request):
             rel_limit = int(rel_limit)
             if total_limit < 0 or depth_limit < 0 or rel_limit < 0:
                 raise
-        except:
+        except Exception:
             return render(request, "error.html", {"error" : "Limits must be positive integers."})
 
         # Don't exceed the configured maximums. This is done in the view
@@ -1284,7 +1284,7 @@ def base_context(request):
     base_context['service_nav_templates'] = settings.SERVICE_NAV_TEMPLATES
     base_context['service_cp_templates'] = settings.SERVICE_CP_TEMPLATES
     base_context['service_tab_templates'] = settings.SERVICE_TAB_TEMPLATES
-    if (request.user.is_authenticated if django_version >= (1, 10) else request.user.is_authenticated()):
+    if request.user.is_authenticated:
         user = request.user
         base_context['acl'] = ReadACL
         base_context['GeneralACL'] = GeneralACL
@@ -1293,30 +1293,30 @@ def base_context(request):
             base_context['new_action'] = ActionsForm(initial={'analyst': user,
                 'active': "off",
                 'date': datetime.datetime.now()})
-        except Exception, e:
+        except Exception as e:
             logger.warning("Base Context ActionsForm Error: %s" % e)
 
         # Other info acquired from functions
         try:
             base_context['email_notifications'] = get_user_email_notification(user.username)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Base Context get_user_email_notification Error: %s" % e)
         try:
             base_context['user_notifications'] = get_user_notifications(user.username,
                                                                         count=True)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Base Context get_user_notifications Error: %s" % e)
         try:
             base_context['user_organization'] = get_user_organization(user)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Base Context get_user_organization Error: %s" % e)
         try:
             base_context['user_source_list'] = user_sources(user)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Base Context user_sources Error: %s" % e)
 
         nav_template = get_nav_template(request.user.prefs.nav)
-        if nav_template != None:
+        if nav_template is not None:
             base_context['nav_template'] = nav_template
 
         base_context['newer_notifications_location'] = request.user.prefs.toast_notifications.get('newer_notifications_location', 'top')
@@ -1876,7 +1876,7 @@ def role_details(request, rid=None):
     # Silly Django :(
     try:
         roles = request.POST.getlist('roles', None)
-    except:
+    except Exception:
         roles = None
     analyst = request.user.username
     template = "role_detail.html"
@@ -2494,6 +2494,7 @@ def remove_action(request, obj_type, obj_id):
 
     if request.method == "POST" and request.is_ajax():
         user = request.user
+        acl = get_acl_object(obj_type)
         if user.has_access_to(acl.ACTIONS_DELETE):
             key = request.POST['key'].split(',')
             date = datetime.datetime.strptime(key[0],

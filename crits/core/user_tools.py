@@ -6,11 +6,13 @@ except ImportError:
 
 from crits.core.data_tools import generate_qrcode
 from crits.core.totp import gen_user_secret
+from crits.vocabulary.acls import (
+    ActorACL, BackdoorACL, CampaignACL, CertificateACL, DomainACL, EmailACL,
+    EventACL, ExploitACL, GeneralACL, IndicatorACL, IPACL, PCAPACL, RawDataACL,
+    SampleACL, ScreenshotACL, SignatureACL, TargetACL,
+)
 
 from django.conf import settings
-#from django.contrib.auth.views import logout_then_login
-
-from crits.vocabulary.acls import GeneralACL
 
 def is_user_favorite(analyst, type_, id_):
     """
@@ -62,7 +64,6 @@ def user_sources(user=None):
 
 
 def get_acl_object(crits_type):
-    from crits.vocabulary.acls import *
     if crits_type == 'Actor':
         return ActorACL
     elif crits_type == 'Backdoor':
@@ -151,7 +152,7 @@ def user_can_view_data(user):
     """
     if user.is_active:
         if user.has_access_to(GeneralACL.WEB_INTERFACE):
-            return user.is_authenticated()
+            return user.is_authenticated
         else:
             return False
     else:
@@ -351,7 +352,7 @@ def subscribe_user(username, stype, oid):
     try:
         user.save()
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': e}
 
@@ -378,7 +379,7 @@ def unsubscribe_user(username, stype, oid):
     try:
         user.save()
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': e}
 
@@ -403,7 +404,7 @@ def subscribe_to_source(username, source):
     try:
         user.save()
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': e}
 
@@ -428,7 +429,7 @@ def unsubscribe_from_source(username, source):
     try:
         user.save()
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': e}
 
@@ -450,7 +451,7 @@ def update_user_preference(username, section, values):
     user = CRITsUser.objects(username=username).first()
 
     if user:
-        if not section in user.prefs:
+        if section not in user.prefs:
            setattr(user.prefs, section, {})
 
         # Something to think about.. do we want to do a replacement or a merge?
@@ -459,7 +460,7 @@ def update_user_preference(username, section, values):
         try:
             user.save()
             return {'success': True }
-        except ValidationError, e:
+        except ValidationError as e:
             return {'success': False,
                     'message': e}
     return {'success': False,
@@ -475,7 +476,7 @@ def get_nav_template(nav_preferences):
     :returns: The navigation template for the specified navigation preference.
               If a navigation preference is not specified then None is returned.
     """
-    if nav_preferences != None:
+    if nav_preferences is not None:
         nav_menu = nav_preferences.get("nav_menu")
 
         if nav_menu == "topmenu":
@@ -507,19 +508,19 @@ def toggle_user_preference(username, section, setting, is_enabled=False):
         otree = setting.split(".")
         param = otree.pop()
 
-        if not section in user.prefs:
+        if section not in user.prefs:
             setattr(user.prefs, section, {})
         opt = user.prefs[section]
 
         if len(otree):
             for subsect in otree:
-                if not subsect in opt:
+                if subsect not in opt:
                     opt[subsect] = {}
                     opt = opt[subsect]
                 else:
                     opt = opt[subsect]
 
-        if (not param in opt):
+        if (param not in opt):
             # if the preference doesn't exist, then try the fallback default value
             if is_enabled == True:
                 opt[param] = False
@@ -536,7 +537,7 @@ def toggle_user_preference(username, section, setting, is_enabled=False):
             user.save()
             return {'success': True,
                     'state': opt[param] }
-        except ValidationError, e:
+        except ValidationError as e:
             return {'success': False,
                     'message': e}
     return {'success': False,

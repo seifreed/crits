@@ -25,7 +25,7 @@ class CritsDateTimeField(DateTimeField):
         return super(CritsDateTimeField, self).__set__(instance, value)
 
     def transform(self, value):
-        if value and isinstance(value, basestring):
+        if value and isinstance(value, str):
             return parse(value, fuzzy=True)
         elif not value:
             return datetime.datetime.now()
@@ -81,7 +81,7 @@ class S3Proxy(object):
             if self.gridout is None:
                 self.gridout = io.BytesIO(S3.get_file_s3(self.grid_id, self.collection_name))
             return self.gridout
-        except:
+        except Exception:
             return None
 
     def put(self, file_obj, **kwargs):
@@ -99,7 +99,7 @@ class S3Proxy(object):
         else:
             try:
                 return gridout.read(size)
-            except:
+            except Exception:
                 return ""
 
     def _mark_as_changed(self):
@@ -127,7 +127,7 @@ class S3FileField(FileField):
             if grid_file:
                 try:
                     grid_file.delete()
-                except:
+                except Exception:
                     pass
                 # Create a new file with the new data
                 grid_file.put(value)

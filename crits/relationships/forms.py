@@ -37,7 +37,7 @@ class ForgeRelationshipForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ForgeRelationshipForm, self).__init__(*args, **kwargs)
         self.fields['forward_type'].choices = self.fields['reverse_type'].choices = [
-            (c, c) for c in sorted(settings.CRITS_TYPES.iterkeys())
+            (c, c) for c in sorted(settings.CRITS_TYPES.keys())
         ]
         self.fields['forward_relationship'].choices = [
             (c, c) for c in RelationshipTypes.values(sort=True)
@@ -55,13 +55,13 @@ class ForgeRelationshipForm(forms.Form):
         if 'forward_value' in cleaned_data:
             try:
                 cleaned_data['forward_value'] = cleaned_data['forward_value'].strip()
-            except:
+            except Exception:
                 pass
 
         if 'dest_id' in cleaned_data:
             try:
                 cleaned_data['dest_id'] = cleaned_data['dest_id'].strip()
-            except:
+            except Exception:
                 pass
 
         return cleaned_data

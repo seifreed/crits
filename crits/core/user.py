@@ -31,8 +31,8 @@
 import datetime
 import hmac
 import logging
-import random
 import re
+import secrets
 import string
 import time
 import uuid
@@ -54,12 +54,7 @@ from django.utils.functional import SimpleLazyObject
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.hashers import check_password, make_password
-from django.http import HttpResponse
-
-# Importing these breaks on django 1.11
-#from django.contrib.auth.models import _user_has_perm, _user_get_all_permissions
-#from django.contrib.auth.models import _user_has_module_perms
-#from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import PermissionDenied
 
 from crits.config.config import CRITsConfig
 from crits.core.crits_mongoengine import CritsDocument, CritsSchemaDocument
@@ -358,8 +353,8 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         """
 
         if (not self._dynamic and hasattr(self, 'unsupported_attrs')
-            and not name in self._fields and not name.startswith('_')
-            and not name.startswith('$') and not '.' in name
+            and name not in self._fields and not name.startswith('_')
+            and not name.startswith('$') and '.' not in name
             and name not in ('backend')):
             if not self.unsupported_attrs:
                 self.unsupported_attrs = UnsupportedAttrs()
@@ -386,22 +381,15 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
 
     # the rest of this taken from the MongoEngine User class.
 
-    def __unicode__(self):
-        """
-        This is so request.user returns the username like Django expects,
-        not the whole object.
-        """
-
-        return self.username
-
     def get_full_name(self):
         """
         Returns the users first and last names, separated by a space.
         """
 
-        full_name = u'%s %s' % (self.first_name or '', self.last_name or '')
+        full_name = '%s %s' % (self.first_name or '', self.last_name or '')
         return full_name.strip()
 
+    @property
     def is_anonymous(self):
         """
         We do not allow anonymous users.
@@ -409,6 +397,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
 
         return False
 
+    @property
     def is_authenticated(self):
         """
         If we know about the user from the request, it means they've
@@ -482,7 +471,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
 
         e = EmbeddedPasswordReset()
         char_set = string.ascii_uppercase + string.digits
-        e.reset_code = ''.join(random.sample(char_set*6,6))
+        e.reset_code = ''.join(secrets.choice(char_set) for _ in range(6))
         e.date = datetime.datetime.now()
         self.password_reset = e
         self.save(username=analyst)
@@ -709,7 +698,11 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         return permissions
 
     def get_all_permissions(self, obj=None):
-        return _user_get_all_permissions(self, obj)
+        permissions = set()
+        for backend in auth.get_backends():
+            if hasattr(backend, "get_all_permissions"):
+                permissions.update(backend.get_all_permissions(self, obj))
+        return permissions
 
     def has_perm(self, perm, obj=None):
         """
@@ -725,7 +718,14 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
             return True
 
         # Otherwise we need to check the backends.
-        return _user_has_perm(self, perm, obj)
+        for backend in auth.get_backends():
+            if hasattr(backend, "has_perm"):
+                try:
+                    if backend.has_perm(self, perm, obj):
+                        return True
+                except PermissionDenied:
+                    return False
+        return False
 
     def has_module_perms(self, app_label):
         """
@@ -736,7 +736,14 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         if self.is_active and self.is_superuser:
             return True
 
-        return _user_has_module_perms(self, app_label)
+        for backend in auth.get_backends():
+            if hasattr(backend, "has_module_perms"):
+                try:
+                    if backend.has_module_perms(self, app_label):
+                        return True
+                except PermissionDenied:
+                    return False
+        return False
 
     def email_user(self, subject, message, from_email=None):
         """
@@ -766,7 +773,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         :returns: None, str, dict
         """
 
-        if not section in self.prefs:
+        if section not in self.prefs:
             return default
 
         # Split the preference option into subtrees on '.'
@@ -781,7 +788,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                 else:
                     return default
 
-        if not param in opt:
+        if param not in opt:
             return default
 
         return opt[param]
@@ -803,7 +810,8 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         Get information about this user from LDAP.
         """
 
-        import ldap, ldapurl
+        import ldap
+        import ldapurl
         resp = {"result": "ERROR"}
         if not config:
             config = CRITsConfig.objects().first()
@@ -856,7 +864,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                               config.ldap_userdn)
         elif "@" in config.ldap_userdn:
             un = "%s%s" % (self.username, config.ldap_userdn)
-	try:
+        try:
             # Try auth bind first
             l.simple_bind_s(un, password)
             logger.info("Bound to LDAP for: %s" % un)
@@ -893,7 +901,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
             self.get_access_list(update=True)
         try:
             return [s.name for s in self.acl.get('sources')]
-        except:
+        except Exception:
             return []
 
     def check_source_tlp(self, object):
@@ -904,7 +912,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
             return False
 
         user_source_names = self.get_sources_list()
-        user_source_objects = self.acl.get('sources')
+        user_source_objects = self.acl.get('sources') or []
 
         object_sources = object.source
 
@@ -927,9 +935,9 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         """
         if not object:
             return False
-        user_source_list_red = [x.name for x in filter(lambda us: us.tlp_red and us.read, self.acl.get('sources'))]
-        user_source_list_amber = [x.name for x in filter(lambda us: us.tlp_amber and us.read, self.acl.get('sources'))]
-        user_source_list_green = [x.name for x in filter(lambda us: us.tlp_green and us.read, self.acl.get('sources'))]
+        user_source_list_red = [x.name for x in filter(lambda us: us.tlp_red and us.read, self.acl.get('sources') or [])]
+        user_source_list_amber = [x.name for x in filter(lambda us: us.tlp_amber and us.read, self.acl.get('sources') or [])]
+        user_source_list_green = [x.name for x in filter(lambda us: us.tlp_green and us.read, self.acl.get('sources') or [])]
         source_tlp_filter = {'$elemMatch': {'$or': [{'instances.tlp': 'white'}, # Consider 'TLP white' open to all, even users who don't have permission on the source
                                                     # If the TLP isn't specified on any source instance, treat it like TLP Red
                                                     {'name': {'$in': user_source_list_red}, 'instances': {'$elemMatch': {'tlp': {'$exists': False}}}},
@@ -957,7 +965,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
     def check_source_write(self, source):
         """
         """
-        user_source_objects = self.acl.get('sources')
+        user_source_objects = self.acl.get('sources') or []
 
         for usource in user_source_objects:
             if usource.name == source:
@@ -992,7 +1000,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         # for each role, modify the acl object to reflect all of the attributes
         # the user should be granted access to.
         for r in roles:
-            for p,v in r._data.iteritems():
+            for p,v in r._data.items():
                 if p in ['name', 'description', 'active', 'id']:
                     # No need to worry about these. Added benefit of
                     # throwing a validation error since there is no name
@@ -1009,7 +1017,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                         found = False
                         for src in acl['sources']:
                             if s.name == src.name:
-                                for x,y in s._data.iteritems():
+                                for x,y in s._data.items():
                                     if not acl['sources'][c].get(x, True):
                                         acl['sources'][c][x] = y
                                 found = True
@@ -1017,7 +1025,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                             c += 1
                         if not found:
                             acl['sources'].append(s)
-                elif p in settings.CRITS_TYPES.iterkeys():
+                elif p in settings.CRITS_TYPES.keys():
                     # For each CRITs Type adjust the attributes based on which
                     # ones the # user should get access to.
 
@@ -1025,7 +1033,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                     attr = acl.get(p, False)
 
                     # Modify the attributes.
-                    for x,y in getattr(r, p)._data.iteritems():
+                    for x,y in getattr(r, p)._data.items():
                         if not getattr(attr, x, False):
                             setattr(attr, x, y)
 
@@ -1075,14 +1083,14 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         attributes to allow for functions that act dynamically on multiple TLOs
         to be able to do so without huge if blocks. Example from above:
 
-            for x in settings.CRITS_TYPES.iterkeys():
+            for x in settings.CRITS_TYPES.keys():
                 if (X.has_access_to('%s.read' % x)
                     and X.has_access_to('%s.bucketlist_read' % x):
 
         Is much cleaner than:
 
             acl = X.get_access_list()
-            for x in settings.CRITS_TYPES.iterkeys():
+            for x in settings.CRITS_TYPES.keys():
                 if (getattr(getattr(acl, x), 'read')
                     and getattr(getattr(acl, x), 'bucketlist_read'))
 
@@ -1101,52 +1109,40 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         for a in attrs:
             try:
                 attr = attr.get(a, False)
-            except:
+            except Exception:
                 return False
         return attr
 
 class AuthenticationMiddleware(object):
-    # This has been added to make theSessions work on Django 1.8+ and
-    # mongoengine 0.8.8 see:
-    # https://github.com/MongoEngine/mongoengine/issues/966
-    # For mongoengine 10.x you can comment out AuthenticationMiddleware from settings.py
+    """Resolve ``request.user`` as a CRITsUser from the session.
 
-    from django import VERSION as d_VERSION
+    Django's own AuthenticationMiddleware assumes the auth user model's primary
+    key is an integer (AutoField) and raises on CRITs' ObjectId session ids, so
+    CRITs resolves the user lazily through CRITsAuthBackend instead.
+    """
 
-    if d_VERSION >= (1,10,0):
-        def __init__(self, get_response):
-            self.get_response = get_response
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-        def __call__(self, request):
-            return self.get_response(request)
-
-        def process_exception(self, request, exception):
-            if settings.DEBUG:
-                return HttpResponse("exception: %s" % exception)
-
-    def _get_user_session_key(self, request):
-        from bson.objectid import ObjectId
-
-        # This value in the session is always serialized to a string, so we need
-        # to convert it back to Python whenever we access it.
-        SESSION_KEY = '_auth_user_id'
-        if SESSION_KEY in request.session:
-            return ObjectId(request.session[SESSION_KEY])
-
-    def process_request(self, request):
-        # Used for with Django <1.10
-        try:
-            from mongoengine.django.auth import get_user
-        except ImportError:
-            pass
-
+    def __call__(self, request):
         assert hasattr(request, 'session'), (
-            "The Django authentication middleware requires session middleware "
-            "to be installed. Edit your MIDDLEWARE_CLASSES setting to insert "
+            "The CRITs authentication middleware requires session middleware to "
+            "be installed. Edit MIDDLEWARE to insert "
             "'django.contrib.sessions.middleware.SessionMiddleware' before "
-            "'django.contrib.auth.middleware.AuthenticationMiddleware'."
+            "'crits.core.user.AuthenticationMiddleware'."
         )
-        request.user = SimpleLazyObject(lambda: get_user(self._get_user_session_key(request)))
+        request.user = SimpleLazyObject(lambda: self._get_user(request))
+        return self.get_response(request)
+
+    @staticmethod
+    def _get_user(request):
+        from django.contrib.auth.models import AnonymousUser
+        user_id = request.session.get('_auth_user_id')
+        if user_id:
+            user = CRITsAuthBackend().get_user(user_id)
+            if user is not None:
+                return user
+        return AnonymousUser()
 
 # stolen from MongoEngine and modified to use the CRITsUser class.
 class CRITsAuthBackend(object):
@@ -1206,7 +1202,8 @@ class CRITsAuthBackend(object):
             if not config:
                 return None
             if config.ldap_auth:
-                import ldap, ldapurl
+                import ldap
+                import ldapurl
                 try:
                     # If you are using Oracle's server that's based on
                     # Netscape's code, and your users can't login after
@@ -1234,15 +1231,15 @@ class CRITsAuthBackend(object):
                     l.set_option(ldap.OPT_TIMEOUT, 10)
                     # two-step ldap binding
                     if len(config.ldap_bind_dn) > 0:
-                    	try:
-                    		logger.info("binding with bind_dn: %s" % config.ldap_bind_dn)
-                    		l.simple_bind_s(config.ldap_bind_dn, config.ldap_bind_password)
-                    		filter = '(|(cn='+fusername+')(uid='+fusername+')(mail='+fusername+'))'
-                    		# use the retrieved dn for the second bind
-                        	un = l.search_s(config.ldap_userdn,ldap.SCOPE_SUBTREE,filter,['dn'])[0][0]
+                        try:
+                                logger.info("binding with bind_dn: %s" % config.ldap_bind_dn)
+                                l.simple_bind_s(config.ldap_bind_dn, config.ldap_bind_password)
+                                filter = '(|(cn='+fusername+')(uid='+fusername+')(mail='+fusername+'))'
+                                # use the retrieved dn for the second bind
+                                un = l.search_s(config.ldap_userdn,ldap.SCOPE_SUBTREE,filter,['dn'])[0][0]
                         except Exception as err:
-            			#logger.error("Error binding to LDAP for: %s" % config.ldap_bind_dn)
-            			logger.error("authenticate ERR: %s" % err)
+                                #logger.error("Error binding to LDAP for: %s" % config.ldap_bind_dn)
+                                logger.error("authenticate ERR: %s" % err)
                         l.unbind()
                         if len(ldap_server) == 2:
                             l = ldap.initialize('%s:%s' % (url.unparse(),
@@ -1305,7 +1302,7 @@ Please contact a site administrator to resolve.
 """
                 try:
                     user.email_user(subject, body)
-                except Exception, err:
+                except Exception as err:
                     logger.warning("Error sending email: %s" % str(err))
             self.track_login_attempt(user, e)
             user.reload()
@@ -1346,7 +1343,7 @@ Please contact a site administrator to resolve.
         ct = time.time()
         try:
             lt = time.mktime(user.login_attempts[-1]['date'].timetuple())
-        except:
+        except Exception:
             lt = 0
         if ct - lt < 10:
             logger.info("Multiple login attempts detected exceeding "

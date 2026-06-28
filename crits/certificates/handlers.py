@@ -6,7 +6,7 @@ from bson.objectid import ObjectId
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 
@@ -294,7 +294,7 @@ def handle_cert_file(filename, data, source_name, user=None,
             return status
 
     # generate md5 and timestamp
-    md5 = hashlib.md5(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate Certificate
@@ -308,7 +308,7 @@ def handle_cert_file(filename, data, source_name, user=None,
         cert.md5 = md5
 
     # generate source information and add to certificate
-    if isinstance(source_name, basestring) and len(source_name) > 0:
+    if isinstance(source_name, str) and len(source_name) > 0:
         if user.check_source_write(source_name):
             s = create_embedded_source(source_name,
                                              reference=reference,

@@ -1,10 +1,10 @@
-import json, logging
+import json
 
 from django.core.exceptions import ValidationError
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.core.validators import validate_ipv4_address, validate_ipv6_address
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -320,11 +320,11 @@ def add_new_ip(data, rowData, request, errors, is_validate_only=False, cache={})
             for object_row_counter, objectData in enumerate(objectsData, 1):
                 new_ip = retVal.get('object')
 
-                if new_ip != None and is_validate_only == False:
+                if new_ip is not None and is_validate_only == False:
                     objectDict = object_array_to_dict(objectData,
                                                       "IP", new_ip.id)
                 else:
-                    if new_ip != None:
+                    if new_ip is not None:
                         if new_ip.id:
                             objectDict = object_array_to_dict(objectData,
                                                               "IP", new_ip.id)
@@ -414,7 +414,7 @@ def ip_add_update(ip_address, ip_type, source=None, source_method='',
     ip_object = None
     cached_results = cache.get(form_consts.IP.CACHED_RESULTS)
 
-    if cached_results != None:
+    if cached_results is not None:
         ip_object = cached_results.get(ip_address)
     else:
         ip_object = IP.objects(ip=ip_address).first()
@@ -425,7 +425,7 @@ def ip_add_update(ip_address, ip_type, source=None, source_method='',
         ip_object.ip_type = ip_type
         is_item_new = True
 
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[ip_address] = ip_object
 
     if not ip_object.description:
@@ -433,7 +433,7 @@ def ip_add_update(ip_address, ip_type, source=None, source_method='',
     elif ip_object.description != description:
         ip_object.description += "\n" + (description or '')
 
-    if isinstance(source_name, basestring):
+    if isinstance(source_name, str):
         if user.check_source_write(source):
             source = [create_embedded_source(source,
                                              reference=source_reference,
@@ -445,7 +445,7 @@ def ip_add_update(ip_address, ip_type, source=None, source_method='',
                     "message": "User does not have permission to add object \
                                 using source %s." % source}
 
-    if isinstance(campaign, basestring):
+    if isinstance(campaign, str):
         c = EmbeddedCampaign(name=campaign, confidence=confidence, analyst=user.username)
         campaign = [c]
 
@@ -491,7 +491,7 @@ def ip_add_update(ip_address, ip_type, source=None, source_method='',
             retVal['warning'] = message
 
     elif is_validate_only == True:
-        if ip_object.id != None and is_item_new == False:
+        if ip_object.id is not None and is_item_new == False:
             message = ('Warning: IP already exists: '
                                  '<a href="%s">%s</a>' % (resp_url, ip_object.ip))
             retVal['message'] = message
@@ -596,7 +596,7 @@ def parse_row_to_bound_ip_form(request, rowData, cache):
 
     bound_form = cache.get('ip_form')
 
-    if bound_form == None:
+    if bound_form is None:
         bound_form = AddIPForm(request.user, None, data)
         cache['ip_form'] = bound_form
     else:
@@ -623,7 +623,7 @@ def process_bulk_add_ip(request, formdict):
 
     cleanedRowsData = convert_handsontable_to_rows(request)
     for rowData in cleanedRowsData:
-        if rowData != None and rowData.get(form_consts.IP.IP_ADDRESS) != None:
+        if rowData is not None and rowData.get(form_consts.IP.IP_ADDRESS) is not None:
             ip_names.append(rowData.get(form_consts.IP.IP_ADDRESS).lower())
 
     ip_results = IP.objects(ip__in=ip_names)

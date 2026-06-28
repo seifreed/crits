@@ -2,7 +2,7 @@ from django import forms
 from django.forms.widgets import Select
 from django.forms.fields import ChoiceField
 from itertools import chain
-from django.utils.encoding import force_unicode, smart_unicode
+from django.utils.encoding import force_str, smart_str
 from django.utils.html import escape, conditional_escape
 
 class CalWidget(forms.DateTimeInput):
@@ -34,9 +34,9 @@ class ExtendedSelect(Select):
 
     def render_options(self, choices, selected_choices):
         def render_option(option_value, option_label, attrs):
-            option_value = force_unicode(option_value)
+            option_value = force_str(option_value)
             if option_value in selected_choices:
-                selected_html = u' selected="selected"'
+                selected_html = ' selected="selected"'
                 if not self.allow_multiple_selected:
                     #Only allow for a single selection.
                     selected_choices.remove(option_value)
@@ -52,22 +52,22 @@ class ExtendedSelect(Select):
                 attrs_html = " " + " ".join(attrs_html)
             else:
                 attrs_html = ""
-            return u'<option value="%s"%s%s>%s</option>' % (
+            return '<option value="%s"%s%s>%s</option>' % (
                 escape(option_value), selected_html, attrs_html,
-                conditional_escape(force_unicode(option_label)))
+                conditional_escape(force_str(option_label)))
         # Normalize to strings.
-        selected_choices = set(force_unicode(v) for v in selected_choices)
+        selected_choices = set(force_str(v) for v in selected_choices)
         output = []
         for option_value, option_label, option_attrs in chain(self.choices, choices):
             if isinstance(option_label, (list, tuple)):
-                output.append(u'<optgroup label="%s">' % escape(force_unicode(option_value)))
+                output.append('<optgroup label="%s">' % escape(force_str(option_value)))
                 for option in option_label:
                     output.append(render_option(*option))
-                output.append(u'</optgroup>')
+                output.append('</optgroup>')
             else:
                 output.append(render_option(option_value, option_label,
                     option_attrs))
-        return u'\n'.join(output)
+        return '\n'.join(output)
 
 class ExtendedChoiceField(ChoiceField):
     """
@@ -92,9 +92,9 @@ class ExtendedChoiceField(ChoiceField):
             if isinstance(v, (list, tuple)):
                 # This is an optgroup, so look inside the group for options
                 for k2, v2 in v:
-                    if value == smart_unicode(k2):
+                    if value == smart_str(k2):
                         return True
             else:
-                if value == smart_unicode(k):
+                if value == smart_str(k):
                     return True
         return False

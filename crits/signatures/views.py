@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -67,11 +67,11 @@ def set_signature_type(request, id_):
         data_type = request.POST['data_type']
         type_ = request.POST['type']
         analyst = request.user
-        if user.has_access_to(SignatureACL.DATA_TYPE_EDIT):
+        if analyst.has_access_to(SignatureACL.DATA_TYPE_EDIT):
             return HttpResponse(json.dumps(update_signature_type(type_,
                                                                  id_,
                                                                 data_type,
-                                                                user)),
+                                                                analyst)),
                                 content_type="application/json")
         else:
             return HttpResponse(json.dumps({'success':False,

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -151,7 +151,7 @@ def bulk_add_md5_sample(request):
     objectformdict = form_to_dict(AddObjectForm(request.user))
 
     if request.method == "POST" and request.is_ajax():
-        response = process_bulk_add_md5_sample(request, formdict);
+        response = process_bulk_add_md5_sample(request, formdict)
 
         return HttpResponse(json.dumps(response,
                             default=json_handler),
@@ -291,7 +291,7 @@ def upload_file(request, related_md5=None):
                         backdoor_version=backdoor_version,
                         description=description)
 
-            except ZipFileError, zfe:
+            except ZipFileError as zfe:
                 return render(request, 'file_upload_response.html', {'response': json.dumps({'success': False,
                                 'message': zfe.value})})
             else:
@@ -311,7 +311,7 @@ def upload_file(request, related_md5=None):
                                                         response.get('message'))
                     try:
                         md5_response = [result[0].get('object').md5]
-                    except:
+                    except Exception:
                         md5_response = None
 
                 if response['success']:
@@ -434,22 +434,22 @@ def xor_searcher(request, sample_md5):
         if form.is_valid():
             try:
                 string = request.POST['string']
-            except:
+            except Exception:
                 string = None
             try:
                 if request.POST["skip_nulls"] == "on":
                     skip_nulls = 1
-            except:
+            except Exception:
                 skip_nulls = 0
             try:
                 if request.POST["is_key"] == "on":
                     is_key = 1
-            except:
+            except Exception:
                 is_key = 0
             if is_key:
                 try:
                     result = {"keys": [int(string)]}
-                except:
+                except Exception:
                     result = {"keys": []}
             else:
                 results = xor_search(md5=sample_md5,
@@ -481,7 +481,7 @@ def unzip_sample(request, md5):
             pwd = form.cleaned_data['password']
             try:
                 handle_unzip_file(md5, user=request.user, password=pwd)
-            except ZipFileError, zfe:
+            except ZipFileError as zfe:
                 return render(request, 'error.html', {'error' : zfe.value})
         return HttpResponseRedirect(reverse('crits-samples-views-detail',
                                             args=[md5]))

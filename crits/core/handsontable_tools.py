@@ -30,13 +30,13 @@ def convert_handsontable_to_rows(request):
     myDict = dict(request.POST.iterlists())
     dataElement = myDict['data'][0]
     rowsData = json.loads(dataElement)
-    cleanedRowsData = [];
+    cleanedRowsData = []
 
     for rowData in rowsData:
-        cleanedRowData = {};
+        cleanedRowData = {}
 
         # If the row data is null that means we should skip processing for this row
-        if rowData != None:
+        if rowData is not None:
             for columnKey, columnValue in rowData.items():
                 cleanedRowData[remove_html_tags(columnKey)] = columnValue
 
@@ -77,7 +77,7 @@ def form_to_dict(form):
     dict = []
 
     # need an offset to account for skipped fields
-    offset = 0;
+    offset = 0
 
     for position, field in enumerate(form):
         newItem = {'name': field.name,
@@ -88,15 +88,15 @@ def form_to_dict(form):
         newItem['isRequired'] = field.field.required
 
         classes = field.field.widget.attrs.get('class')
-        if classes != None:
+        if classes is not None:
             if "bulkskip" not in classes:
                 newItem['classes'] = classes.split()
 
                 if "bulknoinitial" in newItem['classes']:
-                    newItem['initial'] = None;
+                    newItem['initial'] = None
             else:
                 offset -= 1
-                continue;
+                continue
 
         if isinstance(field.field, ExtendedChoiceField):
             newItem['type'] = 'choice'
@@ -190,23 +190,23 @@ def parse_bulk_upload(request, parse_row_function, add_new_function, formdict, c
     secondaryData = []
     isFailureDetected = False
     is_validate_only = convert_string_to_bool(request.POST['isValidateOnly'])
-    offset = int(request.POST.get('offset', 0));
+    offset = int(request.POST.get('offset', 0))
 
     if cache.get("cleaned_rows_data"):
-        cleanedRowsData = cache.get("cleaned_rows_data");
+        cleanedRowsData = cache.get("cleaned_rows_data")
     else:
-        cleanedRowsData = convert_handsontable_to_rows(request);
+        cleanedRowsData = convert_handsontable_to_rows(request)
 
-    rowCounter = offset;
-    processedRows = 0;
+    rowCounter = offset
+    processedRows = 0
 
     for rowData in cleanedRowsData:
         rowCounter = rowCounter + 1
 
         # Make sure that the rowData has content, otherwise the client side
         # might have done some filtering to ignore rows that have no data.
-        if(rowData == None):
-            continue;
+        if(rowData is None):
+            continue
 
         try:
             bound_form = parse_row_function(request, rowData, cache)
@@ -220,7 +220,7 @@ def parse_bulk_upload(request, parse_row_function, add_new_function, formdict, c
 
                 (result, errors, retVal) = add_new_function(data, rowData, request, errors, is_validate_only, cache)
 
-                processedRows += 1;
+                processedRows += 1
 
                 #if retVal.get('message'):
                 #    messages.append("At row " + str(rowCounter) + ": " + retVal.get('message'))
@@ -239,34 +239,34 @@ def parse_bulk_upload(request, parse_row_function, add_new_function, formdict, c
                     # The "col": -1 will just indicate to the client side to highlight the entire row.
                     failedRows.append({'row': rowCounter,
                                        'col': -1,
-                                       'message': "At row " + str(rowCounter) + ": " + message});
+                                       'message': "At row " + str(rowCounter) + ": " + message})
                 else:
-                    status = retVal.get(form_consts.Status.STATUS_FIELD, form_consts.Status.SUCCESS);
-                    data = {'row': rowCounter, 's': status};
+                    status = retVal.get(form_consts.Status.STATUS_FIELD, form_consts.Status.SUCCESS)
+                    data = {'row': rowCounter, 's': status}
 
                     if retVal.get('warning'):
-                        data['message'] = "At row " + str(rowCounter) + ": " + retVal.get('warning');
+                        data['message'] = "At row " + str(rowCounter) + ": " + retVal.get('warning')
                     elif retVal.get('message'):
-                        data['message'] = "At row " + str(rowCounter) + ": " + retVal.get('message');
+                        data['message'] = "At row " + str(rowCounter) + ": " + retVal.get('message')
 
-                    successfulRows.append(data);
+                    successfulRows.append(data)
 
             # ... otherwise validation of the bound form failed and we need to
             # populate the response with error information
             else:
-                processedRows += 1;
+                processedRows += 1
 
                 for name, errorMessages in bound_form.errors.items():
                     entry = get_field_from_label(name, formdict)
-                    if entry == None:
+                    if entry is None:
                         continue
                     for message in errorMessages:
                         failedRows.append({'row': rowCounter,
                                            'col': entry['position'],
                                            'label': entry['label'],
-                                           'message': "At (" + str(rowCounter) + ", " + entry['label'] + "): " + message});
+                                           'message': "At (" + str(rowCounter) + ", " + entry['label'] + "): " + message})
 
-        except Exception,e:
+        except Exception:
             import traceback
             traceback.print_exc()
 

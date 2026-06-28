@@ -36,7 +36,7 @@ class SavedSearch(CritsDocument, CritsSchemaDocument, DynamicDocument):
             for col in self.tableColumns:
                 if col["field"] == self.sortBy["field"]:
                     textString = col["caption"] + " - " + self.sortBy['direction'].upper()
-                    break;
+                    break
         return textString
     
 class Dashboard(CritsDocument, CritsSchemaDocument, DynamicDocument):

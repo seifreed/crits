@@ -3,7 +3,8 @@ import logging
 import os
 import pprint
 import subprocess
-import tempfile, shutil
+import tempfile
+import shutil
 import time
 
 from bson.objectid import ObjectId
@@ -11,7 +12,7 @@ from django.core.mail import send_mail
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 from hashlib import md5
@@ -571,7 +572,7 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
     zipdir = ""
     extractdir = ""
     try:
-        zip_md5 = md5(data).hexdigest()
+        zip_md5 = md5(data, usedforsecurity=False).hexdigest()
 
         # 7z doesn't decompress archives via stdin, therefore
         # we need to write it out as a file first
@@ -584,7 +585,7 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
         args = [crits_config.zip7_path]
         if not os.access(crits_config.zip7_path, os.X_OK):
             errmsg = "7z is not executable at path specified in the config setting: %s\n" % crits_config.zip7_path
-            raise ZipFileError, errmsg
+            raise ZipFileError(errmsg)
         args.append("e")
         extractdir = tempfile.mkdtemp(dir=temproot)
         args.append("-o" + extractdir)  # Set output directory
@@ -611,10 +612,10 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
 
         if proc.returncode:     # 7z spit out an error
             errmsg = "Error while extracting archive\n" + proc.stdout.read()
-            raise ZipFileError, errmsg
+            raise ZipFileError(errmsg)
         elif not waitSeconds:   # Process timed out
             proc.terminate()
-            raise ZipFileError, "Unzip process failed to terminate"
+            raise ZipFileError("Unzip process failed to terminate")
         else:
             if related_md5 and related_md5 == zip_md5:
                 relationship = RelationshipTypes.COMPRESSED_INTO
@@ -650,11 +651,11 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
                     filehandle.close()
     except ZipFileError:  # Pass this error up the chain
         raise
-    except Exception, ex:
+    except Exception as ex:
         errmsg = ''
         for err in ex.args:
             errmsg = errmsg + " " + str(err)
-        raise ZipFileError, errmsg
+        raise ZipFileError(errmsg)
 
     finally:
         if os.path.isdir(zipdir):
@@ -773,7 +774,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
                     retVal['success'] = False
                     retVal['message'] += pres.get('message', '')
                 return retVal
-        except:
+        except Exception:
             # Continue on adding this as a Sample
             pass
 
@@ -796,7 +797,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         else:
             return retVal
 
-    if sha1_digest != None and sha1_digest != "":
+    if sha1_digest is not None and sha1_digest != "":
         sha1_digest = sha1_digest.lower().strip()
         validate_sha1_result = validate_sha1_checksum(sha1_digest)
         retVal['message'] += validate_sha1_result.get('message')
@@ -808,7 +809,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         else:
             return retVal
 
-    if sha256_digest != None and sha256_digest != "":
+    if sha256_digest is not None and sha256_digest != "":
         sha256_digest = sha256_digest.lower().strip()
         validate_sha256_result = validate_sha256_checksum(sha256_digest)
         retVal['message'] += validate_sha256_result.get('message')
@@ -827,7 +828,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         return retVal
 
     if data:
-        md5_digest = md5(data).hexdigest()
+        md5_digest = md5(data, usedforsecurity=False).hexdigest()
         validate_md5_result = validate_md5_checksum(md5_digest)
         retVal['message'] += validate_md5_result.get('message')
         retVal['success'] = validate_md5_result.get('success')
@@ -852,7 +853,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
 
     cached_results = cache.get(form_consts.Sample.CACHED_RESULTS)
 
-    if cached_results != None:
+    if cached_results is not None:
         sample = cached_results.get(md5_digest)
     else:
         sample = Sample.objects(md5=md5_digest).first()
@@ -868,7 +869,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
     else:
         if filename not in sample.filenames and filename != sample.filename:
             sample.filenames.append(filename)
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[md5_digest] = sample
 
     if not sample.description:
@@ -919,7 +920,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
                 sample.add_source(s)
 
     # generate new source information and add to sample
-    if isinstance(source, basestring) and len(source) > 0:
+    if isinstance(source, str) and len(source) > 0:
         if user.check_source_write(source):
             s = create_embedded_source(source,
                                        method=source_method,
@@ -951,10 +952,10 @@ def handle_file(filename, data, source, source_method='', source_reference='',
     elif is_validate_only == False:
         # assume it's a list of EmbeddedCampaign, but check if it's a string
         # if it is a string then create a new EmbeddedCampaign
-        if campaign != None:
+        if campaign is not None:
             campaign_array = campaign
 
-            if isinstance(campaign, basestring):
+            if isinstance(campaign, str):
                 campaign_array = [EmbeddedCampaign(name=campaign, confidence=confidence, analyst=user.username)]
 
             for campaign_item in campaign_array:
@@ -1021,7 +1022,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
                                              args=[sample.md5.lower()]),
                                              sample.md5.lower()))
             # Update Cache
-            if cached_results != None:
+            if cached_results is not None:
                 cached_results[sample.md5] = sample
     else:
         # Duplicate sample, but uploaded anyways
@@ -1035,7 +1036,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
             retVal['warning'] = message
         # Duplicate sample, but only validation
         else:
-            if sample.id != None:
+            if sample.id is not None:
                 warning_message = ('Warning: Trying to add file [' +
                                     filename + ']'
                                     ' when MD5 already exists as file [' +
@@ -1142,8 +1143,8 @@ def handle_uploaded_file(f, source, source_method='', source_reference='', sourc
         filename = getattr(f, 'name', None)
         if not filename:
             try:
-                filename = md5(data).hexdigest()
-            except:
+                filename = md5(data, usedforsecurity=False).hexdigest()
+            except Exception:
                 filename = "unknown"
 
     if file_format == "zip" and f:
@@ -1313,7 +1314,7 @@ def add_new_sample_via_bulk(data, rowData, request, errors, is_validate_only=Fal
                 objectsData = json.loads(objectsData)
 
                 for object_row_counter, objectData in enumerate(objectsData, 1):
-                    if sample.get('object') != None and is_validate_only == False:
+                    if sample.get('object') is not None and is_validate_only == False:
                         objectDict = object_array_to_dict(objectData, "Sample",
                                                           sample.get('object').id)
                     else:
@@ -1428,7 +1429,7 @@ def parse_row_to_bound_sample_form(request, rowData, cache, upload_type="File Up
 
     bound_md5_sample_form = cache.get('sample_form')
 
-    if bound_md5_sample_form == None:
+    if bound_md5_sample_form is None:
         bound_md5_sample_form = UploadFileForm(request.user, data, request.FILES)
         cache['sample_form'] = bound_md5_sample_form
     else:
@@ -1471,7 +1472,7 @@ def process_bulk_add_md5_sample(request, formdict):
 
     cleanedRowsData = convert_handsontable_to_rows(request)
     for rowData in cleanedRowsData:
-        if rowData != None and rowData.get(form_consts.Sample.MD5) != None:
+        if rowData is not None and rowData.get(form_consts.Sample.MD5) is not None:
             md5_samples.append(rowData.get(form_consts.Sample.MD5).lower())
 
     md5_results = Sample.objects(md5__in=md5_samples)
@@ -1507,7 +1508,7 @@ def update_sample_filename(id_, filename, analyst):
     try:
         sample.save(username=analyst)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def modify_sample_filenames(id_, tags, analyst):
@@ -1529,7 +1530,7 @@ def modify_sample_filenames(id_, tags, analyst):
         try:
             sample.save(username=analyst)
             return {'success': True}
-        except ValidationError, e:
+        except ValidationError as e:
             return {'success': False, 'message': "Invalid value: %s" % e}
     else:
         return {'success': False}

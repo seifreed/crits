@@ -1,4 +1,4 @@
-import urllib
+from urllib.parse import urlencode
 import json
 
 from django.http import HttpResponse, HttpResponseRedirect
@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.shortcuts import render
 from django.forms.utils import ErrorList
 
@@ -94,7 +94,7 @@ def bulk_add_domain(request):
                                       'table_name': 'domain',
                                       'local_validate_columns': [form_consts.Domain.DOMAIN_NAME],
                                       'custom_js': "domain_handsontable.js",
-                                      'is_bulk_add_objects': True});
+                                      'is_bulk_add_objects': True})
         else:
             response = {"success":False,
                         "message":"User does not have permission to add domains."}
@@ -159,7 +159,7 @@ def add_domain(request):
                                                default=json_handler),
                                     content_type="application/json")
         if errors:
-            if not 'message' in retVal:
+            if 'message' not in retVal:
                 retVal['message'] = ""
             elif not isinstance(retVal['message'], str):
                 retVal['message'] = str(retVal['message'])
@@ -218,7 +218,7 @@ def domain_search(request):
     query[request.GET.get('search_type', '')]=request.GET.get('q', '').strip()
     #return render(request, 'error.html', {'error': query})
     return HttpResponseRedirect(reverse('crits-domains-views-domains_listing')
-                                + "?%s" % urllib.urlencode(query))
+                                + "?%s" % urlencode(query))
 
 @user_passes_test(user_can_view_data)
 def tld_update(request):

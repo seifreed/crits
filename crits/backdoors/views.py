@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -236,7 +236,7 @@ def edit_backdoor_version(request, id_):
         request.user._setup()
         user = request.user
         version = request.POST.get('version', None)
-        if version == None:
+        if version is None:
             return HttpResponse(json.dumps({'success': False,
                                             'message': 'Not all info provided.'}),
                                 content_type="application/json")

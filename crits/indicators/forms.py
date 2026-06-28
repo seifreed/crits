@@ -8,14 +8,12 @@ from crits.core.forms import (
 from crits.core import form_consts
 from crits.core.widgets import CalWidget
 from crits.core.handlers import get_item_names
-from crits.core.handlers import get_source_names
-from crits.core.user_tools import get_user_organization
 from crits.vocabulary.indicators import (
     IndicatorTypes,
     IndicatorThreatTypes,
     IndicatorAttackTypes
 )
-from crits.vocabulary.acls import Common, IndicatorACL
+from crits.vocabulary.acls import Common
 
 from crits.vocabulary.relationships import RelationshipTypes
 from crits.vocabulary.status import Status

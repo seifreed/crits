@@ -1,12 +1,11 @@
 import json
-import urllib
-import logging
+from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -60,7 +59,7 @@ def ip_search(request):
     query[request.GET.get('search_type', '')]=request.GET.get('q', '').strip()
     #return render(request, 'error.html', {'error': query})
     return HttpResponseRedirect(reverse('crits-ips-views-ips_listing')
-                                + "?%s" % urllib.urlencode(query))
+                                + "?%s" % urlencode(query))
 
 @user_passes_test(user_can_view_data)
 def ip_detail(request, ip):

@@ -18,7 +18,7 @@ from multiprocessing.pool import Pool, ThreadPool
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.conf import settings
 from django.shortcuts import render
 
@@ -304,7 +304,7 @@ def run_triage(obj, user):
                         execute=settings.SERVICE_MODEL,
                         custom_config={},
                         is_triage_run=True)
-        except:
+        except Exception:
             pass
     return
 
@@ -502,7 +502,7 @@ def update_config(service_name, config, user):
         #update_status(service_name)
         service.save(username=user.username)
         return {'success': True}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def get_service_config(name):
@@ -622,7 +622,7 @@ def set_enabled(service_name, enabled=True, user=None):
         else:
             url = reverse('crits-services-views-enable', args=(service_name,))
         return {'success': True, 'url': url}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False, 'message': e}
 
 def set_triage(service_name, enabled=True, user=None):
@@ -645,7 +645,7 @@ def set_triage(service_name, enabled=True, user=None):
             url = reverse('crits-services-views-enable_triage',
                           args=(service_name,))
         return {'success': True, 'url': url}
-    except ValidationError, e:
+    except ValidationError as e:
         return {'success': False,
                 'message': e}
 
@@ -728,7 +728,7 @@ def update_analysis_results(task):
 
         #TODO: find a better way to do this.
         new_dict = {}
-        for k in tdict.iterkeys():
+        for k in tdict.keys():
             new_dict['set__%s' % k] = tdict[k]
         try:
             AnalysisResult.objects(id=ar.id).update_one(**new_dict)
@@ -742,7 +742,7 @@ def update_analysis_results(task):
             new_dict['set__log'].append(le)
             try:
                 AnalysisResult.objects(id=ar.id).update_one(**new_dict)
-            except: # don't know what's wrong, try writing basic log only
+            except Exception: # don't know what's wrong, try writing basic log only
                 AnalysisResult.objects(id=ar.id).update_one(set__log=[le])
 
 # The service pools need to be defined down here because the functions

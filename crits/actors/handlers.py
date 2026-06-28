@@ -3,7 +3,7 @@ import json
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -171,7 +171,7 @@ def generate_actor_jtable(request, option):
             if jtable_ajax_delete(obj_type, request):
                 response = {"Result": "OK"}
             else:
-                respones = {"Result": "ERROR"}
+                response = {"Result": "ERROR"}
         else:
             response = {"Result": "OK",
                         "message": "User does not have permission to delete"}
@@ -370,7 +370,7 @@ def add_new_actor(name, aliases=None, description=None, source=None,
             actor.description = description.strip()
         is_item_new = True
 
-    if isinstance(source, basestring):
+    if isinstance(source, str):
         if user.check_source_write(source):
             source = [create_embedded_source(source,
                                              reference=source_reference,
@@ -382,7 +382,7 @@ def add_new_actor(name, aliases=None, description=None, source=None,
                     "message": "User does not have permission to add objects \
                     using source %s." % str(source)}
 
-    if isinstance(campaign, basestring):
+    if isinstance(campaign, str):
         c = EmbeddedCampaign(name=campaign,
                              confidence=confidence,
                              analyst=username)
@@ -570,7 +570,7 @@ def add_new_actor_identifier(identifier_type, identifier=None, source=None,
                     'message': "Missing Identifier"}
         actor_identifier.name = identifier.strip()
 
-    if isinstance(source, basestring):
+    if isinstance(source, str):
         source = [create_embedded_source(source,
                                          reference=source_reference,
                                          method=source_method,

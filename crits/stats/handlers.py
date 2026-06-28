@@ -31,7 +31,7 @@ def generate_yara_hits():
     try:
         yarahits = samples.inline_map_reduce(m, r,
                                              query={'analysis.service_name': 'yara'})
-    except:
+    except Exception:
         return
     yarahits_col = mongo_connector(settings.COL_YARAHITS)
     yarahits_col.drop()
@@ -56,7 +56,7 @@ def generate_sources():
     try:
         sources = samples.inline_map_reduce(m,r,
                                             query={"source.name": {"$exists": 1}})
-    except:
+    except Exception:
         return
     source_access = mongo_connector(settings.COL_SOURCE_ACCESS)
     for source in sources:
@@ -73,7 +73,7 @@ def generate_filetypes():
     r = Code('function(k,v) { var count = 0; v.forEach(function(v) { count += v["count"]; }); return {count: count}; }', {})
     try:
         samples.map_reduce(m,r, settings.COL_FILETYPES)
-    except:
+    except Exception:
         return
 
 def zero_campaign():
@@ -116,7 +116,7 @@ def update_results(collection, m, r, stat_query, field, campaign_stats):
     if collection.find().count() > 0:
         results = collection.inline_map_reduce(m,r, query=stat_query)
         for result in results:
-            if result["_id"] != None:
+            if result["_id"] is not None:
                 if result["_id"] not in campaign_stats:
                     campaign_stats[result["_id"]] = zero_campaign()
                 campaign_stats[result["_id"]][field] = result["value"]["count"]
@@ -258,7 +258,7 @@ def target_user_stats():
                 if targ.email_count != result.value['count']:
                     targ.email_count = result.value['count']
                     targ.save()
-        except:
+        except Exception:
             pass
     mapcode = """
         function() {
@@ -278,7 +278,7 @@ def target_user_stats():
             if div.email_count != result.value['count']:
                 div.email_count = result.value['count']
                 div.save()
-    except:
+    except Exception:
         raise
 
 

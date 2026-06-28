@@ -1,12 +1,11 @@
 import json
-import urllib
+from urllib.parse import urlencode
 
-from django import forms
 from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -16,9 +15,8 @@ from crits.events.forms import EventForm
 from crits.events.handlers import event_remove
 from crits.events.handlers import update_event_title, update_event_type
 from crits.events.handlers import get_event_details
-from crits.events.handlers import generate_event_jtable, add_sample_for_event
+from crits.events.handlers import generate_event_jtable
 from crits.events.handlers import generate_event_csv, add_new_event
-from crits.samples.forms import UploadFileForm
 
 from crits.vocabulary.events import EventTypes
 from crits.vocabulary.acls import EventACL
@@ -106,7 +104,7 @@ def event_search(request):
     query = {}
     query[request.GET.get('search_type', '')] = request.GET.get('q', '').strip()
     return HttpResponseRedirect(reverse('crits-events-views-events_listing') +
-                                "?%s" % urllib.urlencode(query))
+                                "?%s" % urlencode(query))
 
 
 @user_passes_test(user_can_view_data)

@@ -4,12 +4,11 @@ from django.forms.widgets import RadioSelect
 from crits.campaigns.campaign import Campaign
 from crits.core import form_consts
 from crits.core.forms import add_bucketlist_to_form, add_ticket_to_form, SourceInForm
-from crits.core.handlers import get_source_names, get_item_names
+from crits.core.handlers import get_item_names
 from crits.backdoors.handlers import get_backdoor_names
-from crits.core.user_tools import get_user_organization
 
 from crits.vocabulary.relationships import RelationshipTypes
-from crits.vocabulary.acls import Common, SampleACL
+from crits.vocabulary.acls import Common
 
 relationship_choices = [(c, c) for c in RelationshipTypes.values(sort=True)]
 
@@ -142,20 +141,20 @@ class UploadFileForm(SourceInForm):
 
             if not filedata:
                 self._errors.setdefault('filedata', ErrorList())
-                self._errors['filedata'].append(u'This field is required.')
+                self._errors['filedata'].append('This field is required.')
             if not file_format:
                 self._errors.setdefault('file_format', ErrorList())
-                self._errors['file_format'].append(u'This field is required.')
+                self._errors['file_format'].append('This field is required.')
         else: #Metadata Upload
             filename = cleaned_data.get('filename')
             md5 = cleaned_data.get('md5')
 
             if not filename:
                 self._errors.setdefault('filename', ErrorList())
-                self._errors['filename'].append(u'This field is required.')
+                self._errors['filename'].append('This field is required.')
             if not md5:
                 self._errors.setdefault('md5', ErrorList())
-                self._errors['md5'].append(u'This field is required.')
+                self._errors['md5'].append('This field is required.')
 
         campaign = cleaned_data.get('campaign')
 
@@ -164,7 +163,7 @@ class UploadFileForm(SourceInForm):
 
             if not confidence or confidence == '':
                 self._errors.setdefault('confidence', ErrorList())
-                self._errors['confidence'].append(u'This field is required if campaign is specified.')
+                self._errors['confidence'].append('This field is required if campaign is specified.')
 
         inherit_campaigns = cleaned_data.get('inherit_campaigns')
         inherit_sources = cleaned_data.get('inherit_sources')
@@ -174,11 +173,11 @@ class UploadFileForm(SourceInForm):
             if not (related_md5 or related_id):
                 if inherit_campaigns:
                     self._errors.setdefault('inherit_campaigns', ErrorList())
-                    self._errors['inherit_campaigns'].append(u'Nothing to inherit from.')
+                    self._errors['inherit_campaigns'].append('Nothing to inherit from.')
                 if inherit_sources:
                     self._errors.setdefault('inherit_sources', ErrorList())
-                    self._errors['inherit_sources'].append(u'Nothing to inherit from.')
+                    self._errors['inherit_sources'].append('Nothing to inherit from.')
                 self._errors.setdefault('related_md5', ErrorList())
-                self._errors['related_md5'].append(u'Need a Related MD5 from which to inherit.')
+                self._errors['related_md5'].append('Need a Related MD5 from which to inherit.')
 
         return cleaned_data

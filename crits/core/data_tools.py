@@ -1,11 +1,13 @@
-import tempfile, shutil
+import tempfile
+import shutil
 import os
 import re
 import subprocess
 import time
 import datetime
 import csv
-import json, yaml
+import json
+import yaml
 import string
 
 from bson.objectid import ObjectId
@@ -36,8 +38,8 @@ def get_file_fs(sample_md5):
                    'rb')
         data = fin.read()
         fin.close()
-    except Exception as e:
-        raise("error: %s" % e)
+    except Exception:
+        raise "error: %s"
     return data
 
 def put_file_fs(data):
@@ -51,7 +53,7 @@ def put_file_fs(data):
     :returns: str (the md5 of the file written)
     """
 
-    a = md5()
+    a = md5(usedforsecurity=False)
     a.update(data)
     sample_md5 = a.hexdigest()
     try:
@@ -61,8 +63,8 @@ def put_file_fs(data):
                     'wb')
         fout.write(data)
         fout.close()
-    except Exception as e:
-        raise("error: %s" % e)
+    except Exception:
+        raise "error: %s"
     return sample_md5
 
 def create_zip(files, pw_protect=True):
@@ -137,24 +139,24 @@ def create_zip(files, pw_protect=True):
         zipdata = ""
         if proc.returncode:     # zip spit out an error
             errmsg = "Error while creating archive\n" + proc.stdout.read()
-            raise ZipFileError, errmsg
+            raise ZipFileError(errmsg)
         elif not waitSeconds:   # Process timed out
             proc.terminate()
-            raise ZipFileError, "Error:\nProcess failed to terminate"
+            raise ZipFileError("Error:\nProcess failed to terminate")
         else:
             with open(dumpdir + "/" + zipname, "rb") as fh:
                 zipdata = fh.read()
         if not len(zipdata):
-            raise ZipFileError, "Error:\nThe zip archive contains no data"
+            raise ZipFileError("Error:\nThe zip archive contains no data")
         return zipdata
 
     except ZipFileError:
         raise
-    except Exception, ex:
+    except Exception as ex:
         errmsg = ""
         for err in ex.args:
-            errmsg = errmsg + " " + unicode(err)
-        raise ZipFileError, errmsg
+            errmsg = errmsg + " " + str(err)
+        raise ZipFileError(errmsg)
     finally:
         if os.path.isdir(dumpdir):
             shutil.rmtree(dumpdir)
@@ -174,7 +176,7 @@ def format_file(data, file_format):
     :returns: tuple of (<formatted_data>, <file_extension>)
     """
 
-    if data == None:
+    if data is None:
         return ("", "")
 
     if file_format == "base64":
@@ -208,7 +210,7 @@ def convert_datetimes_to_string(obj):
     if isinstance(obj, datetime.datetime):
         return datetime.datetime.strftime(obj, settings.PY_DATETIME_FORMAT)
     elif isinstance(obj, list) or isinstance(obj, dict):
-        for idx in (xrange(len(obj)) if isinstance(obj, list) else obj.keys()):
+        for idx in (range(len(obj)) if isinstance(obj, list) else obj.keys()):
             obj[idx] = convert_datetimes_to_string(obj[idx])
 
     return obj
@@ -223,7 +225,7 @@ def convert_string_to_bool(value):
     :returns: True, False
     """
 
-    if(value != None) and ((value == True) or (value == "True") or (value == "true")):
+    if(value is not None) and ((value == True) or (value == "True") or (value == "true")):
         return True
     else:
         return False
@@ -315,7 +317,7 @@ def format_object(obj_type, obj_id, data_format="yaml", cleanse=True,
         del data["campaign"]
 
     del data["_id"]
-    if data.has_key("modified"):
+    if "modified" in data:
         del data["modified"]
 
     if remove_buckets and 'bucket_list' in data:
@@ -330,7 +332,7 @@ def format_object(obj_type, obj_id, data_format="yaml", cleanse=True,
     data = json.dumps(convert_datetimes_to_string(data),
                       default=json_util.default)
     if data_format == "yaml":
-        data = yaml.dump(yaml.load(data), default_flow_style=False)
+        data = yaml.dump(yaml.safe_load(data), default_flow_style=False)
     elif data_format == "json":
         data = json.dumps(json.loads(data))
 
@@ -397,21 +399,25 @@ def make_stackstrings(md5=None, data=None):
     while x < len(data):
         if (data[x] == '\xc6') and ((data[x+1] == '\x45') or (data[x+1] == '\x84')):
             a = ord(data[x+3])
-            if (a <= 126 and a >= 32) or (a==9): strings += data[x+3]
+            if (a <= 126 and a >= 32) or (a==9):
+                strings += data[x+3]
             prev = x
             x += 4
         elif (data[x] == '\xc6') and (data[x+1] == '\x44'):
             a = ord(data[x+4])
-            if (a <= 126 and a >= 32) or (a==9): strings += data[x+4]
+            if (a <= 126 and a >= 32) or (a==9):
+                strings += data[x+4]
             prev = x
             x += 5
         elif (data[x] == '\xc6') and ((data[x+1] == '\x05') or (data[x+1] == '\x85')):
             a = ord(data[x+6])
-            if (a <= 126 and a >= 32) or (a==9): strings += data[x+6]
+            if (a <= 126 and a >= 32) or (a==9):
+                strings += data[x+6]
             prev = x
             x += 7
         else:
-            if ((x - prev) ==12): strings += '\n'
+            if ((x - prev) ==12):
+                strings += '\n'
             x += 1
     strings = strings.replace('\x00', '\r')
     return strings
@@ -431,8 +437,8 @@ def make_hex(md5=None, data=None):
         data = get_file(md5)
     length = 16
     hex_data = ''
-    digits = 4 if isinstance(data, unicode) else 2
-    for i in xrange(0, len(data), length):
+    digits = 4 if isinstance(data, str) else 2
+    for i in range(0, len(data), length):
         s = data[i:i+length]
         hexa = ' '.join(["%0*X" % (digits, ord(x))  for x in s])
         text = ' '.join([x if 0x20 <= ord(x) < 0x7F else '.'  for x in s])
@@ -603,8 +609,9 @@ def generate_qrcode(data, size):
     """
 
     try:
-        import qrcode, io
-    except:
+        import qrcode
+        import io
+    except Exception:
         return None
     a = io.BytesIO()
     qr = qrcode.QRCode()
@@ -625,7 +632,7 @@ def validate_md5_checksum(md5_checksum):
     """
     retVal = {'success': True, 'message': ''}
 
-    if re.match("^[a-fA-F0-9]{32}$", md5_checksum) == None:
+    if re.match("^[a-fA-F0-9]{32}$", md5_checksum) is None:
         retVal['message'] += "The MD5 digest needs to be 32 hex characters."
         retVal['success'] = False
 
@@ -639,7 +646,7 @@ def validate_sha1_checksum(sha1_checksum):
     """
     retVal = {'success': True, 'message': ''}
 
-    if re.match("^[a-fA-F0-9]{40}$", sha1_checksum) == None:
+    if re.match("^[a-fA-F0-9]{40}$", sha1_checksum) is None:
         retVal['message'] += "The SHA1 digest needs to be 40 hex characters."
         retVal['success'] = False
 
@@ -655,7 +662,7 @@ def validate_sha256_checksum(sha256_checksum):
     """
     retVal = {'success': True, 'message': ''}
 
-    if re.match("^[a-fA-F0-9]{64}$", sha256_checksum) == None:
+    if re.match("^[a-fA-F0-9]{64}$", sha256_checksum) is None:
         retVal['message'] += "The SHA256 digest needs to be 64 hex characters."
         retVal['success'] = False
 

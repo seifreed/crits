@@ -162,7 +162,7 @@ class RawData(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
 
         from hashlib import md5
         if not self.md5:
-            self.md5 = md5(data).hexdigest()
+            self.md5 = md5(data, usedforsecurity=False).hexdigest()
 
     def add_tool(self, name=None, version=None, details=None):
         """
@@ -225,7 +225,7 @@ class RawData(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
             pd = parse(line_data, fuzzy=True)
             if pd:
                 eh.line_date = pd
-        except:
+        except Exception:
             eh.line_date = datetime.datetime.now()
         self.highlights.append(eh)
 

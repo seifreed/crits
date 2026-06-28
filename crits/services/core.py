@@ -1,5 +1,5 @@
 from datetime import datetime
-from distutils.version import StrictVersion
+from packaging.version import Version
 
 try:
     from importlib import import_module
@@ -113,7 +113,7 @@ class ServiceManager(object):
             #                (service_name, service_version))
 
             try:
-                StrictVersion(service_version)
+                Version(service_version)
             except ValueError as e:
                 # Unable to parse the service version
                 msg = ("Service %s is invalid, and will not be available." %
@@ -155,7 +155,7 @@ class ServiceManager(object):
                 # config.
                 try:
                     service.parse_config(svc_obj.config.to_dict())
-                except ServiceConfigError as e:
+                except ServiceConfigError:
                     svc_obj.status = "misconfigured"
                     svc_obj.enabled = False
                     svc_obj.run_on_triage = False
@@ -283,7 +283,6 @@ class AnalysisTask(object):
             'results':              self.results,
             'object_type':          self.obj._meta['crits_type'],
             'object_id':            str(self.obj.id),
-            'results':              self.results,
         }
 
     def __str__(self):
@@ -457,7 +456,7 @@ class Service(object):
             error = "Service not yet implemented"
             logger.error(error)
             self._error(error)
-        except Exception, e:
+        except Exception as e:
             logger.exception("Error running service %s" % self.name)
             error = "Error running service: %s" % e
             self._error(error)

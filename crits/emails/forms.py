@@ -1,17 +1,12 @@
-from django.conf import settings
 from django import forms
-from django.forms.widgets import RadioSelect
 
 from crits.campaigns.campaign import Campaign
 from crits.core import form_consts
 from crits.core.forms import add_bucketlist_to_form, add_ticket_to_form, SourceInForm
-from crits.core.widgets import CalWidget
-from crits.core.user_tools import get_user_organization
 
-from crits.core.handlers import get_source_names, get_item_names
-from datetime import datetime
+from crits.core.handlers import get_item_names
 from crits.vocabulary.relationships import RelationshipTypes
-from crits.vocabulary.acls import Common, EmailACL
+from crits.vocabulary.acls import Common
 
 relationship_choices = [(c, c) for c in RelationshipTypes.values(sort=True)]
 

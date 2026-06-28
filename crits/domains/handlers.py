@@ -5,7 +5,7 @@ import datetime
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 try:
@@ -14,7 +14,7 @@ except ImportError:
     from mongoengine.errors import ValidationError
 
 from crits.core import form_consts
-from crits.core.class_mapper import class_from_id, class_from_value
+from crits.core.class_mapper import class_from_id
 from crits.core.crits_mongoengine import EmbeddedSource, EmbeddedCampaign
 from crits.core.crits_mongoengine import json_handler, create_embedded_source
 from crits.core.handsontable_tools import convert_handsontable_to_rows, parse_bulk_upload
@@ -45,7 +45,7 @@ def get_valid_root_domain(domain):
     """
 
     root = fqdn = error = ""
-    black_list = "/:@\ "
+    black_list = r"/:@\ "
     domain = domain.strip()
 
     if any(c in black_list for c in domain):
@@ -353,7 +353,7 @@ def add_new_domain(data, request, errors, rowData=None, is_validate_only=False, 
                 retVal['status'] = form_consts.Status.DUPLICATE
                 retVal['warning'] = message
         else:
-            result_cache = cache.get(form_consts.Domain.CACHED_RESULTS);
+            result_cache = cache.get(form_consts.Domain.CACHED_RESULTS)
             result_cache[domain.lower()] = True
 
     elif not errors:
@@ -484,7 +484,7 @@ def add_new_domain(data, request, errors, rowData=None, is_validate_only=False, 
                 objectsData = json.loads(objectsData)
                 current_domain = retrieve_domain(domain, cache)
                 for object_row_counter, objectData in enumerate(objectsData, 1):
-                    if current_domain != None:
+                    if current_domain is not None:
                         # if the domain exists then try to add objects to it
                         if isinstance(current_domain, Domain) == True:
                             objectDict = object_array_to_dict(objectData,
@@ -494,7 +494,7 @@ def add_new_domain(data, request, errors, rowData=None, is_validate_only=False, 
                             objectDict = object_array_to_dict(objectData,
                                                               "Domain",
                                                               "")
-                            current_domain = None;
+                            current_domain = None
                     else:
                         objectDict = object_array_to_dict(objectData,
                                                           "Domain",
@@ -586,12 +586,12 @@ def upsert_domain(domain, source, username=None, campaign=None,
     if not campaign:
         campaign = []
     # assume it's a list, but check if it's a string
-    elif isinstance(campaign, basestring):
+    elif isinstance(campaign, str):
         c = EmbeddedCampaign(name=campaign, confidence=confidence, analyst=username)
         campaign = [c]
 
     # assume it's a list, but check if it's a string
-    if isinstance(source, basestring):
+    if isinstance(source, str):
         s = EmbeddedSource()
         s.name = source
         instance = EmbeddedSource.SourceInstance()
@@ -606,7 +606,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
     root_domain = None
     cached_results = cache.get(form_consts.Domain.CACHED_RESULTS)
 
-    if cached_results != None:
+    if cached_results is not None:
         if domain != root:
             fqdn_domain = cached_results.get(domain)
             root_domain = cached_results.get(root)
@@ -626,7 +626,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
         root_domain.record_type = 'A'
         is_root_domain_new = True
 
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[root] = root_domain
     if domain != root and not fqdn_domain:
         fqdn_domain = Domain()
@@ -635,7 +635,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
         fqdn_domain.record_type = 'A'
         is_fqdn_domain_new = True
 
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[domain] = fqdn_domain
 
     # if new or found, append the new source(s)
@@ -674,9 +674,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
     if related_id:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     # save
     try:
@@ -684,7 +682,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
             root_domain.save(username=username)
         if fqdn_domain:
             fqdn_domain.save(username=username)
-    except Exception, e:
+    except Exception as e:
         return {'success': False, 'message': e}
 
     #Add relationships between fqdn, root
@@ -775,7 +773,7 @@ class etld(object):
                                   '\\.').replace('*',
                                                  '[^\\.]*').replace('!',
                                                                     '')
-        return '^(%s)\.(.*)$' % etld
+        return r'^(%s)\.(.*)$' % etld
 
     def parse(self, hostname):
         """
@@ -818,7 +816,7 @@ def parse_row_to_bound_domain_form(request, rowData, cache):
     bound_domain_form = None
 
     # TODO Add common method to convert data to string
-    domain_name = rowData.get(form_consts.Domain.DOMAIN_NAME, "").strip();
+    domain_name = rowData.get(form_consts.Domain.DOMAIN_NAME, "").strip()
     campaign = rowData.get(form_consts.Domain.CAMPAIGN, "")
     confidence = rowData.get(form_consts.Domain.CAMPAIGN_CONFIDENCE, "")
     source = rowData.get(form_consts.Domain.DOMAIN_SOURCE, "")
@@ -868,7 +866,7 @@ def parse_row_to_bound_domain_form(request, rowData, cache):
 
         bound_domain_form = cache.get("domain_ip_form")
 
-        if bound_domain_form == None:
+        if bound_domain_form is None:
             bound_domain_form = AddDomainForm(request.user, data)
             cache['domain_ip_form'] = bound_domain_form
         else:
@@ -887,13 +885,13 @@ def parse_row_to_bound_domain_form(request, rowData, cache):
 
         bound_domain_form = cache.get("domain_form")
 
-        if bound_domain_form == None:
+        if bound_domain_form is None:
             bound_domain_form = AddDomainForm(request.user, data)
             cache['domain_form'] = bound_domain_form
         else:
             bound_domain_form.data = data
 
-    if bound_domain_form != None:
+    if bound_domain_form is not None:
         bound_domain_form.full_clean()
 
     return bound_domain_form
@@ -918,8 +916,8 @@ def process_bulk_add_domain(request, formdict):
 
     cleanedRowsData = convert_handsontable_to_rows(request)
     for rowData in cleanedRowsData:
-        if rowData != None:
-            if rowData.get(form_consts.Domain.DOMAIN_NAME) != None:
+        if rowData is not None:
+            if rowData.get(form_consts.Domain.DOMAIN_NAME) is not None:
                 domain = rowData.get(form_consts.Domain.DOMAIN_NAME).strip().lower()
                 (root_domain, full_domain, error) = get_valid_root_domain(domain)
                 domain_names.append(full_domain)
@@ -927,7 +925,7 @@ def process_bulk_add_domain(request, formdict):
                 if domain != root_domain:
                     domain_names.append(root_domain)
 
-            if rowData.get(form_consts.Domain.IP_ADDRESS) != None:
+            if rowData.get(form_consts.Domain.IP_ADDRESS) is not None:
                 ip_addr = rowData.get(form_consts.Domain.IP_ADDRESS)
                 ip_type = rowData.get(form_consts.Domain.IP_TYPE)
                 (ip_addr, error) = validate_and_normalize_ip(ip_addr, ip_type)

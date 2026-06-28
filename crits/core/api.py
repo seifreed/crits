@@ -9,7 +9,7 @@ from lxml.etree import tostring
 try:
     from django.urls import resolve, get_script_prefix
 except ImportError:
-    from django.core.urlresolvers import resolve, get_script_prefix
+    from django.urls import resolve, get_script_prefix
 
 from tastypie.exceptions import BadRequest, ImmediateHttpResponse
 from tastypie.serializers import Serializer
@@ -50,7 +50,7 @@ class CRITsApiKeyAuthentication(ApiKeyAuthentication):
         try:
             from crits.core.user import CRITsUser
             user = CRITsUser.objects(username=username).first()
-        except:
+        except Exception:
             return self._unauthorized()
 
         if not user:
@@ -181,7 +181,7 @@ class CRITsSerializer(Serializer):
                             filedata = data.obj.screenshot.read()
                             if filedata:
                                 files.append([filename, filedata])
-                except:
+                except Exception:
                     pass
             try:
                 if len(files):
@@ -191,7 +191,7 @@ class CRITsSerializer(Serializer):
                     response['Content-Disposition'] = 'attachment; filename="results.zip"'
                 else:
                     response = BadRequest("No files found!")
-            except Exception, e:
+            except Exception as e:
                 response = BadRequest(str(e))
         return response
 
@@ -444,11 +444,11 @@ class CRITsAPIResource(MongoEngineResource):
                 querydict['_id'] = path[-1]
 
         do_or = False
-        for k,v in get_params.iteritems():
+        for k,v in get_params.items():
             v = v.strip()
             try:
                 v_int = int(v)
-            except:
+            except Exception:
                 # If can't be converted to an int use the string.
                 v_int = v
             if k == "c-_id" or k.find("c-_id__") == 0:
@@ -462,11 +462,11 @@ class CRITsAPIResource(MongoEngineResource):
                     except ValueError:
                         op_index = None
 
-                    if op_index == None:
+                    if op_index is None:
                         querydict[field] = ObjectId(v)
                     elif op in ['$in', '$nin']:
                         querydict[field] = {op: [ObjectId(x) for x in v.split(',')]}
-                except:
+                except Exception:
                     pass
             elif k.startswith("c-"):
                 field = k[2:]
@@ -484,7 +484,7 @@ class CRITsAPIResource(MongoEngineResource):
                         if field in ('created', 'modified'):
                             try:
                                 val = parse(val, fuzzy=True)
-                            except:
+                            except Exception:
                                 pass
                         if op in ('$in', '$nin'):
                             if field == 'source.name':
@@ -507,13 +507,13 @@ class CRITsAPIResource(MongoEngineResource):
                                 for i in val:
                                     try:
                                         v_f.append(int(i))
-                                    except:
+                                    except Exception:
                                         pass
                                 val = v_f
                             else:
                                 try:
                                     val = int(val)
-                                except:
+                                except Exception:
                                     val = None
                         if val or val == 0:
                             if isinstance(val, str):
@@ -527,7 +527,7 @@ class CRITsAPIResource(MongoEngineResource):
                 elif field in ('created', 'modified'):
                     try:
                         querydict[field] = parse(v, fuzzy=True)
-                    except:
+                    except Exception:
                         querydict[field] = v
                 elif field == 'source.name':
                     v = remove_quotes(v)
@@ -542,7 +542,7 @@ class CRITsAPIResource(MongoEngineResource):
                 do_or = True
         if do_or:
             tmp = {}
-            tmp['$or'] = [{x:y} for x,y in querydict.iteritems()]
+            tmp['$or'] = [{x:y} for x,y in querydict.items()]
             querydict = tmp
         if no_sources and sources:
             querydict['source.name'] = {'$in': source_list}
@@ -551,7 +551,7 @@ class CRITsAPIResource(MongoEngineResource):
             querydict_tlp_filter = querydict
 
         if only or exclude:
-            required = [k for k,f in klass._fields.iteritems() if f.required]
+            required = [k for k,f in klass._fields.items() if f.required]
         if only:
             fields = only.split(',')
             if exclude:
@@ -736,7 +736,7 @@ class CRITsAPIResource(MongoEngineResource):
                     content['message'] = message
                 else:
                     content['message'] = "success!"
-            except Exception, e:
+            except Exception as e:
                 content['return_code'] = 1
                 content['message'] = str(e)
         else:

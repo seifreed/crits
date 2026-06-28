@@ -1,7 +1,7 @@
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from tastypie import authorization
 from tastypie.authentication import MultiAuthentication
 
@@ -113,9 +113,9 @@ class DomainResource(CRITsAPIResource):
             errors = False
             retVal = {'success':False,
                       'message':'User does not have permission to create Object.'}
-        if not 'message' in retVal:
+        if 'message' not in retVal:
             retVal['message'] = ""
-        elif not isinstance(retVal['message'], basestring):
+        elif not isinstance(retVal['message'], str):
             retVal['message'] = str(retVal['message'])
         if errors:
             for e in errors:

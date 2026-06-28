@@ -12,7 +12,7 @@ from mongoengine import Q
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from crits.campaigns.campaign import Campaign
 from crits.indicators.indicator import Indicator
 from crits.emails.email import Email
@@ -20,13 +20,11 @@ from crits.samples.sample import Sample
 from django.http import HttpResponse
 import json
 from django.utils.html import escape as html_escape
-import cgi
+import html
 import datetime
-from django.http import HttpRequest
 from crits.dashboards.utilities import getHREFLink, get_obj_name_from_title, get_obj_type_from_string
 
 from crits.vocabulary.acls import EmailACL, SampleACL, IndicatorACL, CampaignACL
-import HTMLParser
 
 def get_dashboard(user,dashId=None):
     """
@@ -45,7 +43,7 @@ def get_dashboard(user,dashId=None):
     elif user.defaultDashboard:
         try:
             dashboard = Dashboard.objects(id=user.defaultDashboard).first()
-        except:
+        except Exception:
             user.defaultDashboard = None
             user.save()
     if not dashboard:
@@ -150,7 +148,7 @@ def constructSavedTable(table, records):
     colNames = []
     for column in table.tableColumns:
         col = {}
-        for k,v in column.iteritems():
+        for k,v in column.items():
             if k == "sizeCalculated" or k == "sizeCorrected" or k == 'min':
                 continue
             elif k == "field":
@@ -252,13 +250,13 @@ def parseDocObjectsToStrings(records, obj_type):
                 doc[key] = len(value)
             elif key == "thumb":
                 doc['url'] = reverse("crits-screenshots-views-render_screenshot",
-                                      args=(unicode(doc["_id"]),))
+                                      args=(str(doc["_id"]),))
             elif key=="results" and obj_type == "AnalysisResult":
                 doc[key] = len(value)
             elif isinstance(value, list):
                 if value:
                     for item in value:
-                        if not isinstance(item, basestring):
+                        if not isinstance(item, str):
                             break
                     else:
                         doc[key] = ",".join(value)
@@ -266,7 +264,7 @@ def parseDocObjectsToStrings(records, obj_type):
                     doc[key] = ""
             doc[key] = html_escape(doc[key])
             value = doc[key].strip()
-            if isinstance(value, unicode) or isinstance(value, str):
+            if isinstance(value, str) or isinstance(value, str):
                 val = ' '.join(value.split())
                 val = val.replace('"',"'")
                 doc[key] = val
@@ -282,7 +280,7 @@ def save_data(userId, columns, tableName, searchTerm="", objType="", sortBy=None
     """
     try:
         if searchTerm:
-            searchTerm = HTMLParser.HTMLParser().unescape(searchTerm)
+            searchTerm = html.unescape(searchTerm)
         #if user is editing a table
         if tableId :
             newSavedSearch = SavedSearch.objects(id=tableId).first()
@@ -332,14 +330,14 @@ def save_data(userId, columns, tableName, searchTerm="", objType="", sortBy=None
         elif not newSavedSearch.col:
             newSavedSearch.col = 1
         if maxRows:
-            newSavedSearch.maxRows = maxRows;
+            newSavedSearch.maxRows = maxRows
         newSavedSearch.save()
         #if the old dashboard is empty, delete it
         if oldDashId:
             deleteDashboardIfEmpty(oldDashId)
     except Exception as e:
-        print "ERROR: "
-        print e
+        print("ERROR: ")
+        print(e)
         return {'success': False,
                 'message': "An unexpected error occurred while saving table. Please refresh and try again"}
     return {'success': True,'message': tableName+" Saved Successfully!"}
@@ -392,7 +390,7 @@ def clear_dashboard(dashId):
             else:
                 search.update(unset__col=1,unset__row=1,unset__sizex=1)
     except Exception as e:
-        print e
+        print(e)
         return {'success': False,
                 'message': "An unexpected error occurred while resetting dash. Please refresh and try again"}
     return {'success': True,
@@ -423,7 +421,7 @@ def delete_table(userId, id):
             savedSearch.delete()
             deleteDashboardIfEmpty(dashId)
     except Exception as e:
-        print e
+        print(e)
         return {'success': False,
                 'message': "Search could not be found. Please refresh and try again."}
     return {'success': True,'message': message, 'wasDeleted': doDelete}
@@ -481,7 +479,7 @@ def get_table_data(request=None,obj=None,user=None,searchTerm="",
         return {'Result': "ERROR", 'Message': response['msg']}
     response['crits_type'] = obj_type
     # Escape term for rendering in the UI.
-    response['term'] = cgi.escape(term)
+    response['term'] = html.escape(term)
     response['data'] = response['data'].to_dict(excludes, includes)
     response['Records'] = parseDocObjectsToStrings(response.pop('data'), obj)
     response['TotalRecordCount'] = response.pop('count')
@@ -530,7 +528,7 @@ def generate_search_for_saved_table(user, id=None,request=None):
             response['Result'] = "ERROR"
             response['Message'] = "Error finding table, please try again later."
             return response
-    except:
+    except Exception:
         savedSearch = SavedSearch()
         savedSearch.isDefaultOnDashboard = True
         savedSearch.name = id.replace("_", " ")
@@ -648,7 +646,7 @@ def setDefaultDashboard(user, dashId):
         user.defaultDashboard = dashId
         user.save()
         return name
-    except:
+    except Exception:
         return False
 
 def cloneDashboard(userId, dashboard, cloneSearches=False, skip=None):
@@ -695,7 +693,7 @@ def getDashboardsForUser(user):
             parents.append(dash.parent)
     #remove any parent from the list to prevent duplicate dashboards
     for dash in dashboards:
-        if not dash.id in parents:
+        if dash.id not in parents:
             userDashboards.append(dash)
     return userDashboards
 
@@ -716,7 +714,7 @@ def setPublic(id, makePublic):
         else:#if making public, remove parent
             Dashboard.objects(id=id).update_one(unset__parent=1)
     except Exception as e:
-        print e
+        print(e)
         return "An error occured while updating table. Please try again later."
     return True
 
@@ -743,7 +741,7 @@ def deleteDashboard(id):
         SavedSearch.objects(dashboard=id).delete_one()
         Dashboard.objects(id=id).delete_one()
     except Exception as e:
-        print e
+        print(e)
         return False
     return name
 
@@ -766,7 +764,7 @@ def changeTheme(id, theme):
     try:
         Dashboard.objects(id=id).update_one(set__theme=theme)
     except Exception as e:
-        print e
+        print(e)
         return False
     return "Dashboard updated successfully."
 

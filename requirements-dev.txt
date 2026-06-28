@@ -1,0 +1,6 @@
+# Quality-gate tooling (see CLAUDE.md). All must pass with zero errors/warnings.
+black>=25.1
+ruff>=0.9
+mypy>=1.15
+bandit>=1.8
+pip-audit>=2.9

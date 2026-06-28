@@ -32,5 +32,5 @@ def migrate_analysis_results(self):
             ar.save()
     try:
         del self.unsupported_attrs['analysis']
-    except:
+    except Exception:
         pass

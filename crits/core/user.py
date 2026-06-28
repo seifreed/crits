@@ -31,8 +31,8 @@
 import datetime
 import hmac
 import logging
-import random
 import re
+import secrets
 import string
 import time
 import uuid
@@ -476,7 +476,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
 
         e = EmbeddedPasswordReset()
         char_set = string.ascii_uppercase + string.digits
-        e.reset_code = ''.join(random.sample(char_set*6,6))
+        e.reset_code = ''.join(secrets.choice(char_set) for _ in range(6))
         e.date = datetime.datetime.now()
         self.password_reset = e
         self.save(username=analyst)

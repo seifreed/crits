@@ -1,11 +1,11 @@
 import hmac
 import base64
+import os
 import struct
 import hashlib
 import time
 from django.utils.crypto import pbkdf2
-from Crypto import Random
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 # from http://stackoverflow.com/questions/8529265/google-authenticator-implementation-in-python
 def get_hotp_token(secret, intervals_no):
@@ -21,7 +21,7 @@ def get_hotp_token(secret, intervals_no):
 
     msg = struct.pack(">Q", intervals_no)
     h = hmac.new(secret, msg, hashlib.sha1).digest()
-    o = ord(h[19]) & 15
+    o = h[19] & 15
     h = (struct.unpack(">I", h[o:o+4])[0] & 0x7fffffff) % 1000000
     return h
 
@@ -55,8 +55,8 @@ def decrypt_secret(secret, password, username):
 
     secret = base64.b32decode(secret)
     pw_hash = pbkdf2(password.encode('ascii'), username.encode('ascii'), 10000)
-    cipher = AES.new(pw_hash, AES.MODE_ECB, '')
-    tmp = cipher.decrypt(secret)
+    decryptor = Cipher(algorithms.AES(pw_hash), modes.ECB()).decryptor()
+    tmp = decryptor.update(secret) + decryptor.finalize()
     return tmp[:10]
 
 def encrypt_secret(secret, password, username):
@@ -80,9 +80,8 @@ def encrypt_secret(secret, password, username):
 
     secret += gen_random(6)
     pw_hash = pbkdf2(password.encode('ascii'), username.encode('ascii'), 10000)
-    cipher = AES.new(pw_hash, AES.MODE_ECB, '')
-    tmp = cipher.encrypt(secret)
-    return tmp
+    encryptor = Cipher(algorithms.AES(pw_hash), modes.ECB()).encryptor()
+    return encryptor.update(secret) + encryptor.finalize()
 
 def gen_random(secret_len=10):
     """
@@ -95,8 +94,7 @@ def gen_random(secret_len=10):
     :type secret_len: int
     """
 
-    rndfile = Random.new()
-    return rndfile.read(secret_len)
+    return os.urandom(secret_len)
 
 def gen_user_secret(password, username):
     """

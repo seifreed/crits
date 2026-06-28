@@ -729,7 +729,7 @@ def handle_yaml(data, sourcename, reference, method, tlp, user, email_id=None,
           }
 
     try:
-        converted = yaml.load(data)
+        converted = yaml.safe_load(data)
         if isinstance(converted, dict) == False:
             raise
     except Exception as e:
@@ -1152,7 +1152,7 @@ def handle_eml(data, sourcename, reference, method, tlp, user, campaign=None,
         filename = part.get_filename()
         attach = part.get_payload(decode=True)
         if attach is not None and len(attach):
-            md5 = hashlib.md5(attach).hexdigest()
+            md5 = hashlib.md5(attach, usedforsecurity=False).hexdigest()
             mtype = magic.from_buffer(attach)
 
             if filename is not None:

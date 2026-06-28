@@ -53,7 +53,7 @@ def put_file_fs(data):
     :returns: str (the md5 of the file written)
     """
 
-    a = md5()
+    a = md5(usedforsecurity=False)
     a.update(data)
     sample_md5 = a.hexdigest()
     try:
@@ -332,7 +332,7 @@ def format_object(obj_type, obj_id, data_format="yaml", cleanse=True,
     data = json.dumps(convert_datetimes_to_string(data),
                       default=json_util.default)
     if data_format == "yaml":
-        data = yaml.dump(yaml.load(data), default_flow_style=False)
+        data = yaml.dump(yaml.safe_load(data), default_flow_style=False)
     elif data_format == "json":
         data = json.dumps(json.loads(data))
 

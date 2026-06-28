@@ -351,7 +351,7 @@ def handle_signature_file(data, source_name, user=None,
         return status
 
     # generate md5 and timestamp
-    md5 = hashlib.md5(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate signature

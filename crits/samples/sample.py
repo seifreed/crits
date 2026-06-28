@@ -125,8 +125,8 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         # MongoEngine will still mark the field as modified even if you set it
         # to the same value.
         if not self.md5:
-            self.md5 = md5(data).hexdigest()
-        self.sha1 = sha1(data).hexdigest()
+            self.md5 = md5(data, usedforsecurity=False).hexdigest()
+        self.sha1 = sha1(data, usedforsecurity=False).hexdigest()
         self.sha256 = sha256(data).hexdigest()
         try:
             self.ssdeep = pydeep.hash_bytes(data)

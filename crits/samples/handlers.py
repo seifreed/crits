@@ -572,7 +572,7 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
     zipdir = ""
     extractdir = ""
     try:
-        zip_md5 = md5(data).hexdigest()
+        zip_md5 = md5(data, usedforsecurity=False).hexdigest()
 
         # 7z doesn't decompress archives via stdin, therefore
         # we need to write it out as a file first
@@ -828,7 +828,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         return retVal
 
     if data:
-        md5_digest = md5(data).hexdigest()
+        md5_digest = md5(data, usedforsecurity=False).hexdigest()
         validate_md5_result = validate_md5_checksum(md5_digest)
         retVal['message'] += validate_md5_result.get('message')
         retVal['success'] = validate_md5_result.get('success')
@@ -1143,7 +1143,7 @@ def handle_uploaded_file(f, source, source_method='', source_reference='', sourc
         filename = getattr(f, 'name', None)
         if not filename:
             try:
-                filename = md5(data).hexdigest()
+                filename = md5(data, usedforsecurity=False).hexdigest()
             except:
                 filename = "unknown"
 

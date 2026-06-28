@@ -20,7 +20,7 @@ packaging>=24
 chardet>=5,<6
 olefile>=0.47
 qrcode>=8,<9
-pycryptodome>=3.21         # provides the Crypto.* namespace (TOTP secret crypto)
+cryptography>=43           # AES for TOTP secret encryption
 
 # --- REST API (django-tastypie) ---
 # Enabled only when settings.ENABLE_API is True. tastypie-mongoengine is

@@ -261,7 +261,7 @@ def add_object(type_, id_, object_type, source, method, reference, tlp, user,
         if file_:
             data = file_.read()
             filename = file_.name
-            md5sum = md5(data).hexdigest()
+            md5sum = md5(data, usedforsecurity=False).hexdigest()
             value = md5sum
             reference = filename
         ret = tlo.add_object(object_type, value,

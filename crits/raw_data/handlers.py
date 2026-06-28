@@ -376,7 +376,7 @@ def handle_raw_data_file(data, source_name, user=None,
     if isinstance(data, str):
         data=data.encode('utf-8')
     # generate md5 and timestamp
-    md5 = hashlib.md5(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate raw_data

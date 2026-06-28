@@ -294,7 +294,7 @@ def handle_cert_file(filename, data, source_name, user=None,
             return status
 
     # generate md5 and timestamp
-    md5 = hashlib.md5(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate Certificate

@@ -299,7 +299,7 @@ def handle_pcap_file(filename, data, source_name, user=None,
 
 
     # generate md5 and timestamp
-    md5 = hashlib.md5(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate PCAP

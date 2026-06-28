@@ -170,7 +170,7 @@ def add_screenshot(description, tags, source, method, reference, tlp, analyst,
                 obj.save()
                 final_screenshots.append(s)
     else:
-        md5 = hashlib.md5(screenshot.read()).hexdigest()
+        md5 = hashlib.md5(screenshot.read(), usedforsecurity=False).hexdigest()
         check = Screenshot.objects(md5=md5).first()
         if check:
             s = check

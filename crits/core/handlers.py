@@ -1343,8 +1343,13 @@ def collect_objects(obj_type, obj_id, depth_limit, total_limit, rel_limit,
             if not new_class:
                 continue
 
-            new_obj = new_class.objects(id=str(r.object_id),
-                                        source__name__in=sources).first()
+            try:
+                new_obj = new_class.objects(id=str(r.object_id),
+                                            source__name__in=sources).first()
+            except Exception:
+                # A malformed object_id raises InvalidQueryError; skip this
+                # relationship rather than aborting the whole collection.
+                continue
             if not new_obj:
                 continue
 

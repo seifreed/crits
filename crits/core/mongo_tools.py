@@ -308,8 +308,11 @@ def mongo_save(collection, to_save, username=None, safe=True, *args, **kwargs):
 
     col = mongo_connector(collection)
     try:
-        r = col.save(to_save, check_keys=True, manipulate=True, safe=safe,
-                     *args, **kwargs)
+        # pymongo 4 removed Collection.save(); emulate upsert-by-_id.
+        if '_id' in to_save:
+            r = col.replace_one({'_id': to_save['_id']}, to_save, upsert=True)
+        else:
+            r = col.insert_one(to_save)
         return {'success':True, 'message':[r]}
     except Exception as e:
        return {'success':False, 'message':[format_error(e)]}

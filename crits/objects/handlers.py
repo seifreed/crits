@@ -374,7 +374,7 @@ def delete_object_file(value):
     else:
         col = settings.COL_OBJECTS
         grid = mongo_connector("%s.files" % col)
-        grid.remove({'md5': value})
+        grid.delete_many({'md5': value})
     return
 
 def delete_object(type_, oid, object_type, value, analyst, get_objects=True):

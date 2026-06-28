@@ -373,10 +373,11 @@ def handle_raw_data_file(data, source_name, user=None,
         }
         return status
 
-    if isinstance(data, str):
-        data=data.encode('utf-8')
+    # RawData.data is a text field; normalize to str and hash its utf-8 bytes.
+    if isinstance(data, bytes):
+        data = data.decode('utf-8', errors='replace')
     # generate md5 and timestamp
-    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
+    md5 = hashlib.md5(data.encode('utf-8'), usedforsecurity=False).hexdigest()
     timestamp = datetime.datetime.now()
 
     # generate raw_data

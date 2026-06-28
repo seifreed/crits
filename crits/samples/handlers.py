@@ -625,7 +625,14 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
                 for filename in files:
                     filepath = extractdir + "/" + filename
                     filehandle = open(filepath, 'rb')
-                    new_sample = handle_file(filename, filehandle.read(),
+                    file_data = filehandle.read()
+                    filehandle.close()
+                    # Skip 0-byte entries: there's no sample to create, and
+                    # handle_file would return an error dict that pollutes the
+                    # returned list of MD5s.
+                    if not file_data:
+                        continue
+                    new_sample = handle_file(filename, file_data,
                                              source,
                                              source_method=source_method,
                                              source_reference=source_reference,
@@ -648,7 +655,6 @@ def unzip_file(filename, user=None, password=None, data=None, source=None,
                                              description=description)
                     if new_sample:
                         samples.append(new_sample)
-                    filehandle.close()
     except ZipFileError:  # Pass this error up the chain
         raise
     except Exception as ex:

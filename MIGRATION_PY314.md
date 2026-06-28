@@ -21,8 +21,11 @@ docker compose exec crits python manage.py users \
 
 Then log in at http://localhost:8081/login/.
 
-Verified working: login → session → `/dashboards/` and every TLO list page
-(`/samples/list/`, `/indicators/list/`, `/actors/list/`, …) return HTTP 200.
+Verified working:
+- login → session → `/dashboards/` and every TLO list page
+  (`/samples/list/`, `/indicators/list/`, `/actors/list/`, …) return HTTP 200.
+- Write path: after granting a source to the UberAdmin role,
+  `add_new_domain()` persists a `Domain` in MongoDB (read **and** write work).
 
 ## What changed
 
@@ -47,12 +50,20 @@ Verified working: login → session → `/dashboards/` and every TLO list page
 
 - `pip-audit` (requirements.txt): **clean, 0 vulnerabilities**.
 - SyntaxWarnings: **0**.
-- `ruff`: behavior-safe fixes applied; ~430 stylistic findings remain on legacy
-  code (bare-except, `== None`, unused imports). Not yet zero.
-- `bandit`: ~18 high (mostly `hashlib.md5` for file identification — needs
-  `usedforsecurity=False`), plus medium/low. Not yet addressed.
+- `bandit` **HIGH: 0**. Fixed: `md5/sha1` → `usedforsecurity=False`,
+  `yaml.load` → `safe_load`, password/reset-code RNG → `secrets`, TOTP crypto
+  migrated pycryptodome → `cryptography`. Medium/low remain (subprocess for
+  7z/zip, `/tmp`, "password" field-name strings — mostly false positives).
+- `ruff`: behavior-safe fixes applied (`== None`→`is None`, useless semicolons,
+  `not x in`→`x not in`, multi-import splits). ~350 stylistic findings remain
+  (bare-except, `== True`, unused imports, `F821` undefined-name in rarely-hit
+  branches — pre-existing latent bugs). Not yet zero.
 - `mypy`: not yet run to completion on the full tree.
 
-The remaining `ruff`/`bandit`/`mypy` cleanup is a sizable follow-up across the
-~58k-line legacy codebase and is intentionally staged after getting the app
-running and verified.
+Test suite (`manage.py test crits`): runs, system check clean. Remaining
+failures are test-fixture RBAC/source setup and py3 bytes-vs-str assertions in
+the test code, not app-runtime regressions (write path verified manually).
+
+The remaining `ruff`/`bandit`-low/`mypy` cleanup and test-fixture updates are a
+sizable follow-up across the ~58k-line legacy codebase, intentionally staged
+after getting the app running and verified.

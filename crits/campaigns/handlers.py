@@ -336,7 +336,7 @@ def add_campaign(name, description, aliases, analyst,
         campaign.add_ticket(ticket, analyst)
 
     # Adjust aliases.
-    if isinstance(aliases, basestring):
+    if isinstance(aliases, str):
         alias_list = aliases.split(',')
         final_aliases = [a.strip() for a in alias_list]
     elif isinstance(aliases, list):

@@ -919,7 +919,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
                 sample.add_source(s)
 
     # generate new source information and add to sample
-    if isinstance(source, basestring) and len(source) > 0:
+    if isinstance(source, str) and len(source) > 0:
         if user.check_source_write(source):
             s = create_embedded_source(source,
                                        method=source_method,
@@ -954,7 +954,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         if campaign != None:
             campaign_array = campaign
 
-            if isinstance(campaign, basestring):
+            if isinstance(campaign, str):
                 campaign_array = [EmbeddedCampaign(name=campaign, confidence=confidence, analyst=user.username)]
 
             for campaign_item in campaign_array:

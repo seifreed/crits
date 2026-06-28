@@ -366,7 +366,7 @@ def handle_signature_file(data, source_name, user=None,
     signature.data_type_max_version = data_type_max_version
 
     if data_type_dependency:
-        if type(data_type_dependency) == unicode:
+        if type(data_type_dependency) == str:
             data_type_dependency = data_type_dependency.split(",")
 
         for item in data_type_dependency:
@@ -377,7 +377,7 @@ def handle_signature_file(data, source_name, user=None,
         data_type_dependency = []
 
     # generate new source information and add to sample
-    if isinstance(source_name, basestring) and len(source_name) > 0:
+    if isinstance(source_name, str) and len(source_name) > 0:
         if user.check_source_write(source_name):
             source = create_embedded_source(source_name,
                                        date=timestamp,

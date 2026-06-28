@@ -153,7 +153,7 @@ def create_zip(files, pw_protect=True):
     except Exception as ex:
         errmsg = ""
         for err in ex.args:
-            errmsg = errmsg + " " + unicode(err)
+            errmsg = errmsg + " " + str(err)
         raise ZipFileError(errmsg)
     finally:
         if os.path.isdir(dumpdir):
@@ -208,7 +208,7 @@ def convert_datetimes_to_string(obj):
     if isinstance(obj, datetime.datetime):
         return datetime.datetime.strftime(obj, settings.PY_DATETIME_FORMAT)
     elif isinstance(obj, list) or isinstance(obj, dict):
-        for idx in (xrange(len(obj)) if isinstance(obj, list) else obj.keys()):
+        for idx in (range(len(obj)) if isinstance(obj, list) else obj.keys()):
             obj[idx] = convert_datetimes_to_string(obj[idx])
 
     return obj
@@ -431,8 +431,8 @@ def make_hex(md5=None, data=None):
         data = get_file(md5)
     length = 16
     hex_data = ''
-    digits = 4 if isinstance(data, unicode) else 2
-    for i in xrange(0, len(data), length):
+    digits = 4 if isinstance(data, str) else 2
+    for i in range(0, len(data), length):
         s = data[i:i+length]
         hexa = ' '.join(["%0*X" % (digits, ord(x))  for x in s])
         text = ' '.join([x if 0x20 <= ord(x) < 0x7F else '.'  for x in s])

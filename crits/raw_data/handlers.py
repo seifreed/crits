@@ -373,7 +373,7 @@ def handle_raw_data_file(data, source_name, user=None,
         }
         return status
 
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         data=data.encode('utf-8')
     # generate md5 and timestamp
     md5 = hashlib.md5(data).hexdigest()
@@ -397,7 +397,7 @@ def handle_raw_data_file(data, source_name, user=None,
         is_rawdata_new = True
 
     # generate new source information and add to sample
-    if isinstance(source_name, basestring) and len(source_name) > 0:
+    if isinstance(source_name, str) and len(source_name) > 0:
         if user.check_source_write(source_name):
             source = create_embedded_source(source_name,
                                        method=method,

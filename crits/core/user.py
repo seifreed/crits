@@ -386,20 +386,12 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
 
     # the rest of this taken from the MongoEngine User class.
 
-    def __unicode__(self):
-        """
-        This is so request.user returns the username like Django expects,
-        not the whole object.
-        """
-
-        return self.username
-
     def get_full_name(self):
         """
         Returns the users first and last names, separated by a space.
         """
 
-        full_name = u'%s %s' % (self.first_name or '', self.last_name or '')
+        full_name = '%s %s' % (self.first_name or '', self.last_name or '')
         return full_name.strip()
 
     def is_anonymous(self):

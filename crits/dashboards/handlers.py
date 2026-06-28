@@ -252,13 +252,13 @@ def parseDocObjectsToStrings(records, obj_type):
                 doc[key] = len(value)
             elif key == "thumb":
                 doc['url'] = reverse("crits-screenshots-views-render_screenshot",
-                                      args=(unicode(doc["_id"]),))
+                                      args=(str(doc["_id"]),))
             elif key=="results" and obj_type == "AnalysisResult":
                 doc[key] = len(value)
             elif isinstance(value, list):
                 if value:
                     for item in value:
-                        if not isinstance(item, basestring):
+                        if not isinstance(item, str):
                             break
                     else:
                         doc[key] = ",".join(value)
@@ -266,7 +266,7 @@ def parseDocObjectsToStrings(records, obj_type):
                     doc[key] = ""
             doc[key] = html_escape(doc[key])
             value = doc[key].strip()
-            if isinstance(value, unicode) or isinstance(value, str):
+            if isinstance(value, str) or isinstance(value, str):
                 val = ' '.join(value.split())
                 val = val.replace('"',"'")
                 doc[key] = val

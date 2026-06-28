@@ -16,7 +16,7 @@ class vocab(object):
         l = []
         for k,v in cls.__dict__.iteritems():
             if ('__' not in k and
-                isinstance(v, basestring) and
+                isinstance(v, str) and
                 '__' not in v and
                 'vocabulary' not in v):
                 l.append(v)

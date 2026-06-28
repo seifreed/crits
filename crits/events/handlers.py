@@ -337,7 +337,7 @@ def add_new_event(title, description, event_type, source_name, source_method,
         valid_campaigns[c['name'].lower()] = c['name']
 
     if campaign:
-        if isinstance(campaign, basestring) and len(campaign) > 0:
+        if isinstance(campaign, str) and len(campaign) > 0:
             if campaign.lower() not in valid_campaigns:
                 result = {'success':False, 'message':'{} is not a valid campaign.'.format(campaign)}
             else:

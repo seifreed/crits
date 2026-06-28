@@ -1423,12 +1423,12 @@ def datetime_parser(value):
     """
     if isinstance(value,datetime.datetime):
         return value
-    elif isinstance(value,basestring) and value:
+    elif isinstance(value,str) and value:
         return datetime.datetime.strptime(value, settings.PY_DATETIME_FORMAT)
     elif isinstance(value,dict):
         for k,v in value.items():
             # Make sure that date is in the key, value is a string, and val is not ''
-            if "date" in k and isinstance(v,basestring) and v:
+            if "date" in k and isinstance(v,str) and v:
                 value[k] = datetime.datetime.strptime(v, settings.PY_DATETIME_FORMAT)
         return value
     else:
@@ -1443,7 +1443,7 @@ def format_error(e):
     :returns: str
     """
 
-    return e.__class__.__name__+": "+unicode(e)
+    return e.__class__.__name__+": "+str(e)
 
 def toggle_item_state(type_, oid, analyst):
     """
@@ -1999,9 +1999,9 @@ def data_query(col_obj, user, limit=25, skip=0, sort=[], query={},
     results['msg'] = ""
     results['crits_type'] = col_obj._meta['crits_type']
     sourcefilt = user_sources(user)
-    if isinstance(sort,basestring):
+    if isinstance(sort,str):
         sort = sort.split(',')
-    if isinstance(projection,basestring):
+    if isinstance(projection,str):
         projection = projection.split(',')
     if not projection:
         projection = []
@@ -2167,7 +2167,7 @@ def csv_export(request, col_obj, query={}):
     result = csv_query(col_obj, request.user, fields=opts['fields'],
                         sort=opts['sort'], query=query, limit=opts['limit'],
                         skip=opts['skip'])
-    if isinstance(result, basestring):
+    if isinstance(result, str):
         response = HttpResponse(result, content_type="text/csv")
         response['Content-Disposition'] = "attachment;filename=crits-%s-export.csv" % col_obj._meta['crits_type']
     else:
@@ -2407,7 +2407,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
                 elif isinstance(value, list):
                     if value:
                         for item in value:
-                            if not isinstance(item, basestring):
+                            if not isinstance(item, str):
                                 break
                         else:
                             doc[key] = ",".join(value)
@@ -2438,7 +2438,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
             elif not url:
                 doc['url'] = None
             else:
-                doc['url'] = reverse(url, args=(unicode(doc[urlfieldparam]),))
+                doc['url'] = reverse(url, args=(str(doc[urlfieldparam]),))
     return response
 
 def jtable_ajax_delete(obj,request):
@@ -4339,7 +4339,7 @@ def get_role_details(rid, roles, analyst):
             return template, args
         show_roles = None
     if roles:
-        if isinstance(roles, basestring):
+        if isinstance(roles, str):
             roles = roles.split(',')
             roles = [r.strip() for r in roles]
         tmp = CRITsUser()

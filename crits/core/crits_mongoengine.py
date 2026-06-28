@@ -585,7 +585,7 @@ class CritsDocument(BaseDocument):
                         try: # convert list of strings
                             data = ";".join(data)
                         except: # Convert non-string data types
-                            data = unicode(data)
+                            data = str(data)
                 row.append(data.encode('utf-8'))
             else:
                 row.append('')
@@ -1144,7 +1144,7 @@ class EmbeddedTickets(BaseDocument):
         :type date: datetime.datetime.
         """
 
-        if isinstance(tickets, basestring):
+        if isinstance(tickets, str):
             tickets = tickets.split(',')
         elif not isinstance(tickets, list):
             tickets = [tickets]
@@ -1153,7 +1153,7 @@ class EmbeddedTickets(BaseDocument):
             if isinstance(ticket, EmbeddedTicket):
                 if not self.is_ticket_exist(ticket.ticket_number): # stop dups
                     self.tickets.append(ticket)
-            elif isinstance(ticket, basestring):
+            elif isinstance(ticket, str):
                 if ticket and not self.is_ticket_exist(ticket):  # stop dups
                     et = EmbeddedTicket()
                     et.analyst = analyst
@@ -1461,7 +1461,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         :type longitude: str
         """
 
-        if isinstance(date, basestring):
+        if isinstance(date, str):
             date = parse(date, fuzzy=True)
         for location in self.locations:
             if (location.location == location_name and
@@ -1487,7 +1487,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         :type date: str
         """
 
-        if isinstance(date, basestring):
+        if isinstance(date, str):
             date = parse(date, fuzzy=True)
         for location in self.locations:
             if (location.location == location_name and
@@ -1514,7 +1514,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         # or subtraction of a bucket_list.
         if isinstance(tags, list) and len(tags) == 1 and tags[0] == '':
             parsed_tags = []
-        elif isinstance(tags, (str, unicode)):
+        elif isinstance(tags, (str, str)):
             parsed_tags = tags.split(',')
         else:
             parsed_tags = tags
@@ -1566,7 +1566,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         # or subtraction of a sector.
         if isinstance(sectors, list) and len(sectors) == 1 and sectors[0] == '':
             parsed_sectors = []
-        elif isinstance(sectors, (str, unicode)):
+        elif isinstance(sectors, (str, str)):
             parsed_sectors = sectors.split(',')
         else:
             parsed_sectors = sectors
@@ -2036,12 +2036,12 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         got_rel = True
         if not rel_item:
             got_rel = False
-            if isinstance(rel_id, basestring) and isinstance(type_, basestring):
+            if isinstance(rel_id, str) and isinstance(type_, str):
                 rel_item = class_from_id(type_, rel_id)
             else:
                 return {'success': False,
                         'message': 'Could not find object'}
-        if isinstance(new_date, basestring):
+        if isinstance(new_date, str):
             new_date = parse(new_date, fuzzy=True)
         if rel_item and rel_type and modification:
             # get reverse relationship
@@ -2474,7 +2474,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         :type name: str
         """
 
-        if isinstance(name, basestring):
+        if isinstance(name, str):
             for r in self.releasability:
                 if r.name == name and len(r.instances) == 0:
                     self.releasability.remove(r)
@@ -2603,7 +2603,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
             details_url_key = mapper['details_url_key']
 
             try:
-                return reverse(details_url, args=(unicode(self[details_url_key]),))
+                return reverse(details_url, args=(str(self[details_url_key]),))
             except Exception:
                 return None
         else:
@@ -2781,7 +2781,7 @@ def create_embedded_source(name, source_instance=None, date=None,
     if tlp not in ('white', 'green', 'amber', 'red', None):
         return None
 
-    if isinstance(name, basestring):
+    if isinstance(name, str):
         s = EmbeddedSource()
         s.name = name
         if isinstance(source_instance, EmbeddedSource.SourceInstance):

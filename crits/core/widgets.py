@@ -36,7 +36,7 @@ class ExtendedSelect(Select):
         def render_option(option_value, option_label, attrs):
             option_value = force_unicode(option_value)
             if option_value in selected_choices:
-                selected_html = u' selected="selected"'
+                selected_html = ' selected="selected"'
                 if not self.allow_multiple_selected:
                     #Only allow for a single selection.
                     selected_choices.remove(option_value)
@@ -52,7 +52,7 @@ class ExtendedSelect(Select):
                 attrs_html = " " + " ".join(attrs_html)
             else:
                 attrs_html = ""
-            return u'<option value="%s"%s%s>%s</option>' % (
+            return '<option value="%s"%s%s>%s</option>' % (
                 escape(option_value), selected_html, attrs_html,
                 conditional_escape(force_unicode(option_label)))
         # Normalize to strings.
@@ -60,14 +60,14 @@ class ExtendedSelect(Select):
         output = []
         for option_value, option_label, option_attrs in chain(self.choices, choices):
             if isinstance(option_label, (list, tuple)):
-                output.append(u'<optgroup label="%s">' % escape(force_unicode(option_value)))
+                output.append('<optgroup label="%s">' % escape(force_unicode(option_value)))
                 for option in option_label:
                     output.append(render_option(*option))
-                output.append(u'</optgroup>')
+                output.append('</optgroup>')
             else:
                 output.append(render_option(option_value, option_label,
                     option_attrs))
-        return u'\n'.join(output)
+        return '\n'.join(output)
 
 class ExtendedChoiceField(ChoiceField):
     """

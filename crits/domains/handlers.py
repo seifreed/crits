@@ -586,12 +586,12 @@ def upsert_domain(domain, source, username=None, campaign=None,
     if not campaign:
         campaign = []
     # assume it's a list, but check if it's a string
-    elif isinstance(campaign, basestring):
+    elif isinstance(campaign, str):
         c = EmbeddedCampaign(name=campaign, confidence=confidence, analyst=username)
         campaign = [c]
 
     # assume it's a list, but check if it's a string
-    if isinstance(source, basestring):
+    if isinstance(source, str):
         s = EmbeddedSource()
         s.name = source
         instance = EmbeddedSource.SourceInstance()

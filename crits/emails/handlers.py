@@ -533,7 +533,7 @@ def handle_email_fields(data, user, method, related_id=None,
     try:
         for x in ('cc', 'to'):
             y = data.get(x, None)
-            if isinstance(y, basestring):
+            if isinstance(y, str):
                 if len(y) > 0:
                     tmp_y = y.split(',')
                     y_final = [ty.strip() for ty in tmp_y if len(ty.strip()) > 0]
@@ -986,7 +986,7 @@ def handle_pasted_eml(data, sourcename, reference, method, tlp,  user,
     emldata = []
     boundary = None
     isbody = False
-    if not isinstance(data, basestring):
+    if not isinstance(data, str):
         data = data.read()
     for line in data.split("\n"):
         # We match the regex for a boundary definition
@@ -1074,15 +1074,15 @@ def handle_eml(data, sourcename, reference, method, tlp, user, campaign=None,
             mfpos = preheaders.find("MAIL FROM")
             if mfpos > -1:
                 try:
-                    mailfrom = unicode(preheaders[mfpos + 10:])
+                    mailfrom = str(preheaders[mfpos + 10:])
                 except UnicodeDecodeError:
-                    mailfrom = unicode(preheaders[mfpos + 10:], errors="replace")
+                    mailfrom = str(preheaders[mfpos + 10:], errors="replace")
             rcpos = preheaders.find("RCPT TO")
             if rcpos > -1:
                 try:
-                    rcptto = unicode(preheaders[rcpos + 9:])
+                    rcptto = str(preheaders[rcpos + 9:])
                 except UnicodeDecodeError:
-                    rcptto = unicode(preheaders[rcpos + 9:], errors="replace")
+                    rcptto = str(preheaders[rcpos + 9:], errors="replace")
         if mailfrom:
             msg_import['mailfrom'] = mailfrom
         if rcptto:
@@ -1141,9 +1141,9 @@ def handle_eml(data, sourcename, reference, method, tlp, user, campaign=None,
             content = part.get_payload(decode=True)
             if content:
                 try:
-                    message_part = unicode(content)
+                    message_part = str(content)
                 except UnicodeDecodeError:
-                    message_part = unicode(content, errors="replace")
+                    message_part = str(content, errors="replace")
 
                 msg_import["raw_body"] = msg_import["raw_body"] + \
                                          message_part + "\n"
@@ -1157,9 +1157,9 @@ def handle_eml(data, sourcename, reference, method, tlp, user, campaign=None,
 
             if filename is not None:
                 try:
-                    filename = unicode(filename)
+                    filename = str(filename)
                 except UnicodeDecodeError:
-                    filename = unicode(filename, errors="replace")
+                    filename = str(filename, errors="replace")
             else:
                 filename = md5
 
@@ -1307,10 +1307,10 @@ def dict_to_email(d, save_unsupported=True):
         else:
             d['isodate'] = date_parser(d['date'], fuzzy=True)
 
-    if 'to' in d and isinstance(d['to'], basestring) and len(d['to']) > 0:
+    if 'to' in d and isinstance(d['to'], str) and len(d['to']) > 0:
         d['to'] = [d['to']]
 
-    if 'cc' in d and isinstance(d['cc'], basestring) and len(d['cc']) > 0:
+    if 'cc' in d and isinstance(d['cc'], str) and len(d['cc']) > 0:
         d['cc'] = [d['cc']]
 
     if 'from' in d:

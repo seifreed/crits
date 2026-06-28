@@ -265,7 +265,7 @@ def new_actor_identifier_type(request):
         if not identifier_type:
             return HttpResponse(json.dumps({'success': False,
                                             'message': 'Need a name.'}),
-                                mimetype="application/json")
+                                content_type="application/json")
         if user.has_access_to(GeneralACL.ADD_NEW_ACTOR_IDENTIFIER_TYPE):
             result = create_actor_identifier_type(identifier_type, request.user)
         else:
@@ -298,7 +298,7 @@ def actor_tags_modify(request):
         if not tag_type:
             return HttpResponse(json.dumps({'success': False,
                                             'message': 'Need a tag type.'}),
-                                mimetype="application/json")
+                                content_type="application/json")
 
         # Get the appropriate permission to look up
         if tag_type=='ActorMotivation':

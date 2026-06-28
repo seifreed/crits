@@ -317,7 +317,7 @@ def remove_activity(request, indicator_id):
         date = date.replace(microsecond=date.microsecond/1000*1000)
         result = activity_remove(indicator_id, date, user)
         return HttpResponse(json.dumps(result),
-                            mimetype="application/json")
+                            content_type="application/json")
     return HttpResponse({})
 
 @user_passes_test(user_can_view_data)

@@ -207,7 +207,7 @@ def remove_ip(request):
         result = ip_remove(request.POST['key'],
                             request.user.username)
         return HttpResponse(json.dumps(result),
-                            mimetype="application/json")
+                            content_type="application/json")
 
     return render(request, 'error.html',
                               {'error':'Expected AJAX/POST'})

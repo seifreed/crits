@@ -59,7 +59,6 @@ class SignatureHandlerTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
-        self.user.sources.append(TSRC)
         self.user.save()
 
     def tearDown(self):
@@ -84,7 +83,6 @@ class SignatureViewTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
-        self.user.sources.append(TSRC)
         self.user.save()
         # Add a test signature
         title = SIGNATURE_TITLE

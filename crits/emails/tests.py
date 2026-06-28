@@ -119,7 +119,6 @@ class EmailHandlerTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
-        self.user.sources.append(TSRC)
         self.user.save()
 
     def tearDown(self):
@@ -151,7 +150,6 @@ class EmailViewTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
-        self.user.sources.append(TSRC)
         self.user.save()
         # Add a test email
         handlers.handle_eml(EML_DATA, TSRC, None, self.user, "Test")

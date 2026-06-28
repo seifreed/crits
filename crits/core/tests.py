@@ -105,6 +105,19 @@ def prep_db():
     # Add Source
     handlers.add_new_source(TSRC, TRANDUSER)
 
+    # Set up the UberAdmin role with full access to all sources (incl. TSRC)
+    # and all permissions. CRITs replaced the old per-user `sources` list with
+    # role-based ACLs, so test users get source access through this role.
+    from django.conf import settings
+    from crits.core.role import Role
+    role = Role.objects(name=settings.ADMIN_ROLE).first()
+    if not role:
+        role = Role(name=settings.ADMIN_ROLE,
+                    description="Default role with full system access.")
+    role.add_all_sources()
+    role.make_all_true()
+    role.save()
+
     # Add User
     user = CRITsUser.create_user(username=TUSER_NAME,
                                  password=TUSER_PASS,
@@ -112,6 +125,8 @@ def prep_db():
                                  )
     user.first_name = TUSER_FNAME
     user.last_name = TUSER_LNAME
+    user.roles = [settings.ADMIN_ROLE]
+    user.get_access_list(update=True)
     user.save()
 
     # Add test source object

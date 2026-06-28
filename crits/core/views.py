@@ -2494,6 +2494,7 @@ def remove_action(request, obj_type, obj_id):
 
     if request.method == "POST" and request.is_ajax():
         user = request.user
+        acl = get_acl_object(obj_type)
         if user.has_access_to(acl.ACTIONS_DELETE):
             key = request.POST['key'].split(',')
             date = datetime.datetime.strptime(key[0],

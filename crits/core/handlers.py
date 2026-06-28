@@ -93,7 +93,7 @@ from crits.indicators.indicator import Indicator
 
 from crits.core.totp import valid_totp
 
-from crits.vocabulary.acls import ActorACL
+from crits.vocabulary.acls import ActorACL, Common
 
 
 logger = logging.getLogger(__name__)

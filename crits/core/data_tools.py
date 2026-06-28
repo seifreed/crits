@@ -106,7 +106,7 @@ def create_zip(files, pw_protect=True):
 
             # make sure our desired path doesn't already exist (some files may
             # have the same name but different data)
-            path = dumpdir + "/" + filename.encode("utf-8")
+            path = dumpdir + "/" + filename
             i = 1
             tmp = path
             while os.path.exists(tmp):

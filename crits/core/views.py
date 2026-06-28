@@ -2023,14 +2023,13 @@ def download_file(request, sample_md5):
     """
 
     dtype = request.GET.get("type", "sample")
-    if dtype=='cert':
-        tlo_type = 'Certificate'
-    else:
-        tlo_type = dtype
+    # get_acl_object expects the canonical CRITs type name (capitalized).
+    tlo_type = {'cert': 'Certificate', 'sample': 'Sample', 'pcap': 'PCAP',
+                'object': 'Sample'}.get(dtype, dtype)
 
     user = request.user
     acl = get_acl_object(tlo_type)
-    if user.has_access_to(acl.DOWNLOAD):
+    if acl is not None and user.has_access_to(acl.DOWNLOAD):
         if dtype in ('object', 'pcap', 'cert'):
             return download_grid_file(request, dtype, sample_md5)
         else:

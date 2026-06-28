@@ -666,7 +666,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
     for a in ind['attack_types']:
         if a not in IndicatorAttackTypes.values():
             return {'success': False,
-                    'message': "Not a valid Indicator Attack Type: " % a}
+                    'message': "Not a valid Indicator Attack Type: %s" % a}
 
     given_val = ind['value'] # Preserve the original value for later
     (ind['value'], error) = validate_indicator_value(ind['value'], ind['type'])

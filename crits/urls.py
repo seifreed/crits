@@ -95,7 +95,7 @@ if settings.ENABLE_API:
                         rdef = importlib.util.module_from_spec(spec)
                         spec.loader.exec_module(rdef)
                         rdef.register_api(v1_api)
-                    except Exception as e:
+                    except Exception:
                         pass
 
     urlpatterns.append(url(r'^api/', include(v1_api.urls)))

@@ -196,7 +196,6 @@ def migrate_roles():
 
     """
     from crits.core.mongo_tools import mongo_connector
-    import sys
 
     collection = mongo_connector(settings.COL_USERS)
     users = collection.find()

@@ -155,7 +155,7 @@ class ServiceManager(object):
                 # config.
                 try:
                     service.parse_config(svc_obj.config.to_dict())
-                except ServiceConfigError as e:
+                except ServiceConfigError:
                     svc_obj.status = "misconfigured"
                     svc_obj.enabled = False
                     svc_obj.run_on_triage = False
@@ -283,7 +283,6 @@ class AnalysisTask(object):
             'results':              self.results,
             'object_type':          self.obj._meta['crits_type'],
             'object_id':            str(self.obj.id),
-            'results':              self.results,
         }
 
     def __str__(self):

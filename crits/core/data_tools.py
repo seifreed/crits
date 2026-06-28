@@ -38,7 +38,7 @@ def get_file_fs(sample_md5):
                    'rb')
         data = fin.read()
         fin.close()
-    except Exception as e:
+    except Exception:
         raise "error: %s"
     return data
 
@@ -63,7 +63,7 @@ def put_file_fs(data):
                     'wb')
         fout.write(data)
         fout.close()
-    except Exception as e:
+    except Exception:
         raise "error: %s"
     return sample_md5
 

@@ -266,7 +266,7 @@ def parse_bulk_upload(request, parse_row_function, add_new_function, formdict, c
                                            'label': entry['label'],
                                            'message': "At (" + str(rowCounter) + ", " + entry['label'] + "): " + message})
 
-        except Exception as e:
+        except Exception:
             import traceback
             traceback.print_exc()
 

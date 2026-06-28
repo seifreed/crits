@@ -171,7 +171,7 @@ def generate_actor_jtable(request, option):
             if jtable_ajax_delete(obj_type, request):
                 response = {"Result": "OK"}
             else:
-                respones = {"Result": "ERROR"}
+                response = {"Result": "ERROR"}
         else:
             response = {"Result": "OK",
                         "message": "User does not have permission to delete"}

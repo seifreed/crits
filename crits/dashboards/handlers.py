@@ -26,7 +26,6 @@ from django.http import HttpRequest
 from crits.dashboards.utilities import getHREFLink, get_obj_name_from_title, get_obj_type_from_string
 
 from crits.vocabulary.acls import EmailACL, SampleACL, IndicatorACL, CampaignACL
-import html
 
 def get_dashboard(user,dashId=None):
     """

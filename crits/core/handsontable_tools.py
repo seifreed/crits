@@ -27,7 +27,7 @@ def convert_handsontable_to_rows(request):
         with the column name as the key and column value as the value pair.
     """
 
-    myDict = dict(request.POST.iterlists())
+    myDict = dict(request.POST.lists())
     dataElement = myDict['data'][0]
     rowsData = json.loads(dataElement)
     cleanedRowsData = []

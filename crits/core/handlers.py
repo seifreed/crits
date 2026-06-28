@@ -999,7 +999,7 @@ def alter_bucket_list(obj, buckets, val):
     ###TODO: SetOnInsert is supported since mongoengine 0.8.0 (see commits #308/#309)
     buckets_col = mongo_connector(settings.COL_BUCKET_LISTS)
     for name in buckets:
-        buckets_col.update({'name': name},
+        buckets_col.update_one({'name': name},
                            {'$inc': {obj._meta['crits_type']: val},
                             '$setOnInsert': soi},
                            upsert=True)
@@ -2031,7 +2031,7 @@ def data_query(col_obj, user, limit=25, skip=0, sort=[], query={},
     docs = None
     try:
         if not issubclass(col_obj,CritsSourceDocument):
-            results['count'] = col.find(query).count()
+            results['count'] = col.count_documents(query)
             if count:
                 results['result'] = "OK"
                 return results
@@ -4188,7 +4188,7 @@ def alter_sector_list(obj, sectors, val):
     # for this we should switch to using it instead of pymongo here.
     sectors_col = mongo_connector(settings.COL_SECTOR_LISTS)
     for name in sectors:
-        sectors_col.update({'name': name},
+        sectors_col.update_one({'name': name},
                            {'$inc': {obj._meta['crits_type']: val},
                             '$setOnInsert': soi},
                            upsert=True)

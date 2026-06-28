@@ -37,7 +37,7 @@ def generate_yara_hits():
     yarahits_col.drop()
     sv = YaraHit._meta['latest_schema_version']
     for hit in yarahits:
-        yarahits_col.update({'engine': hit["_id"]["engine"],
+        yarahits_col.update_one({'engine': hit["_id"]["engine"],
                              "version": hit["_id"]["version"],
                              "result": hit["_id"]["result"]},
                             {"$set": {"sample_count": hit["value"]["count"],
@@ -60,7 +60,7 @@ def generate_sources():
         return
     source_access = mongo_connector(settings.COL_SOURCE_ACCESS)
     for source in sources:
-        source_access.update({"name": source["_id"]["name"]},
+        source_access.update_one({"name": source["_id"]["name"]},
                              {"$set": {"sample_count": source["value"]["count"]}})
 
 def generate_filetypes():
@@ -113,7 +113,7 @@ def update_results(collection, m, r, stat_query, field, campaign_stats):
     :returns: dict
     """
 
-    if collection.find().count() > 0:
+    if collection.count_documents({}) > 0:
         results = collection.inline_map_reduce(m,r, query=stat_query)
         for result in results:
             if result["_id"] is not None:
@@ -185,7 +185,7 @@ def generate_campaign_stats(source_name=None):
                                     "sample_count", campaign_stats)
     # update all of the campaigns here
     for campaign in campaign_stats.keys():
-        campaigns.update({"name": campaign},
+        campaigns.update_one({"name": campaign},
                          {"$set": campaign_stats[campaign]}, upsert=True)
 
 def generate_counts():
@@ -204,18 +204,18 @@ def generate_counts():
     last_seven = start - datetime.timedelta(7)
     last_thirty = start - datetime.timedelta(30)
     count = {}
-    count['Samples'] = samples.find().count()
-    count['Emails'] = emails.find().count()
-    count['Indicators'] = indicators.find().count()
-    count['PCAPs'] = pcaps.find().count()
-    count['Domains'] = domains.find().count()
-    count['Emails Today'] = emails.find({"source.instances.date": {"$gte": today}}).count()
-    count['Emails Last 7'] = emails.find({'source.instances.date': {'$gte': last_seven}}).count()
-    count['Emails Last 30'] = emails.find({'source.instances.date': {'$gte': last_thirty}}).count()
-    count['Indicators Today'] = indicators.find({"source.instances.date": {"$gte": today}}).count()
-    count['Indicators Last 7'] = indicators.find({"source.instances.date": {"$gte": last_seven}}).count()
-    count['Indicators Last 30'] = indicators.find({"source.instances.date": {"$gte": last_thirty}}).count()
-    counts.update({'name': "counts"}, {'$set': {'counts': count}}, upsert=True)
+    count['Samples'] = samples.count_documents({})
+    count['Emails'] = emails.count_documents({})
+    count['Indicators'] = indicators.count_documents({})
+    count['PCAPs'] = pcaps.count_documents({})
+    count['Domains'] = domains.count_documents({})
+    count['Emails Today'] = emails.count_documents({"source.instances.date": {"$gte": today}})
+    count['Emails Last 7'] = emails.count_documents({'source.instances.date': {'$gte': last_seven}})
+    count['Emails Last 30'] = emails.count_documents({'source.instances.date': {'$gte': last_thirty}})
+    count['Indicators Today'] = indicators.count_documents({"source.instances.date": {"$gte": today}})
+    count['Indicators Last 7'] = indicators.count_documents({"source.instances.date": {"$gte": last_seven}})
+    count['Indicators Last 30'] = indicators.count_documents({"source.instances.date": {"$gte": last_thirty}})
+    counts.update_one({'name': "counts"}, {'$set': {'counts': count}}, upsert=True)
 
 
 def target_user_stats():
@@ -333,5 +333,5 @@ def campaign_date_stats():
         "campaign": result["_id"]["campaign"],
         "value": result["value"]
         })
-    stat_coll.update({'name': 'campaign_monthly'}, {"$set": stats},
+    stat_coll.update_one({'name': 'campaign_monthly'}, {"$set": stats},
                      upsert=True)

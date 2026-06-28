@@ -3,6 +3,7 @@ if settings.FILE_DB == settings.S3:
     from crits.core.s3_tools import get_file_s3
 
 import gridfs
+from pymongo import ReturnDocument
 
 import magic
 import logging
@@ -248,7 +249,10 @@ def mongo_insert(collection, doc_or_docs, username=None, safe=True, *args,
 
     col = mongo_connector(collection)
     try:
-        col.insert(doc_or_docs, safe=safe, check_keys=True, *args, **kwargs)
+        if isinstance(doc_or_docs, list):
+            col.insert_many(doc_or_docs, *args, **kwargs)
+        else:
+            col.insert_one(doc_or_docs, *args, **kwargs)
         return {'success':True, 'message':[], 'object':doc_or_docs}
     except Exception as e:
         # OperationFailure gets raised only if safe=True and there is some error
@@ -342,9 +346,15 @@ def mongo_find_and_modify(collection, query, alter, fields=None, username=None,
     """
     try:
         col = mongo_connector(collection)
-        result = col.find_and_modify(query, update=alter, fields=fields,
-                                     remove=remove, new=new, upsert=upsert,
-                                     sort=sort, *args, **kwargs)
+        if remove:
+            result = col.find_one_and_delete(query, projection=fields,
+                                             sort=sort, *args, **kwargs)
+        else:
+            result = col.find_one_and_update(
+                query, alter, projection=fields, sort=sort, upsert=upsert,
+                return_document=(ReturnDocument.AFTER if new
+                                 else ReturnDocument.BEFORE),
+                *args, **kwargs)
     except Exception as e:
         return {'success':False, 'message':[format_error(e)]}
     try:

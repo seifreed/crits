@@ -292,7 +292,7 @@ def add_object(type_, id_, object_type, source, method, reference, tlp, user,
                 #     need to use pymongo directly.
                 col = settings.COL_OBJECTS
                 grid = mongo_connector("%s.files" % col)
-                if grid.find({'md5': md5sum}).count() == 0:
+                if grid.count_documents({'md5': md5sum}) == 0:
                     put_file(filename, data, collection=col)
 
         if add_indicator and not is_validate_only:

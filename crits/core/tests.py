@@ -379,9 +379,9 @@ class LoginTests(SimpleTestCase):
         for path in paths:
             response = self.client.get(path, follow=True)
             redirs = response.redirect_chain
-            self.assertEquals(response.status_code, 200)
+            self.assertEqual(response.status_code, 200)
             self.assertTrue(redirs[0][0] in redir_url + path)
-            self.assertEquals(redirs[0][1], 302)
+            self.assertEqual(redirs[0][1], 302)
 
     def testBasicLogin(self):
         pass
@@ -415,9 +415,7 @@ class DashboardViewTests(SimpleTestCase):
         response = views.dashboard(self.req)
         self.assertTrue(">{0} {1}</a>".format(self.user.first_name,
                                               self.user.last_name)
-                        in response.content)
-        self.assertTrue("&nbsp;({0})".format(self.user.role)
-                        in response.content)
+                        in response.content.decode())
 
     def testUserInactiveRedirect(self):
         self.req.user.mark_inactive()

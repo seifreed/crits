@@ -2061,7 +2061,19 @@ def data_query(col_obj, user, limit=25, skip=0, sort=[], query={},
             #    return results
 
             #docs = col_obj.objects.filter(id__in=filterlist).\
-            tlp_filter_query = user.filter_dict_source_tlp(query)
+            # data_query is called with either a username string or a
+            # CRITsUser; filter_dict_source_tlp is a CRITsUser method, so
+            # resolve the object and make sure its ACL cache is populated.
+            user_obj = user
+            if not hasattr(user_obj, 'filter_dict_source_tlp'):
+                from crits.core.user import CRITsUser
+                user_obj = CRITsUser.objects(username=user).first()
+            if user_obj is None:
+                results['msg'] = "ERROR: Unknown user '%s'." % user
+                return results
+            if user_obj.acl_needs_update or len(user_obj.acl) == 0:
+                user_obj.get_access_list(update=True)
+            tlp_filter_query = user_obj.filter_dict_source_tlp(query)
             docs = col_obj.objects.filter(__raw__=tlp_filter_query).\
                                             order_by(*sort).skip(skip).\
                                             only(*projection).limit(limit)

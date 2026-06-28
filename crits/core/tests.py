@@ -129,28 +129,28 @@ def prep_db():
     user.get_access_list(update=True)
     user.save()
 
-    # Add test source object
-    '''
-    obj = TestSourceObject()
-    obj.name = TOBJS_NAME
-    obj.value = TOBJS_VALUE
-    obj.save()
-    role.add_source(source=TSRC) #, read=True, write=True, tlp_red=True, tlp_amber=True, tlp_green=True)
-    role.save()
-    
-    # Add another with Different source
-    obj = TestSourceObject()
-    obj.name = TOBJS_NAME
-    obj.value = TOBJS_VALUE
-    obj.add_source(source=TUNKSRC) #, read=True, write=True, tlp_red=True, tlp_amber=True, tlp_green=True) #analyst=TRANDUSER)
-    obj.save()
-    # Add test non-source object
+    # Add a non-source test object (no source filtering applies to it).
     obj = TestObject()
     obj.name = TOBJ_NAME
     obj.value = TOBJ_VALUE
-    obj.save()
-    '''
-    
+    obj.save(username=TUSER_NAME)
+
+    # Add a source-bound object on the registered TSRC source. The admin role
+    # has access to TSRC, so the test user can see this one.
+    sobj = TestSourceObject()
+    sobj.name = TOBJS_NAME
+    sobj.value = TOBJS_VALUE
+    sobj.add_source(source=TSRC, analyst=TUSER_NAME, tlp='red')
+    sobj.save(username=TUSER_NAME)
+
+    # Add a source-bound object on an unregistered source. No role grants
+    # access to it, so it must never appear in source-filtered queries.
+    uobj = TestSourceObject()
+    uobj.name = "unknownobj"
+    uobj.value = "unknown value"
+    uobj.add_source(source=TUNKSRC, analyst=TRANDUSER, tlp='red')
+    uobj.save(username=TRANDUSER)
+
 
 def clean_db():
     """
@@ -321,32 +321,15 @@ class DataQueryTests(SimpleTestCase):
 
     def testSourceDataQuery(self):
         objs = TestSourceObject
-        # User does not have source, should not return results
+        # The admin role grants access to the registered TSRC source but not to
+        # the unregistered UnknownSource, so source filtering must return only
+        # the TSRC-bound object.
         resp = handlers.data_query(objs, self.user.username)
-        self.assertEqual(resp['count'], 0)
-        self.assertEqual(resp['result'], 'OK')
-        self.assertEqual(resp['crits_type'], 'TestSourceBase')
-        self.assertEqual(resp['msg'], '')
-        self.assertTrue(isinstance(resp['data'], CritsQuerySet))
-        # Add source for user and query again
-        data = {'username': self.user.username,
-                'first_name': self.user.first_name,
-                'last_name': self.user.last_name,
-                'email': self.user.email,
-                'roles': self.user.roles,
-                'sources': [TSRC, ],
-                'secret': '',
-                'organization': TSRC,
-                'subscriptions': [],
-                'totp': False,
-                }
-        handlers.modify_source_access(self.user.username, data)
-        resp = handlers.data_query(objs, self.user.username)
-        # Now we should get one result, but not the UnknownSource object
         self.assertEqual(resp['count'], 1)
         self.assertEqual(resp['result'], 'OK')
         self.assertEqual(resp['crits_type'], 'TestSourceBase')
         self.assertEqual(resp['msg'], '')
+        self.assertTrue(isinstance(resp['data'], CritsQuerySet))
         self.assertEqual(resp['data'][0].name, TOBJS_NAME)
         self.assertEqual(resp['data'][0].value, TOBJS_VALUE)
         self.assertEqual(resp['data'][0]._meta['crits_type'], "TestSourceBase")

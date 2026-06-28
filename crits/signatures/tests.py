@@ -70,7 +70,7 @@ class SignatureHandlerTests(SimpleTestCase):
         data = SIGNATURE_DATA
         data_type = TDT
         source_name = TSRC
-        user = TUSER_NAME
+        user = self.user
         (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type)
 
 
@@ -90,7 +90,7 @@ class SignatureViewTests(SimpleTestCase):
         data = SIGNATURE_DATA
         data_type = TDT
         source_name = TSRC
-        user = TUSER_NAME
+        user = self.user
         (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type)
 
     def tearDown(self):

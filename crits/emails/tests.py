@@ -125,18 +125,18 @@ class EmailHandlerTests(SimpleTestCase):
         clean_db()
 
     def testEmailRawAdd(self):
-        result = handlers.handle_pasted_eml(EML_DATA, TSRC, None, self.user, "Test")
+        result = handlers.handle_pasted_eml(EML_DATA, TSRC, "", "Test", "red", self.user)
         self.assertEqual(result['status'], True)
         self.assertEqual(result['data']['x_mailer'],"YahooMailWebService/0.8.121.416")
         newdata = ""
         for line in EML_DATA.split('\n'):
             newdata += line.lstrip() + "\n"
-        result = handlers.handle_pasted_eml(newdata, TSRC, None, self.user, "Test")
+        result = handlers.handle_pasted_eml(newdata, TSRC, "", "Test", "red", self.user)
         self.assertEqual(result['status'], True)
         self.assertEqual(result['data']['x_mailer'],"YahooMailWebService/0.8.121.416")
 
     def testEmailAdd(self):
-        result = handlers.handle_eml(EML_DATA, TSRC, None, self.user, "Test")
+        result = handlers.handle_eml(EML_DATA, TSRC, "", "Test", "red", self.user)
         self.assertEqual(result['status'], True)
         self.assertEqual(result['data']['x_mailer'],"YahooMailWebService/0.8.121.416")
 
@@ -152,7 +152,7 @@ class EmailViewTests(SimpleTestCase):
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
         self.user.save()
         # Add a test email
-        handlers.handle_eml(EML_DATA, TSRC, None, self.user, "Test")
+        handlers.handle_eml(EML_DATA, TSRC, "", "Test", "red", self.user)
 
     def tearDown(self):
         clean_db()

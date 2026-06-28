@@ -135,7 +135,7 @@ def populate_tlds(drop):
     TLD.drop_collection()
     f = os.path.join(settings.SITE_ROOT, '..', 'extras', 'effective_tld_names.dat')
     count = 0
-    for line in open(f, 'r').readlines():
+    for line in open(f, 'r', encoding='utf-8').readlines():
         line = line.strip()
         if line and not line.startswith('//'):
             line = line.replace("*.", "")

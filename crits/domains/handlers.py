@@ -35,6 +35,27 @@ from crits.services.handlers import run_triage, get_supported_services
 from crits.vocabulary.relationships import RelationshipTypes
 from crits.vocabulary.acls import DomainACL
 
+def punycode_to_unicode(domain):
+    """
+    Decode any punycode (xn--) labels in a domain to their Unicode form so it
+    matches the Unicode TLD entries in the Public Suffix List. Labels that are
+    not valid punycode are left untouched.
+
+    :param domain: the domain to normalize
+    :type domain: str
+    :returns: str
+    """
+
+    labels = []
+    for label in domain.split('.'):
+        if label.startswith('xn--'):
+            try:
+                label = label.encode('ascii').decode('idna')
+            except Exception:
+                pass
+        labels.append(label)
+    return '.'.join(labels)
+
 def get_valid_root_domain(domain):
     """
     Validate the given domain and TLD, and if valid, parse out the root domain
@@ -46,7 +67,7 @@ def get_valid_root_domain(domain):
 
     root = fqdn = error = ""
     black_list = r"/:@\ "
-    domain = domain.strip()
+    domain = punycode_to_unicode(domain.strip())
 
     if any(c in black_list for c in domain):
         error = 'Domain cannot contain space or characters %s' % (black_list)

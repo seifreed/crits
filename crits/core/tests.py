@@ -13,7 +13,6 @@ from mongoengine import StringField
 from crits.config.config import CRITsConfig
 from crits.core.user import CRITsUser
 
-from crits.core.role import Role
 
 from crits.core.crits_mongoengine import CritsBaseAttributes, CritsQuerySet
 from crits.core.crits_mongoengine import CritsSourceDocument

@@ -2,8 +2,6 @@ from django import forms
 from django.forms.widgets import HiddenInput
 from crits.core import form_consts
 from crits.core.forms import SourceInForm
-from crits.core.handlers import get_source_names
-from crits.core.user_tools import get_user_organization
 
 class AddScreenshotForm(SourceInForm):
     """

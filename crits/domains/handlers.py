@@ -14,7 +14,7 @@ except ImportError:
     from mongoengine.errors import ValidationError
 
 from crits.core import form_consts
-from crits.core.class_mapper import class_from_id, class_from_value
+from crits.core.class_mapper import class_from_id
 from crits.core.crits_mongoengine import EmbeddedSource, EmbeddedCampaign
 from crits.core.crits_mongoengine import json_handler, create_embedded_source
 from crits.core.handsontable_tools import convert_handsontable_to_rows, parse_bulk_upload

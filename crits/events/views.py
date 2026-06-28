@@ -1,7 +1,6 @@
 import json
 from urllib.parse import urlencode
 
-from django import forms
 from django.contrib.auth.decorators import user_passes_test
 try:
     from django.urls import reverse
@@ -16,9 +15,8 @@ from crits.events.forms import EventForm
 from crits.events.handlers import event_remove
 from crits.events.handlers import update_event_title, update_event_type
 from crits.events.handlers import get_event_details
-from crits.events.handlers import generate_event_jtable, add_sample_for_event
+from crits.events.handlers import generate_event_jtable
 from crits.events.handlers import generate_event_csv, add_new_event
-from crits.samples.forms import UploadFileForm
 
 from crits.vocabulary.events import EventTypes
 from crits.vocabulary.acls import EventACL

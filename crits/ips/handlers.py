@@ -1,5 +1,4 @@
 import json
-import logging
 
 from django.core.exceptions import ValidationError
 try:

@@ -1,6 +1,5 @@
 import json
 from urllib.parse import urlencode
-import logging
 
 from django.contrib.auth.decorators import user_passes_test
 try:

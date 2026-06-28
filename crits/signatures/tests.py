@@ -5,7 +5,7 @@ from . import views
 import crits.signatures.handlers as handlers
 from crits.core.user import CRITsUser
 from crits.core.handlers import add_new_source
-from crits.signatures.handlers import add_new_signature_type, handle_signature_file
+from crits.signatures.handlers import add_new_signature_type
 from crits.core.source_access import SourceAccess
 
 TSRC = "TestSource"

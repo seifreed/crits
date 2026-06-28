@@ -3,7 +3,6 @@ if settings.FILE_DB == settings.S3:
     from crits.core.s3_tools import get_file_s3
 
 import gridfs
-import pymongo
 
 import magic
 import logging

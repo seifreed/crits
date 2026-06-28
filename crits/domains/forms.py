@@ -12,7 +12,7 @@ from crits.core.user_tools import get_user_organization
 from crits.vocabulary.ips import IPTypes
 
 from crits.vocabulary.relationships import RelationshipTypes
-from crits.vocabulary.acls import Common, DomainACL
+from crits.vocabulary.acls import Common
 
 ip_choices = [(c,c) for c in IPTypes.values(sort=True)]
 

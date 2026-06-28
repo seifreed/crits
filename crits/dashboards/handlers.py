@@ -22,7 +22,6 @@ import json
 from django.utils.html import escape as html_escape
 import html
 import datetime
-from django.http import HttpRequest
 from crits.dashboards.utilities import getHREFLink, get_obj_name_from_title, get_obj_type_from_string
 
 from crits.vocabulary.acls import EmailACL, SampleACL, IndicatorACL, CampaignACL

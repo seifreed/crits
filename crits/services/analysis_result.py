@@ -5,7 +5,7 @@ except ImportError:
     from mongoengine import Document
 from mongoengine import StringField, ListField, EmbeddedDocument
 from mongoengine import DynamicEmbeddedDocument, DynamicField, UUIDField
-from mongoengine import DictField, EmbeddedDocumentField, BooleanField
+from mongoengine import EmbeddedDocumentField, BooleanField
 
 from crits.core.crits_mongoengine import CritsDocument, CritsSchemaDocument
 from crits.core.crits_mongoengine import CritsDocumentFormatter

@@ -11,7 +11,7 @@ from crits.core.handlers import get_item_names
 from crits.core import form_consts
 
 from crits.vocabulary.relationships import RelationshipTypes
-from crits.vocabulary.acls import Common, ActorACL
+from crits.vocabulary.acls import Common
 relationship_choices = [(c, c) for c in RelationshipTypes.values(sort=True)]
 
 class AddActorForm(SourceInForm):

@@ -1,4 +1,3 @@
-from django.conf import settings
 
 from crits.config.config import CRITsConfig
 

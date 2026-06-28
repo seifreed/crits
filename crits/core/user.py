@@ -55,7 +55,6 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
 
 from crits.config.config import CRITsConfig
 from crits.core.crits_mongoengine import CritsDocument, CritsSchemaDocument

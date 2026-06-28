@@ -22,7 +22,7 @@ from crits.core.user_tools import user_sources, is_user_favorite
 from crits.core.user_tools import is_user_subscribed
 from crits.notifications.handlers import remove_user_from_notification
 from crits.signatures.signature import Signature, SignatureType, SignatureDependency
-from crits.services.handlers import run_triage, get_supported_services
+from crits.services.handlers import get_supported_services
 from crits.vocabulary.relationships import RelationshipTypes
 from crits.vocabulary.acls import SignatureACL
 

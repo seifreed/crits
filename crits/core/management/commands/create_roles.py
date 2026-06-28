@@ -120,11 +120,11 @@ def add_readonly_role():
                    'description',
                    'unsupported_attrs']
 
-    for p in role._data.iterkeys():
-        if p in settings.CRITS_TYPES.iterkeys():
+    for p in role._data.keys():
+        if p in settings.CRITS_TYPES.keys():
             attr = getattr(role, p)
             # Modify the attributes.
-            for x in attr._data.iterkeys():
+            for x in attr._data.keys():
                 if 'read' in str(x):
                     setattr(attr, x, True)
                 else:
@@ -133,7 +133,7 @@ def add_readonly_role():
             setattr(role, p, attr)
         elif p == "sources":
             for s in getattr(role, p):
-                for x in s._data.iterkeys():
+                for x in s._data.keys():
                     if x != "name":
                         setattr(s, x, True)
 
@@ -165,11 +165,11 @@ def add_analyst_role():
                    'description',
                    'unsupported_attrs']
 
-    for p in role._data.iterkeys():
-        if p in settings.CRITS_TYPES.iterkeys():
+    for p in role._data.keys():
+        if p in settings.CRITS_TYPES.keys():
             attr = getattr(role, p)
             # Modify the attributes.
-            for x in attr._data.iterkeys():
+            for x in attr._data.keys():
                 if 'delete' not in str(x):
                     setattr(attr, x, True)
                 else:
@@ -178,7 +178,7 @@ def add_analyst_role():
             setattr(role, p, attr)
         elif p == "sources":
             for s in getattr(role, p):
-                for x in s._data.iterkeys():
+                for x in s._data.keys():
                     if x != "name":
                         setattr(s, x, True)
 

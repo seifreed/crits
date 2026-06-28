@@ -5,7 +5,7 @@ import html
 import json
 import logging
 import re
-import ushlex as shlex
+import shlex
 from urllib.parse import unquote
 
 from urllib.parse import urlparse
@@ -27,7 +27,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.html import escape as html_escape
-from django.utils.http import urlencode, urlunquote, is_safe_url
+from django.utils.http import urlencode, url_has_allowed_host_and_scheme
 
 try:
     from mongoengine.base import ValidationError
@@ -331,7 +331,7 @@ def get_favorites(analyst):
                   <tbody>
               '''
 
-    for type_, attr in field_dict.iteritems():
+    for type_, attr in field_dict.items():
         if type_ in favorites:
             ids = [ObjectId(s) for s in favorites[type_]]
             objs = class_from_type(type_).objects(id__in=ids).only(attr)
@@ -1940,7 +1940,7 @@ def check_query(qparams,user,obj):
         except:
             field = key
         # Check for mapping, reverse because we're going the other way
-        invmap = dict((v,k) for k, v in obj._db_field_map.iteritems())
+        invmap = dict((v,k) for k, v in obj._db_field_map.items())
         if field in invmap:
             field = invmap[field]
         # Only allow query keys that exist in the object
@@ -2128,7 +2128,7 @@ def parse_query_request(request,col_obj):
                 base = field
                 extra = ""
             # Check for mapping, reverse because we're going the other way
-            invmap = dict((v,k) for k, v in col_obj._db_field_map.iteritems())
+            invmap = dict((v,k) for k, v in col_obj._db_field_map.items())
             if base in invmap:
                 base = invmap[base]
             # Only allow query keys that exist in the object
@@ -3644,8 +3644,8 @@ def validate_next(next_url=None):
         tmp_url = next_url
         if next_url.startswith(prefix):
             tmp_url = tmp_url.replace(prefix, '/', 1)
-        next_url = urlunquote(tmp_url)
-        if not is_safe_url(next_url):
+        next_url = unquote(tmp_url)
+        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts=None):
             raise Exception
         resolve(urlparse(next_url).path)
         response['success'] = True
@@ -4131,7 +4131,7 @@ def unflatten(dictionary):
     """
 
     resultDict = dict()
-    for key, value in dictionary.iteritems():
+    for key, value in dictionary.items():
         parts = key.split(".")
         d = resultDict
         for part in parts[:-1]:

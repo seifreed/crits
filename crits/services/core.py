@@ -1,5 +1,5 @@
 from datetime import datetime
-from distutils.version import StrictVersion
+from packaging.version import Version
 
 try:
     from importlib import import_module
@@ -113,7 +113,7 @@ class ServiceManager(object):
             #                (service_name, service_version))
 
             try:
-                StrictVersion(service_version)
+                Version(service_version)
             except ValueError as e:
                 # Unable to parse the service version
                 msg = ("Service %s is invalid, and will not be available." %

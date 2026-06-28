@@ -150,7 +150,7 @@ def constructSavedTable(table, records):
     colNames = []
     for column in table.tableColumns:
         col = {}
-        for k,v in column.iteritems():
+        for k,v in column.items():
             if k == "sizeCalculated" or k == "sizeCorrected" or k == 'min':
                 continue
             elif k == "field":

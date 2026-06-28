@@ -460,7 +460,7 @@ def login(request):
     user = request.user
 
     # Is the user already authenticated?
-    if (request.user.is_authenticated if django_version >= (1, 10) else request.user.is_authenticated()) and user.has_access_to(GeneralACL.WEB_INTERFACE) and not request.is_ajax:
+    if request.user.is_authenticated and user.has_access_to(GeneralACL.WEB_INTERFACE) and not request.is_ajax():
         resp = validate_next(next_url)
         if not resp['success']:
             return render(request, 'error.html',
@@ -1284,7 +1284,7 @@ def base_context(request):
     base_context['service_nav_templates'] = settings.SERVICE_NAV_TEMPLATES
     base_context['service_cp_templates'] = settings.SERVICE_CP_TEMPLATES
     base_context['service_tab_templates'] = settings.SERVICE_TAB_TEMPLATES
-    if (request.user.is_authenticated if django_version >= (1, 10) else request.user.is_authenticated()):
+    if request.user.is_authenticated:
         user = request.user
         base_context['acl'] = ReadACL
         base_context['GeneralACL'] = GeneralACL

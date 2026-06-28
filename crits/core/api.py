@@ -444,7 +444,7 @@ class CRITsAPIResource(MongoEngineResource):
                 querydict['_id'] = path[-1]
 
         do_or = False
-        for k,v in get_params.iteritems():
+        for k,v in get_params.items():
             v = v.strip()
             try:
                 v_int = int(v)
@@ -542,7 +542,7 @@ class CRITsAPIResource(MongoEngineResource):
                 do_or = True
         if do_or:
             tmp = {}
-            tmp['$or'] = [{x:y} for x,y in querydict.iteritems()]
+            tmp['$or'] = [{x:y} for x,y in querydict.items()]
             querydict = tmp
         if no_sources and sources:
             querydict['source.name'] = {'$in': source_list}
@@ -551,7 +551,7 @@ class CRITsAPIResource(MongoEngineResource):
             querydict_tlp_filter = querydict
 
         if only or exclude:
-            required = [k for k,f in klass._fields.iteritems() if f.required]
+            required = [k for k,f in klass._fields.items() if f.required]
         if only:
             fields = only.split(',')
             if exclude:

@@ -151,7 +151,7 @@ def user_can_view_data(user):
     """
     if user.is_active:
         if user.has_access_to(GeneralACL.WEB_INTERFACE):
-            return user.is_authenticated()
+            return user.is_authenticated
         else:
             return False
     else:

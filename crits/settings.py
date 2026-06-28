@@ -475,6 +475,7 @@ INSTALLED_APPS = (
 
 _MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
+    'crits.core.middleware.AjaxCompatMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

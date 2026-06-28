@@ -728,7 +728,7 @@ def update_analysis_results(task):
 
         #TODO: find a better way to do this.
         new_dict = {}
-        for k in tdict.iterkeys():
+        for k in tdict.keys():
             new_dict['set__%s' % k] = tdict[k]
         try:
             AnalysisResult.objects(id=ar.id).update_one(**new_dict)

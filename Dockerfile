@@ -1,29 +1,26 @@
-FROM ubuntu:latest
+FROM python:3.14-slim
 
-MAINTAINER crits
+# Runtime libs: libmagic (python-magic), 7z + zip (sample archive handling),
+# libxml2/libxslt (+ toolchain) so lxml builds when no cp314 wheel is published.
+RUN apt-get -qq update && apt-get install -y --no-install-recommends \
+        libmagic1 \
+        p7zip-full \
+        zip \
+        curl \
+        gcc \
+        libxml2-dev \
+        libxslt1-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get -qq update
-# git command
-RUN apt-get install -y git
-# pip command
-RUN apt-get install -y python-pip
-# lsb_release command
-RUN apt-get install -y lsb-release 
-# sudo command
-RUN apt-get install -y sudo
-# add-apt-repository command
-RUN apt-get install -y software-properties-common
+WORKDIR /crits
 
-# Clone the repo
-RUN git clone --depth 1 https://github.com/crits/crits.git 
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR crits
-# Install the dependencies
-RUN TERM=xterm sh ./script/bootstrap < docker_inputs
+COPY . .
 
-# Create a new admin. Username: "admin" , Password: "pass1PASS123!"
-RUN sh contrib/mongo/mongod_start.sh && python manage.py users -R UberAdmin -u admin -p "pass1PASS123!" -s -i -a -e admin@crits.crits -f "first" -l "last" -o "no-org"
+RUN chmod +x docker-entrypoint.sh
 
 EXPOSE 8080
-
-CMD sh contrib/mongo/mongod_start.sh && python manage.py runserver 0.0.0.0:8080
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]

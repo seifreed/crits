@@ -394,6 +394,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         full_name = '%s %s' % (self.first_name or '', self.last_name or '')
         return full_name.strip()
 
+    @property
     def is_anonymous(self):
         """
         We do not allow anonymous users.
@@ -401,6 +402,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
 
         return False
 
+    @property
     def is_authenticated(self):
         """
         If we know about the user from the request, it means they've
@@ -984,7 +986,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         # for each role, modify the acl object to reflect all of the attributes
         # the user should be granted access to.
         for r in roles:
-            for p,v in r._data.iteritems():
+            for p,v in r._data.items():
                 if p in ['name', 'description', 'active', 'id']:
                     # No need to worry about these. Added benefit of
                     # throwing a validation error since there is no name
@@ -1001,7 +1003,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                         found = False
                         for src in acl['sources']:
                             if s.name == src.name:
-                                for x,y in s._data.iteritems():
+                                for x,y in s._data.items():
                                     if not acl['sources'][c].get(x, True):
                                         acl['sources'][c][x] = y
                                 found = True
@@ -1009,7 +1011,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                             c += 1
                         if not found:
                             acl['sources'].append(s)
-                elif p in settings.CRITS_TYPES.iterkeys():
+                elif p in settings.CRITS_TYPES.keys():
                     # For each CRITs Type adjust the attributes based on which
                     # ones the # user should get access to.
 
@@ -1017,7 +1019,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                     attr = acl.get(p, False)
 
                     # Modify the attributes.
-                    for x,y in getattr(r, p)._data.iteritems():
+                    for x,y in getattr(r, p)._data.items():
                         if not getattr(attr, x, False):
                             setattr(attr, x, y)
 
@@ -1067,14 +1069,14 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         attributes to allow for functions that act dynamically on multiple TLOs
         to be able to do so without huge if blocks. Example from above:
 
-            for x in settings.CRITS_TYPES.iterkeys():
+            for x in settings.CRITS_TYPES.keys():
                 if (X.has_access_to('%s.read' % x)
                     and X.has_access_to('%s.bucketlist_read' % x):
 
         Is much cleaner than:
 
             acl = X.get_access_list()
-            for x in settings.CRITS_TYPES.iterkeys():
+            for x in settings.CRITS_TYPES.keys():
                 if (getattr(getattr(acl, x), 'read')
                     and getattr(getattr(acl, x), 'bucketlist_read'))
 

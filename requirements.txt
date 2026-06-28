@@ -9,16 +9,18 @@ pymongo>=4.6,<5
 # --- Core libraries ---
 Pillow>=11,<12
 requests>=2.32,<3
-lxml>=5,<6
+lxml>=6,<7
 defusedxml>=0.7
 python-magic>=0.4.27
 python-dateutil>=2.9
 pytz>=2025.1
 PyYAML>=6,<7
 pyparsing>=3,<4
+packaging>=24
 chardet>=5,<6
 olefile>=0.47
 qrcode>=8,<9
+pycryptodome>=3.21         # provides the Crypto.* namespace (TOTP secret crypto)
 
 # --- REST API (django-tastypie) ---
 # Enabled only when settings.ENABLE_API is True. tastypie-mongoengine is

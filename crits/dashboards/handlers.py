@@ -204,7 +204,9 @@ def parseDocObjectsToStrings(records, obj_type):
     entire object
     """
     for doc in records:
-        for key, value in doc.items():
+        # snapshot items: the loop adds keys (recid/details) to doc, which
+        # raises "dictionary changed size during iteration" on py3.
+        for key, value in list(doc.items()):
             # all dates should look the same
 
             if isinstance(value, datetime.datetime):

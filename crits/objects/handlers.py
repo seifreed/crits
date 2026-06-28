@@ -130,6 +130,7 @@ def add_new_handler_object(data, rowData, request, is_validate_only=False,
     result = False
     retVal = {}
     username = request.user.username
+    tlp = None
 
     if data:
         object_type = data.get('object_type')
@@ -140,6 +141,7 @@ def add_new_handler_object(data, rowData, request, is_validate_only=False,
         otype = data.get('otype')
         oid = data.get('oid')
         add_indicator = data.get('add_indicator')
+        tlp = data.get('tlp')
     elif rowData:
         object_type = rowData.get(form_consts.Object.OBJECT_TYPE)
         value = rowData.get(form_consts.Object.VALUE)
@@ -149,6 +151,7 @@ def add_new_handler_object(data, rowData, request, is_validate_only=False,
         otype = rowData.get(form_consts.Object.PARENT_OBJECT_TYPE)
         oid = rowData.get(form_consts.Object.PARENT_OBJECT_ID)
         add_indicator = rowData.get(form_consts.Object.ADD_INDICATOR)
+        tlp = rowData.get(form_consts.Object.SOURCE_TLP)
 
     is_validate_locally = False
     analyst = "%s" % username
@@ -166,7 +169,7 @@ def add_new_handler_object(data, rowData, request, is_validate_only=False,
 
     # TODO file_
     object_result = add_object(
-        otype, oid, object_type, source, method, reference, analyst,
+        otype, oid, object_type, source, method, reference, tlp, request.user,
         value=value, file_=None, add_indicator=add_indicator, get_objects=False,
         tlo=obj, is_validate_only=is_validate_only,
         is_sort_relationships=is_sort_relationships,

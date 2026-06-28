@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import SimpleTestCase
 from django.test.client import RequestFactory
 
@@ -5,6 +6,7 @@ from . import views
 import crits.signatures.handlers as handlers
 from crits.core.user import CRITsUser
 from crits.core.handlers import add_new_source
+from crits.core.management.commands.create_roles import add_uber_admin_role
 from crits.signatures.handlers import add_new_signature_type
 from crits.core.source_access import SourceAccess
 
@@ -25,15 +27,19 @@ def prep_db():
     """
 
     clean_db()
-    # Add User
+    # Add Source
+    add_new_source(TSRC, TUSER_NAME)
+    # Ensure the UberAdmin role exists with access to all sources (incl. the
+    # one just added) and all ACLs, so the test user can use the web views.
+    add_uber_admin_role(drop=False)
+    # Add User and grant the admin role.
     user = CRITsUser.create_user(
                           username=TUSER_NAME,
                           password=TUSER_PASS,
                           email=TUSER_EMAIL,
                           )
+    user.roles = [settings.ADMIN_ROLE]
     user.save()
-    # Add Source
-    add_new_source(TSRC, TUSER_NAME)
     # Add Data Type
     add_new_signature_type(TDT, TUSER_NAME)
 
@@ -59,6 +65,8 @@ class SignatureHandlerTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
 
     def tearDown(self):
@@ -71,7 +79,7 @@ class SignatureHandlerTests(SimpleTestCase):
         data_type = TDT
         source_name = TSRC
         user = self.user
-        (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type)
+        (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type, source_tlp='red')
 
 
 class SignatureViewTests(SimpleTestCase):
@@ -83,6 +91,8 @@ class SignatureViewTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
         # Add a test signature
         title = SIGNATURE_TITLE
@@ -91,7 +101,7 @@ class SignatureViewTests(SimpleTestCase):
         data_type = TDT
         source_name = TSRC
         user = self.user
-        (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type)
+        (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type, source_tlp='red')
 
     def tearDown(self):
         clean_db()
@@ -112,7 +122,7 @@ class SignatureViewTests(SimpleTestCase):
         self.req.user = self.user
         response = views.signatures_listing(self.req)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("#signature_listing" in response.content)
+        self.assertTrue(b"#signature_listing" in response.content)
 
     def testSignaturesjtList(self):
         self.req = self.factory.post('/signatures/list/jtlist/',

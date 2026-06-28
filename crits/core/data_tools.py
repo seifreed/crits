@@ -355,12 +355,14 @@ def make_ascii_strings(md5=None, data=None):
 
     if md5:
         data = get_file(md5)
+    if isinstance(data, str):
+        data = data.encode('latin-1', 'ignore')
     strings_data = 'ASCII Strings\n'
     strings_data += "-" * 30
     strings_data += "\n"
-    ascii_regex = re.compile('([ -~]{4,})')
+    ascii_regex = re.compile(rb'([ -~]{4,})')
     matches = ascii_regex.findall(data)
-    strings_data += '\n'.join([x for x in matches])
+    strings_data += '\n'.join(x.decode('ascii', 'ignore') for x in matches)
     return strings_data + "\n\n\n\n"
 
 def make_unicode_strings(md5=None, data=None):
@@ -376,12 +378,16 @@ def make_unicode_strings(md5=None, data=None):
 
     if md5:
         data = get_file(md5)
+    if isinstance(data, str):
+        data = data.encode('latin-1', 'ignore')
     strings_data = 'Unicode Strings\n'
     strings_data += "-" * 30
     strings_data += "\n"
-    unicode_regex = re.compile('(([%s]\x00){4,})' % string.printable)
+    # Printable ASCII chars stored as UTF-16-LE (each char followed by a null).
+    unicode_regex = re.compile(rb'(?:[ -~]\x00){4,}')
     matches = unicode_regex.findall(data)
-    strings_data += '\n'.join([x[0].replace('\x00', '') for x in matches])
+    strings_data += '\n'.join(x.replace(b'\x00', b'').decode('ascii', 'ignore')
+                              for x in matches)
     return strings_data + "\n\n\n\n"
 
 def make_stackstrings(md5=None, data=None):
@@ -439,14 +445,15 @@ def make_hex(md5=None, data=None):
 
     if md5:
         data = get_file(md5)
+    if isinstance(data, str):
+        data = data.encode('latin-1', 'ignore')
     length = 16
     hex_data = ''
-    digits = 4 if isinstance(data, str) else 2
     for i in range(0, len(data), length):
         s = data[i:i+length]
-        hexa = ' '.join(["%0*X" % (digits, ord(x))  for x in s])
-        text = ' '.join([x if 0x20 <= ord(x) < 0x7F else '.'  for x in s])
-        hex_data += "%04X   %-*s   %s\r\n" % (i, length*(digits + 1), hexa, text)
+        hexa = ' '.join("%02X" % b for b in s)
+        text = ' '.join(chr(b) if 0x20 <= b < 0x7F else '.' for b in s)
+        hex_data += "%04X   %-*s   %s\r\n" % (i, length*3, hexa, text)
     return hex_data
 
 def xor_string(md5=None, data=None, key=0, null=0):
@@ -681,7 +688,10 @@ def detect_pcap(data):
     :returns: bool
     """
 
-    magic = ''.join(x.encode('hex') for x in data[:4])
+    head = data[:4]
+    if isinstance(head, str):
+        head = head.encode('latin-1', 'ignore')
+    magic = head.hex()
     if magic in (
         'a1b2c3d4', #identical
         'd4c3b2a1', #swapped

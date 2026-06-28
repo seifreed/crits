@@ -239,7 +239,9 @@ function getUserSources(user) {
 }
 
 function toggleUserActive(user) {
-    var me = $('#is_active_' + user);
+    // Match by id attribute so usernames containing "." (or other CSS
+    // metacharacters) aren't misread as class/selector syntax.
+    var me = $('[id="is_active_' + user + '"]');
     $.ajax({
         type: 'POST',
         url: toggle_user_active,
@@ -316,7 +318,7 @@ function deleteSignatureDependency(coll, oid)
 }
 
 function toggleItemActive(coll, oid) {
-    var me = $( "a#is_active_" + oid);
+    var me = $('a[id="is_active_' + oid + '"]');
     $.ajax({
         type: "POST",
         url: toggle_item_active,

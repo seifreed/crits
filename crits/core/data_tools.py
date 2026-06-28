@@ -403,30 +403,33 @@ def make_stackstrings(md5=None, data=None):
 
     if md5:
         data = get_file(md5)
+    if isinstance(data, str):
+        data = data.encode('latin-1', 'ignore')
     x = 0
     prev = 0
     strings = ''
-    while x < len(data):
-        if (data[x] == '\xc6') and ((data[x+1] == '\x45') or (data[x+1] == '\x84')):
-            a = ord(data[x+3])
-            if (a <= 126 and a >= 32) or (a==9):
-                strings += data[x+3]
+    n = len(data)
+    while x < n:
+        if (x + 3 < n) and data[x] == 0xc6 and data[x+1] in (0x45, 0x84):
+            a = data[x+3]
+            if (32 <= a <= 126) or (a == 9):
+                strings += chr(a)
             prev = x
             x += 4
-        elif (data[x] == '\xc6') and (data[x+1] == '\x44'):
-            a = ord(data[x+4])
-            if (a <= 126 and a >= 32) or (a==9):
-                strings += data[x+4]
+        elif (x + 4 < n) and data[x] == 0xc6 and data[x+1] == 0x44:
+            a = data[x+4]
+            if (32 <= a <= 126) or (a == 9):
+                strings += chr(a)
             prev = x
             x += 5
-        elif (data[x] == '\xc6') and ((data[x+1] == '\x05') or (data[x+1] == '\x85')):
-            a = ord(data[x+6])
-            if (a <= 126 and a >= 32) or (a==9):
-                strings += data[x+6]
+        elif (x + 6 < n) and data[x] == 0xc6 and data[x+1] in (0x05, 0x85):
+            a = data[x+6]
+            if (32 <= a <= 126) or (a == 9):
+                strings += chr(a)
             prev = x
             x += 7
         else:
-            if ((x - prev) ==12):
+            if ((x - prev) == 12):
                 strings += '\n'
             x += 1
     strings = strings.replace('\x00', '\r')
@@ -473,15 +476,15 @@ def xor_string(md5=None, data=None, key=0, null=0):
 
     if md5:
         data = get_file(md5)
-    out = ''
-    for c in data:
-        if ord(c) == 0 and null == 1:
-            out += c
-        elif ord(c) == key and null == 1:
-            out += c
+    if isinstance(data, str):
+        data = data.encode('latin-1', 'ignore')
+    out = bytearray()
+    for b in data:
+        if null == 1 and (b == 0 or b == key):
+            out.append(b)
         else:
-            out += chr(ord(c) ^ key)
-    return out
+            out.append(b ^ key)
+    return bytes(out)
 
 def xor_search(md5=None, data=None, string=None, skip_nulls=0):
     """
@@ -502,6 +505,8 @@ def xor_search(md5=None, data=None, string=None, skip_nulls=0):
 
     if md5:
         data = get_file(md5)
+    if isinstance(data, str):
+        data = data.encode('latin-1', 'ignore')
     if string is None or string == '':
         plaintext_list = [
                         'This program',

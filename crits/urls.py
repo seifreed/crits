@@ -1,4 +1,4 @@
-import imp
+import importlib.util
 import os
 
 from django.conf import settings
@@ -91,7 +91,9 @@ if settings.ENABLE_API:
                 abs_path = os.path.join(service_directory, d, 'urls.py')
                 if os.path.isfile(abs_path):
                     try:
-                        rdef = imp.load_source('urls', abs_path)
+                        spec = importlib.util.spec_from_file_location('urls', abs_path)
+                        rdef = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(rdef)
                         rdef.register_api(v1_api)
                     except Exception as e:
                         pass

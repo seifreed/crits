@@ -1,14 +1,14 @@
-import cgi
+import html
 import os
 import datetime
-import HTMLParser
+import html
 import json
 import logging
 import re
 import ushlex as shlex
-import urllib
+from urllib.parse import unquote
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 from bson.objectid import ObjectId
 from django.conf import settings
 
@@ -244,8 +244,7 @@ def description_update(type_, id_, description, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    description = h.unescape(description)
+    description = html.unescape(description)
     try:
         obj.description = description
         obj.save(username=user)
@@ -282,8 +281,7 @@ def data_update(type_, id_, data, analyst):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data = h.unescape(data)
+    data = html.unescape(data)
     try:
         obj.data = data
         obj.save(username=analyst)
@@ -1603,7 +1601,7 @@ def parse_search_term(term, force_full=False):
 
     # decode the term so we aren't dealing with weird encoded characters
     if force_full == False:
-        term = urllib.unquote(term)
+        term = unquote(term)
 
     search = {}
 
@@ -2214,7 +2212,7 @@ def get_query(col_obj,request):
         otype = request.GET.get('otype', None)
         if otype:
             search_type = search_type + "_" + otype
-        term = HTMLParser.HTMLParser().unescape(term)
+        term = html.unescape(term)
         qdict = gen_global_query(col_obj,
                                  request.user.username,
                                  term,
@@ -2338,7 +2336,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
             return {'Result': "ERROR", 'Message': response['msg']}
         response['crits_type'] = col_obj._meta['crits_type']
         # Escape term for rendering in the UI.
-        response['term'] = cgi.escape(term)
+        response['term'] = html.escape(term)
         response['data'] = response['data'].to_dict(excludes, includes)
         # Convert data_query to jtable stuff
         response['Records'] = response.pop('data')

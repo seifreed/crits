@@ -1,7 +1,7 @@
 import datetime
 import hashlib
 import json
-import HTMLParser
+import html
 
 try:
     from django.urls import reverse
@@ -619,8 +619,7 @@ def update_dependency(type_, id_, dep, user, append=False, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data_type_dependency = h.unescape(dep)
+    data_type_dependency = html.unescape(dep)
     try:
         deps = data_type_dependency.split(',')
         if append is False:
@@ -668,8 +667,7 @@ def update_min_version(type_, id_, data_type_min_version, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data_type_min_version = h.unescape(data_type_min_version)
+    data_type_min_version = html.unescape(data_type_min_version)
     try:
         obj.data_type_min_version = data_type_min_version
         obj.save(username=user.username)
@@ -707,8 +705,7 @@ def update_max_version(type_, id_, data_type_max_version, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data_type_max_version = h.unescape(data_type_max_version)
+    data_type_max_version = html.unescape(data_type_max_version)
     try:
         obj.data_type_max_version = data_type_max_version
         obj.save(username=user.username)
@@ -759,8 +756,7 @@ def update_signature_data(type_, id_, data, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data = h.unescape(data)
+    data = html.unescape(data)
     try:
         obj.data = data
         obj.save(username=user.username)
@@ -797,8 +793,7 @@ def update_title(type_, id_, title, user, **kwargs):
 
     # Have to unescape the submitted data. Use unescape() to escape
     # &lt; and friends. Use urllib2.unquote() to escape %3C and friends.
-    h = HTMLParser.HTMLParser()
-    data = h.unescape(title)
+    data = html.unescape(title)
     try:
         obj.title = data
         obj.save(username=title)

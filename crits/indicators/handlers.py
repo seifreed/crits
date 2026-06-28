@@ -2,7 +2,7 @@ import csv
 import datetime
 import json
 import logging
-import urlparse
+import urllib.parse as urlparse
 
 from io import BytesIO
 from django.conf import settings

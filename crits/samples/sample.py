@@ -99,9 +99,14 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         self.filedata = data
 
     def _generate_file_metadata(self, data):
-        import pydeep
         import magic
         from hashlib import md5, sha1, sha256
+        # pydeep (ssdeep) and pyimpfuzzy are optional native deps; degrade
+        # gracefully to None hashes when they aren't installed.
+        try:
+            import pydeep
+        except ImportError:
+            pydeep = None
         try:
             import pyimpfuzzy
         except ImportError:

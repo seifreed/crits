@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import datetime
 import email as eml
+from email.header import decode_header, make_header
 from email.parser import Parser
 from email.utils import parseaddr, getaddresses, mktime_tz, parsedate_tz
 import hashlib
@@ -1117,7 +1118,13 @@ def handle_eml(data, sourcename, reference, method, tlp, user, campaign=None,
 
     # clean up headers
     for d in msg.items():
-        cleand = ''.join([x for x in d[1] if (ord(x) < 127 and ord(x) >= 32)])
+        # Decode RFC 2047 encoded-words (e.g. "=?utf-8?B?...?=") so headers like
+        # Subject/From are human-readable, then drop control characters.
+        try:
+            value = str(make_header(decode_header(d[1])))
+        except Exception:
+            value = d[1]
+        cleand = ''.join([x for x in value if x.isprintable() or x == ' '])
         msg_import[d[0].replace(".",
                                 "").replace("$",
                                             "").replace("\x00",

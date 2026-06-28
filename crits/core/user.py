@@ -1100,47 +1100,35 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         return attr
 
 class AuthenticationMiddleware(object):
-    # This has been added to make theSessions work on Django 1.8+ and
-    # mongoengine 0.8.8 see:
-    # https://github.com/MongoEngine/mongoengine/issues/966
-    # For mongoengine 10.x you can comment out AuthenticationMiddleware from settings.py
+    """Resolve ``request.user`` as a CRITsUser from the session.
 
-    from django import VERSION as d_VERSION
+    Django's own AuthenticationMiddleware assumes the auth user model's primary
+    key is an integer (AutoField) and raises on CRITs' ObjectId session ids, so
+    CRITs resolves the user lazily through CRITsAuthBackend instead.
+    """
 
-    if d_VERSION >= (1,10,0):
-        def __init__(self, get_response):
-            self.get_response = get_response
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-        def __call__(self, request):
-            return self.get_response(request)
-
-        def process_exception(self, request, exception):
-            if settings.DEBUG:
-                return HttpResponse("exception: %s" % exception)
-
-    def _get_user_session_key(self, request):
-        from bson.objectid import ObjectId
-
-        # This value in the session is always serialized to a string, so we need
-        # to convert it back to Python whenever we access it.
-        SESSION_KEY = '_auth_user_id'
-        if SESSION_KEY in request.session:
-            return ObjectId(request.session[SESSION_KEY])
-
-    def process_request(self, request):
-        # Used for with Django <1.10
-        try:
-            from mongoengine.django.auth import get_user
-        except ImportError:
-            pass
-
+    def __call__(self, request):
         assert hasattr(request, 'session'), (
-            "The Django authentication middleware requires session middleware "
-            "to be installed. Edit your MIDDLEWARE_CLASSES setting to insert "
+            "The CRITs authentication middleware requires session middleware to "
+            "be installed. Edit MIDDLEWARE to insert "
             "'django.contrib.sessions.middleware.SessionMiddleware' before "
-            "'django.contrib.auth.middleware.AuthenticationMiddleware'."
+            "'crits.core.user.AuthenticationMiddleware'."
         )
-        request.user = SimpleLazyObject(lambda: get_user(self._get_user_session_key(request)))
+        request.user = SimpleLazyObject(lambda: self._get_user(request))
+        return self.get_response(request)
+
+    @staticmethod
+    def _get_user(request):
+        from django.contrib.auth.models import AnonymousUser
+        user_id = request.session.get('_auth_user_id')
+        if user_id:
+            user = CRITsAuthBackend().get_user(user_id)
+            if user is not None:
+                return user
+        return AnonymousUser()
 
 # stolen from MongoEngine and modified to use the CRITsUser class.
 class CRITsAuthBackend(object):

@@ -12,12 +12,29 @@ from urllib.parse import urlparse
 from bson.objectid import ObjectId
 from django.conf import settings
 
-from django.contrib.auth.signals import user_logged_in
-#from django.contrib.auth import login as user_login
 from django.middleware.csrf import rotate_token
 from django.contrib.auth import authenticate
-from django.contrib.auth import login as user_login
-# we implement django.contrib.auth.login as user_login in here to accomodate mongoengine/pymongo
+from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY
+
+
+def user_login(request, user):
+    """Log a CRITsUser in.
+
+    Reimplements ``django.contrib.auth.login`` without touching
+    ``user._meta.pk`` (Django's User Options), which on a mongoengine Document
+    is the ``_meta`` dict and has no ``pk``. CRITsAuthBackend.get_user reloads
+    the user from the id stored in the session.
+    """
+    if user is None:
+        user = request.user
+    if SESSION_KEY in request.session and request.session[SESSION_KEY] != str(user.id):
+        request.session.flush()
+    else:
+        request.session.cycle_key()
+    request.session[SESSION_KEY] = str(user.id)
+    request.session[BACKEND_SESSION_KEY] = 'crits.core.user.CRITsAuthBackend'
+    request.user = user
+    rotate_token(request)
 
 try:
     from django.urls import reverse, resolve, get_script_prefix

@@ -1,10 +1,13 @@
 from django.test import SimpleTestCase
 from django.test.client import RequestFactory
 
+from django.conf import settings
+
 import crits.emails.views as views
 import crits.emails.handlers as handlers
 from crits.core.user import CRITsUser
 from crits.core.handlers import add_new_source
+from crits.core.management.commands.create_roles import add_uber_admin_role
 from crits.core.source_access import SourceAccess
 
 TSRC = "TestSource"
@@ -87,13 +90,17 @@ def prep_db():
 
     clean_db()
     # Add Source
-    add_new_source(TSRC, "RandomUser")
-    # Add User
+    add_new_source(TSRC, TUSER_NAME)
+    # Ensure the UberAdmin role exists with access to all sources (incl. the
+    # one just added) and all ACLs, so the test user can use the web views.
+    add_uber_admin_role(drop=False)
+    # Add User and grant the admin role.
     user = CRITsUser.create_user(
                           username=TUSER_NAME,
                           password=TUSER_PASS,
                           email=TUSER_EMAIL,
                           )
+    user.roles = [settings.ADMIN_ROLE]
     user.save()
 
 
@@ -119,6 +126,8 @@ class EmailHandlerTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
 
     def tearDown(self):
@@ -150,6 +159,8 @@ class EmailViewTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
         # Add a test email
         handlers.handle_eml(EML_DATA, TSRC, "", "Test", "red", self.user)
@@ -162,7 +173,7 @@ class EmailViewTests(SimpleTestCase):
         self.req.user = self.user
         response = views.emails_listing(self.req)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("#email_listing" in response.content)
+        self.assertTrue(b"#email_listing" in response.content)
 
     def testEmailsjtList(self):
         self.req = self.factory.post('/emails/list/jtlist/',

@@ -22,7 +22,7 @@ from django.contrib.auth import login as user_login
 try:
     from django.urls import reverse, resolve, get_script_prefix
 except ImportError:
-    from django.core.urlresolvers import reverse, resolve, get_script_prefix
+    from django.urls import reverse, resolve, get_script_prefix
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -2271,7 +2271,7 @@ def jtable_ajax_list(col_obj,url,urlfieldparam,request,excludes=[],includes=[],q
     :param url: Base URL for objects. Ex ``crits.domains.views.domain_detail``
     :type url: str
     :param urlfieldparam: Field to use for the item detail's URL key.  Passed
-        as arg with ``url`` to :func:`django.core.urlresolvers.reverse`
+        as arg with ``url`` to :func:`django.urls.reverse`
     :type urlfieldparam: str
     :param request: Django request object (Required)
     :type request: :class:`django.http.HttpRequest`

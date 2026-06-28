@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import render
 from hashlib import md5

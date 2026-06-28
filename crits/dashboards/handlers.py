@@ -12,7 +12,7 @@ from mongoengine import Q
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from crits.campaigns.campaign import Campaign
 from crits.indicators.indicator import Indicator
 from crits.emails.email import Email

@@ -13,7 +13,7 @@ from django.conf import settings
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 
 from crits.core.user import CRITsUser
 from crits.core.fields import CritsDateTimeField

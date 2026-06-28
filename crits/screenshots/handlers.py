@@ -8,7 +8,7 @@ from django.shortcuts import render
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 
 from crits.core.class_mapper import class_from_id
 from crits.core.crits_mongoengine import json_handler, create_embedded_source

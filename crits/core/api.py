@@ -9,7 +9,7 @@ from lxml.etree import tostring
 try:
     from django.urls import resolve, get_script_prefix
 except ImportError:
-    from django.core.urlresolvers import resolve, get_script_prefix
+    from django.urls import resolve, get_script_prefix
 
 from tastypie.exceptions import BadRequest, ImmediateHttpResponse
 from tastypie.serializers import Serializer

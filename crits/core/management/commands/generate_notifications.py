@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 try:
     from django.urls import reverse
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 from crits.config.config import CRITsConfig
 from crits.notifications.notification import Notification
 

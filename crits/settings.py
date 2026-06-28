@@ -3,6 +3,7 @@
 import errno
 import glob
 import os
+import runpy
 import sys
 import django
 import subprocess
@@ -10,8 +11,6 @@ import subprocess
 from pymongo import ReadPreference, MongoClient
 from mongoengine import connect
 from mongoengine import __version__ as mongoengine_version
-
-from distutils.version import StrictVersion
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -49,12 +48,6 @@ TEST_RUN = False
 # Get Django version
 DJANGO_VERSION = django.get_version()
 MONGOENGINE_VERSION = mongoengine_version
-#Check mongoengine version (we got it from import)
-if StrictVersion(mongoengine_version) < StrictVersion('0.10.0'):
-    old_mongoengine = True
-    #raise Exception("Mongoengine versions prior to 0.10 are no longer supported! Please see UPDATING!")
-else:
-    old_mongoengine = False
 
 # Some security settings
 # Set to DENY|SAMEORIGIN|ALLOW-FROM uri
@@ -123,10 +116,19 @@ BUCKET_SAMPLES = "samples"
 # Import custom Database config
 dbfile = os.path.join(SITE_ROOT, 'config/database.py')
 if os.path.exists(dbfile):
-    execfile(dbfile)
+    globals().update({k: v for k, v in runpy.run_path(dbfile, init_globals=globals()).items()
+                      if not k.startswith('__')})
 
 if TEST_RUN:
     MONGO_DATABASE = 'crits-unittest'
+
+# SECRET_KEY normally comes from config/database.py; fall back to the
+# environment so the settings module is importable without it.
+SECRET_KEY = globals().get('SECRET_KEY') or os.environ.get('CRITS_SECRET_KEY', '')
+if not SECRET_KEY:
+    SECRET_KEY = 'dev-insecure-secret-key-override-in-config-database-py'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Read preference to configure which nodes you can read from
 # Possible values:
@@ -193,23 +195,20 @@ COL_YARAHITS = "yarahits"                                 # yara hit counts for 
 
 # MongoDB connection pool
 if MONGO_USER:
-    connect(MONGO_DATABASE, host=MONGO_HOST, port=MONGO_PORT, read_preference=MONGO_READ_PREFERENCE, ssl=MONGO_SSL,
+    connect(MONGO_DATABASE, host=MONGO_HOST, port=MONGO_PORT, read_preference=MONGO_READ_PREFERENCE, tls=MONGO_SSL,
             replicaset=MONGO_REPLICASET, username=MONGO_USER, password=MONGO_PASSWORD)
 else:
-    connect(MONGO_DATABASE, host=MONGO_HOST, port=MONGO_PORT, read_preference=MONGO_READ_PREFERENCE, ssl=MONGO_SSL,
+    connect(MONGO_DATABASE, host=MONGO_HOST, port=MONGO_PORT, read_preference=MONGO_READ_PREFERENCE, tls=MONGO_SSL,
             replicaset=MONGO_REPLICASET)
 
-# Get config from DB via pymongo
+# Get config from DB via pymongo (pymongo 4: credentials passed to MongoClient)
 def connect_pymongo(dbs=MONGO_DATABASE, dbhost=MONGO_HOST, dbport=MONGO_PORT, dbuser=MONGO_USER, dbpass=MONGO_PASSWORD, dbssl=MONGO_SSL, w=1):
-    from pymongo import version_tuple as pymongo_versiont
-    if pymongo_versiont >= (3,0):
-        c = MongoClient(dbhost, dbport, ssl=dbssl, w=w) #, connect=False)
-    else:
-        c = MongoClient(dbhost, dbport, ssl=dbssl, w=w)
-    dbase = c[dbs]
+    kwargs = {'tls': dbssl, 'w': w}
     if dbuser:
-        dbase.authenticate(dbuser, dbpass)
-    return dbase
+        kwargs['username'] = dbuser
+        kwargs['password'] = dbpass
+    c = MongoClient(dbhost, dbport, **kwargs)
+    return c[dbs]
 
 PY_DB = connect_pymongo(MONGO_DATABASE, MONGO_HOST, MONGO_PORT, MONGO_USER, MONGO_PASSWORD, MONGO_SSL, 1)
 
@@ -430,262 +429,72 @@ STATICFILES_DIRS = (
 )
 
 
-AUTH_USER_MODEL = 'mongo_auth.MongoUser'
-
 MONGOENGINE_USER_DOCUMENT = 'crits.core.user.CRITsUser'
-# http://django-debug-toolbar.readthedocs.org/en/latest/configuration.html#debug-toolbar-panels
-DEBUG_TOOLBAR_PANELS = [
-    'debug_toolbar.panels.versions.VersionsPanel',
-    'vcs_info_panel.panels.GitInfoPanel',
-    'debug_toolbar.panels.timer.TimerPanel',
-    'debug_toolbar.panels.settings.SettingsPanel',
-    'debug_toolbar.panels.headers.HeadersPanel',
-    'debug_toolbar.panels.request.RequestPanel',
-    'template_timings_panel.panels.TemplateTimings.TemplateTimings',
-    'template_profiler_panel.panels.template.TemplateProfilerPanel',
-    'debug_toolbar_mongo.panel.MongoDebugPanel',
-    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-    'debug_toolbar.panels.templates.TemplatesPanel',
-    'debug_toolbar.panels.cache.CachePanel',
-    'debug_toolbar.panels.signals.SignalsPanel',
-    'debug_toolbar.panels.logging.LoggingPanel',
-    'debug_toolbar.panels.redirects.RedirectsPanel',
-    'debug_toolbar.panels.sql.SQLPanel',
+
+INTERNAL_IPS = ['127.0.0.1']
+
+_TEMPLATE_CONTEXT_PROCESSORS = [
+    'django.template.context_processors.request',
+    'django.template.context_processors.static',
+    'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
+    'crits.core.views.base_context',
+    'crits.core.views.collections',
+    'crits.core.views.user_context',
 ]
 
-INTERNAL_IPS = '127.0.0.1'
+INSTALLED_APPS = (
+    'crits.core',
+    'crits.dashboards',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
+    'crits.actors',
+    'crits.campaigns',
+    'crits.certificates',
+    'crits.domains',
+    'crits.emails',
+    'crits.events',
+    'crits.indicators',
+    'crits.ips',
+    'crits.locations',
+    'crits.objects',
+    'crits.pcaps',
+    'crits.raw_data',
+    'crits.relationships',
+    'crits.samples',
+    'crits.screenshots',
+    'crits.services',
+    'crits.signatures',
+    'crits.stats',
+    'crits.targets',
+)
 
-if django.VERSION >= (1,11,0):
-    DEBUG_TOOLBAR_CONFIG = {
-        # Add in this line to disable the panel
-        'DISABLE_PANELS': {
-            'debug_toolbar.panels.templates.TemplatesPanel',
-            'debug_toolbar.panels.redirects.RedirectsPanel',
-        },
-    }
-
-
-if django.VERSION >= (1,8,0):
-    #'django.template.context_processors.debug',
-    _TEMPLATE_CONTEXT_PROCESSORS = [
-        'django.template.context_processors.request',
-        'django.template.context_processors.static',
-        'django.contrib.auth.context_processors.auth',
-        'django.contrib.messages.context_processors.messages',
-        'crits.core.views.base_context',
-        'crits.core.views.collections',
-        'crits.core.views.user_context',
-    ]
-else:
-    _TEMPLATE_CONTEXT_PROCESSORS = (
-        'django.core.context_processors.request',
-        'django.core.context_processors.static',
-        'django.contrib.auth.context_processors.auth',
-        'django.contrib.messages.context_processors.messages',
-        'crits.core.views.base_context',
-        'crits.core.views.collections',
-        'crits.core.views.user_context',
-    )
-
-if old_mongoengine:
-    INSTALLED_APPS = (
-        'crits.core',
-        'crits.dashboards',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.messages',
-        'django.contrib.sessions',
-        'django.contrib.sites',
-        'django.contrib.staticfiles',
-        'crits.actors',
-        'crits.campaigns',
-        'crits.certificates',
-        'crits.domains',
-        'crits.emails',
-        'crits.events',
-        'crits.indicators',
-        'crits.ips',
-        'crits.locations',
-        'crits.objects',
-        'crits.pcaps',
-        'crits.raw_data',
-        'crits.relationships',
-        'crits.samples',
-        'crits.screenshots',
-        'crits.services',
-        'crits.signatures',
-        'crits.stats',
-        'crits.targets',
-        'tastypie',
-        'tastypie_mongoengine',
-        'mongoengine.django.mongo_auth',
-
-
-    )
-    if ENABLE_DT:
-        INSTALLED_APPS += (
-            'template_timings_panel',
-            'template_profiler_panel',
-            'debug_toolbar_mongo',
-            'vcs_info_panel',
-            'debug_toolbar',
-        )
-
-    _MIDDLEWARE = (
+_MIDDLEWARE = (
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'crits.core.user.AuthenticationMiddleware',
-    )
-    # crits.core.user.AuthenticationMiddleware' # Only needed for mongoengine<0.10
-    if ENABLE_DT:
-        _MIDDLEWARE += ( 
-            'debug_toolbar.middleware.DebugToolbarMiddleware',
-        )
+)
 
-    if django.VERSION >= (1,8,0):
-        _MIDDLEWARE += ('django.middleware.security.SecurityMiddleware',)
-    # Only needed for mongoengine<0.10
-    _MIDDLEWARE += ('crits.core.user.AuthenticationMiddleware',)
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
-
-    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-    #SESSION_ENGINE = 'mongoengine.django.sessions'
-    #SESSION_ENGINE = 'django_mongoengine.sessions'
-    SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
-
-    AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
-        'crits.core.user.CRITsAuthBackend',
-    )   # not needed on good old mongoengine
-        #'django_mongoengine.mongo_auth.backends.MongoEngineBackend',
-
-else:
-    # new mongoengine (0.10+)
-    INSTALLED_APPS = (
-        'crits.core',
-        'crits.dashboards',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.messages',
-        'django.contrib.sessions',
-        'django.contrib.sites',
-        'django.contrib.staticfiles',
-        'crits.actors',
-        'crits.campaigns',
-        'crits.certificates',
-        'crits.domains',
-        'crits.emails',
-        'crits.events',
-        'crits.indicators',
-        'crits.ips',
-        'crits.locations',
-        'crits.objects',
-        'crits.pcaps',
-        'crits.raw_data',
-        'crits.relationships',
-        'crits.samples',
-        'crits.screenshots',
-        'crits.services',
-        'crits.signatures',
-        'crits.stats',
-        'crits.targets',
-        'tastypie',
-        'tastypie_mongoengine',
-        'django_mongoengine',
-        'django_mongoengine.mongo_auth',
-    )
-        
-    if ENABLE_DT:
-        INSTALLED_APPS += ( 
-            'template_timings_panel',
-            'template_profiler_panel',
-            'debug_toolbar_mongo',
-            'vcs_info_panel',
-            'debug_toolbar',
-        )
-
-    _MIDDLEWARE = (
-        'django.middleware.common.CommonMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    )
-    if ENABLE_DT:
-        _MIDDLEWARE += (
-            'debug_toolbar.middleware.DebugToolbarMiddleware',
-
-        )
-
-    if django.VERSION >= (1,8,0):
-        _MIDDLEWARE += ('django.middleware.security.SecurityMiddleware',)
-
-    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-    #SESSION_ENGINE = 'django_mongoengine.sessions'
-
-    SESSION_SERIALIZER = 'django_mongoengine.sessions.BSONSerializer'
-
-    AUTHENTICATION_BACKENDS = (
-
-        'django_mongoengine.mongo_auth.backends.MongoEngineBackend',
-        'crits.core.user.CRITsAuthBackend',
-    )        
-        #'django.contrib.auth.backends.ModelBackend',
-        #'django_mongoengine.mongo_auth.backends.MongoEngineBackend',
+AUTHENTICATION_BACKENDS = (
+    'crits.core.user.CRITsAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 if REMOTE_USER:
     AUTHENTICATION_BACKENDS = (
         'crits.core.user.CRITsRemoteUserBackend',
     )
-    if old_mongoengine:
-        _MIDDLEWARE = (
-            'django.middleware.common.CommonMiddleware',
-            'django.contrib.sessions.middleware.SessionMiddleware',
-            'django.contrib.auth.middleware.AuthenticationMiddleware',
-            'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-            'django.contrib.messages.middleware.MessageMiddleware',
-            'django.middleware.clickjacking.XFrameOptionsMiddleware',
-            'django.middleware.csrf.CsrfViewMiddleware',
-        )
-        if django.VERSION >= (1,8,0):
-            _MIDDLEWARE += ('django.middleware.security.SecurityMiddleware',)
-
-        _MIDDLEWARE += (
-            'crits.core.user.AuthenticationMiddleware',
-            'django.contrib.auth.middleware.RemoteUserMiddleware',
-        )
-
-        if ENABLE_DT:
-            _MIDDLEWARE += (
-                'debug_toolbar.middleware.DebugToolbarMiddleware',
-            )
-    else:
-        _MIDDLEWARE = (
-            'django.middleware.common.CommonMiddleware',
-            'django.contrib.sessions.middleware.SessionMiddleware',
-            'django.contrib.auth.middleware.AuthenticationMiddleware',
-            'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-            'django.contrib.messages.middleware.MessageMiddleware',
-            'django.middleware.clickjacking.XFrameOptionsMiddleware',
-            'django.middleware.csrf.CsrfViewMiddleware',
-            'django.contrib.auth.middleware.RemoteUserMiddleware',
-        )
-        if ENABLE_DT:
-            _MIDDLEWARE += ( 
-                'debug_toolbar.middleware.DebugToolbarMiddleware',
-            )
-
-        if django.VERSION >= (1,8,0):
-            _MIDDLEWARE += ('django.middleware.security.SecurityMiddleware',)
-
-        _MIDDLEWARE += ('django.contrib.auth.middleware.RemoteUserMiddleware',)
+    _MIDDLEWARE += ('django.contrib.auth.middleware.RemoteUserMiddleware',)
 
 MONGODB_DATABASES = {
     "default": {
@@ -820,34 +629,23 @@ REMOTE_USER_META = 'REMOTE_USER'
 
 
 
-if StrictVersion(DJANGO_VERSION) < StrictVersion('1.10.0'):
-    MIDDLEWARE_CLASSES = _MIDDLEWARE
-else:
-    MIDDLEWARE = _MIDDLEWARE
+MIDDLEWARE = _MIDDLEWARE
 
-if StrictVersion(DJANGO_VERSION) < StrictVersion('1.8.0'):
-    print ("Django  versions prior to 1.8.0 are not supported! Please consider upgrading.")
-    TEMPLATE_DEBUG = _TEMPLATE_DEBUG
-    TEMPLATE_DIRS = _TEMPLATE_DIRS
-    TEMPLATE_CONTEXT_PROCESSORS = _TEMPLATE_CONTEXT_PROCESSORS
-else:
-    TEMPLATES = [
-        {
-            'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            #'APP_DIRS': False,'
-            'DIRS': _TEMPLATE_DIRS,
-            'OPTIONS': {
-                #'dirs' : #_TEMPLATE_DIRS,
-                'context_processors' : _TEMPLATE_CONTEXT_PROCESSORS,
-                'debug' : _TEMPLATE_DEBUG,
-                'loaders' : _TEMPLATE_LOADERS,
-
-            },
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': _TEMPLATE_DIRS,
+        'OPTIONS': {
+            'context_processors': _TEMPLATE_CONTEXT_PROCESSORS,
+            'debug': _TEMPLATE_DEBUG,
+            'loaders': _TEMPLATE_LOADERS,
         },
-    ]
+    },
+]
 
 
 # Import custom settings if it exists
 csfile = os.path.join(SITE_ROOT, 'config/overrides.py')
 if os.path.exists(csfile):
-    execfile(csfile)
+    globals().update({k: v for k, v in runpy.run_path(csfile, init_globals=globals()).items()
+                      if not k.startswith('__')})

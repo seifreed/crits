@@ -4364,7 +4364,7 @@ def get_role_details(rid, roles, analyst):
         show_roles = roles
 
     do_not_render = ['_id', 'schema_version']
-    if role != None:
+    if role is not None:
         from crits.core.forms import RoleSourceEdit
         d = {'sources': [s['name'] for s in role['sources']]}
         source_form = RoleSourceEdit(initial=d)

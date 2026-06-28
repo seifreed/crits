@@ -484,7 +484,7 @@ def add_new_domain(data, request, errors, rowData=None, is_validate_only=False, 
                 objectsData = json.loads(objectsData)
                 current_domain = retrieve_domain(domain, cache)
                 for object_row_counter, objectData in enumerate(objectsData, 1):
-                    if current_domain != None:
+                    if current_domain is not None:
                         # if the domain exists then try to add objects to it
                         if isinstance(current_domain, Domain) == True:
                             objectDict = object_array_to_dict(objectData,
@@ -606,7 +606,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
     root_domain = None
     cached_results = cache.get(form_consts.Domain.CACHED_RESULTS)
 
-    if cached_results != None:
+    if cached_results is not None:
         if domain != root:
             fqdn_domain = cached_results.get(domain)
             root_domain = cached_results.get(root)
@@ -626,7 +626,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
         root_domain.record_type = 'A'
         is_root_domain_new = True
 
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[root] = root_domain
     if domain != root and not fqdn_domain:
         fqdn_domain = Domain()
@@ -635,7 +635,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
         fqdn_domain.record_type = 'A'
         is_fqdn_domain_new = True
 
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[domain] = fqdn_domain
 
     # if new or found, append the new source(s)
@@ -868,7 +868,7 @@ def parse_row_to_bound_domain_form(request, rowData, cache):
 
         bound_domain_form = cache.get("domain_ip_form")
 
-        if bound_domain_form == None:
+        if bound_domain_form is None:
             bound_domain_form = AddDomainForm(request.user, data)
             cache['domain_ip_form'] = bound_domain_form
         else:
@@ -887,13 +887,13 @@ def parse_row_to_bound_domain_form(request, rowData, cache):
 
         bound_domain_form = cache.get("domain_form")
 
-        if bound_domain_form == None:
+        if bound_domain_form is None:
             bound_domain_form = AddDomainForm(request.user, data)
             cache['domain_form'] = bound_domain_form
         else:
             bound_domain_form.data = data
 
-    if bound_domain_form != None:
+    if bound_domain_form is not None:
         bound_domain_form.full_clean()
 
     return bound_domain_form
@@ -918,8 +918,8 @@ def process_bulk_add_domain(request, formdict):
 
     cleanedRowsData = convert_handsontable_to_rows(request)
     for rowData in cleanedRowsData:
-        if rowData != None:
-            if rowData.get(form_consts.Domain.DOMAIN_NAME) != None:
+        if rowData is not None:
+            if rowData.get(form_consts.Domain.DOMAIN_NAME) is not None:
                 domain = rowData.get(form_consts.Domain.DOMAIN_NAME).strip().lower()
                 (root_domain, full_domain, error) = get_valid_root_domain(domain)
                 domain_names.append(full_domain)
@@ -927,7 +927,7 @@ def process_bulk_add_domain(request, formdict):
                 if domain != root_domain:
                     domain_names.append(root_domain)
 
-            if rowData.get(form_consts.Domain.IP_ADDRESS) != None:
+            if rowData.get(form_consts.Domain.IP_ADDRESS) is not None:
                 ip_addr = rowData.get(form_consts.Domain.IP_ADDRESS)
                 ip_type = rowData.get(form_consts.Domain.IP_TYPE)
                 (ip_addr, error) = validate_and_normalize_ip(ip_addr, ip_type)

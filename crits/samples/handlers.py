@@ -797,7 +797,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         else:
             return retVal
 
-    if sha1_digest != None and sha1_digest != "":
+    if sha1_digest is not None and sha1_digest != "":
         sha1_digest = sha1_digest.lower().strip()
         validate_sha1_result = validate_sha1_checksum(sha1_digest)
         retVal['message'] += validate_sha1_result.get('message')
@@ -809,7 +809,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
         else:
             return retVal
 
-    if sha256_digest != None and sha256_digest != "":
+    if sha256_digest is not None and sha256_digest != "":
         sha256_digest = sha256_digest.lower().strip()
         validate_sha256_result = validate_sha256_checksum(sha256_digest)
         retVal['message'] += validate_sha256_result.get('message')
@@ -853,7 +853,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
 
     cached_results = cache.get(form_consts.Sample.CACHED_RESULTS)
 
-    if cached_results != None:
+    if cached_results is not None:
         sample = cached_results.get(md5_digest)
     else:
         sample = Sample.objects(md5=md5_digest).first()
@@ -869,7 +869,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
     else:
         if filename not in sample.filenames and filename != sample.filename:
             sample.filenames.append(filename)
-        if cached_results != None:
+        if cached_results is not None:
             cached_results[md5_digest] = sample
 
     if not sample.description:
@@ -952,7 +952,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
     elif is_validate_only == False:
         # assume it's a list of EmbeddedCampaign, but check if it's a string
         # if it is a string then create a new EmbeddedCampaign
-        if campaign != None:
+        if campaign is not None:
             campaign_array = campaign
 
             if isinstance(campaign, str):
@@ -1022,7 +1022,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
                                              args=[sample.md5.lower()]),
                                              sample.md5.lower()))
             # Update Cache
-            if cached_results != None:
+            if cached_results is not None:
                 cached_results[sample.md5] = sample
     else:
         # Duplicate sample, but uploaded anyways
@@ -1036,7 +1036,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
             retVal['warning'] = message
         # Duplicate sample, but only validation
         else:
-            if sample.id != None:
+            if sample.id is not None:
                 warning_message = ('Warning: Trying to add file [' +
                                     filename + ']'
                                     ' when MD5 already exists as file [' +
@@ -1314,7 +1314,7 @@ def add_new_sample_via_bulk(data, rowData, request, errors, is_validate_only=Fal
                 objectsData = json.loads(objectsData)
 
                 for object_row_counter, objectData in enumerate(objectsData, 1):
-                    if sample.get('object') != None and is_validate_only == False:
+                    if sample.get('object') is not None and is_validate_only == False:
                         objectDict = object_array_to_dict(objectData, "Sample",
                                                           sample.get('object').id)
                     else:
@@ -1429,7 +1429,7 @@ def parse_row_to_bound_sample_form(request, rowData, cache, upload_type="File Up
 
     bound_md5_sample_form = cache.get('sample_form')
 
-    if bound_md5_sample_form == None:
+    if bound_md5_sample_form is None:
         bound_md5_sample_form = UploadFileForm(request.user, data, request.FILES)
         cache['sample_form'] = bound_md5_sample_form
     else:
@@ -1472,7 +1472,7 @@ def process_bulk_add_md5_sample(request, formdict):
 
     cleanedRowsData = convert_handsontable_to_rows(request)
     for rowData in cleanedRowsData:
-        if rowData != None and rowData.get(form_consts.Sample.MD5) != None:
+        if rowData is not None and rowData.get(form_consts.Sample.MD5) is not None:
             md5_samples.append(rowData.get(form_consts.Sample.MD5).lower())
 
     md5_results = Sample.objects(md5__in=md5_samples)

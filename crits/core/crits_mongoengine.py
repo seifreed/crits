@@ -1370,7 +1370,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         """
 
         if isinstance(campaign_item, EmbeddedCampaign):
-            if campaign_item.name != None and campaign_item.name.strip() != '':
+            if campaign_item.name is not None and campaign_item.name.strip() != '':
                 campaign_item.confidence = campaign_item.confidence.strip().lower()
                 if campaign_item.confidence == '':
                     campaign_item.confidence = 'low'
@@ -1428,7 +1428,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         """
 
         if isinstance(location_item, EmbeddedLocation):
-            if (location_item.location != None and
+            if (location_item.location is not None and
                 location_item.location.strip() != ''):
                 for l, location in enumerate(self.locations):
                     if (location.location == location_item.location and

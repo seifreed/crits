@@ -462,7 +462,7 @@ class CRITsAPIResource(MongoEngineResource):
                     except ValueError:
                         op_index = None
 
-                    if op_index == None:
+                    if op_index is None:
                         querydict[field] = ObjectId(v)
                     elif op in ['$in', '$nin']:
                         querydict[field] = {op: [ObjectId(x) for x in v.split(',')]}

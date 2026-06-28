@@ -116,7 +116,7 @@ def update_results(collection, m, r, stat_query, field, campaign_stats):
     if collection.find().count() > 0:
         results = collection.inline_map_reduce(m,r, query=stat_query)
         for result in results:
-            if result["_id"] != None:
+            if result["_id"] is not None:
                 if result["_id"] not in campaign_stats:
                     campaign_stats[result["_id"]] = zero_campaign()
                 campaign_stats[result["_id"]][field] = result["value"]["count"]

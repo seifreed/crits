@@ -238,11 +238,11 @@ def upload_indicator(request):
                 else:
                     failed_msg = result['message'] + ' - '
 
-        if result == None or not result['success']:
+        if result is None or not result['success']:
             failed_msg += ('<a href="%s"> Go to all indicators</a></div>'
                            % reverse('crits-indicators-views-indicators_listing'))
             message = {'message': failed_msg, 'form': form.as_table()}
-        elif result != None:
+        elif result is not None:
             message['success'] = result['success']
 
         if request.is_ajax():

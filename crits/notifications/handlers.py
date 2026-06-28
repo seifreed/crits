@@ -510,7 +510,7 @@ def get_user_notifications(username, count=False, newer_than=None):
     """
     n = None
 
-    if newer_than is None or newer_than == None:
+    if newer_than is None or newer_than is None:
         if count:
             n = Notification.objects(users=username).order_by('-created').count()
         else:

@@ -475,7 +475,7 @@ def get_nav_template(nav_preferences):
     :returns: The navigation template for the specified navigation preference.
               If a navigation preference is not specified then None is returned.
     """
-    if nav_preferences != None:
+    if nav_preferences is not None:
         nav_menu = nav_preferences.get("nav_menu")
 
         if nav_menu == "topmenu":

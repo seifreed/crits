@@ -176,7 +176,7 @@ def format_file(data, file_format):
     :returns: tuple of (<formatted_data>, <file_extension>)
     """
 
-    if data == None:
+    if data is None:
         return ("", "")
 
     if file_format == "base64":
@@ -225,7 +225,7 @@ def convert_string_to_bool(value):
     :returns: True, False
     """
 
-    if(value != None) and ((value == True) or (value == "True") or (value == "true")):
+    if(value is not None) and ((value == True) or (value == "True") or (value == "true")):
         return True
     else:
         return False
@@ -628,7 +628,7 @@ def validate_md5_checksum(md5_checksum):
     """
     retVal = {'success': True, 'message': ''}
 
-    if re.match("^[a-fA-F0-9]{32}$", md5_checksum) == None:
+    if re.match("^[a-fA-F0-9]{32}$", md5_checksum) is None:
         retVal['message'] += "The MD5 digest needs to be 32 hex characters."
         retVal['success'] = False
 
@@ -642,7 +642,7 @@ def validate_sha1_checksum(sha1_checksum):
     """
     retVal = {'success': True, 'message': ''}
 
-    if re.match("^[a-fA-F0-9]{40}$", sha1_checksum) == None:
+    if re.match("^[a-fA-F0-9]{40}$", sha1_checksum) is None:
         retVal['message'] += "The SHA1 digest needs to be 40 hex characters."
         retVal['success'] = False
 
@@ -658,7 +658,7 @@ def validate_sha256_checksum(sha256_checksum):
     """
     retVal = {'success': True, 'message': ''}
 
-    if re.match("^[a-fA-F0-9]{64}$", sha256_checksum) == None:
+    if re.match("^[a-fA-F0-9]{64}$", sha256_checksum) is None:
         retVal['message'] += "The SHA256 digest needs to be 64 hex characters."
         retVal['success'] = False
 

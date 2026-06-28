@@ -1316,7 +1316,7 @@ def base_context(request):
             logger.warning("Base Context user_sources Error: %s" % e)
 
         nav_template = get_nav_template(request.user.prefs.nav)
-        if nav_template != None:
+        if nav_template is not None:
             base_context['nav_template'] = nav_template
 
         base_context['newer_notifications_location'] = request.user.prefs.toast_notifications.get('newer_notifications_location', 'top')

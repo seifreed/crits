@@ -1411,14 +1411,14 @@ def create_indicator_from_header_field(email, header_field, ind_type,
     value = getattr(email, header_field)
 
     # Check to make sure the "value" is valid
-    if value == None or value.strip() == "":
+    if value is None or value.strip() == "":
         result = {
             'success':  False,
             'message':  "Can't create indicator from email field [" +
                         str(header_field) + "] with an empty value field",
         }
         return result
-    elif ind_type == None or ind_type.strip() == "":
+    elif ind_type is None or ind_type.strip() == "":
         result = {
             'success':  False,
             'message':  "Can't create indicator from email field " +

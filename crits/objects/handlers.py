@@ -69,14 +69,14 @@ def validate_and_add_new_handler_object(data, rowData, request, errors,
     else:
         formdict = cache.get("object_formdict")
 
-        if formdict == None:
+        if formdict is None:
             object_form = AddObjectForm(request.user)
             formdict = form_to_dict(object_form)
             cache['object_formdict'] = formdict
 
         for name, errorMessages in bound_form.errors.items():
             entry = get_field_from_label(name, formdict)
-            if entry == None:
+            if entry is None:
                 continue
             for message in errorMessages:
                 errors.append("%s #%s - %s - %s" % (form_consts.Common.OBJECTS_DATA,
@@ -161,7 +161,7 @@ def add_new_handler_object(data, rowData, request, is_validate_only=False,
             source = get_user_organization(analyst)
             cache['object_user_source'] =  source
 
-    if (otype == "" or otype == None) or (oid == "" or oid == None):
+    if (otype == "" or otype is None) or (oid == "" or oid is None):
         is_validate_locally = True
 
     # TODO file_
@@ -178,7 +178,7 @@ def add_new_handler_object(data, rowData, request, is_validate_only=False,
         if 'message' in object_result:
             retVal['message'] = object_result['message']
         if is_validate_only == False:
-            if obj == None:
+            if obj is None:
                 obj = class_from_id(otype, oid)
 
             if obj:
@@ -529,13 +529,13 @@ def create_indicator_from_object(rel_type, rel_id, ind_type, value,
     if not me:
         result = {'success': False,
                   'message': "Could not find %s" % rel_type}
-    elif value == None or value.strip() == "":
+    elif value is None or value.strip() == "":
         result = {'success':  False,
                   'message':  "Can't create indicator with an empty value field"}
-    elif ind_type == None or ind_type.strip() == "":
+    elif ind_type is None or ind_type.strip() == "":
         result = {'success':  False,
                   'message':  "Can't create indicator with an empty type field"}
-    elif source_name == None or source_name.strip() == "":
+    elif source_name is None or source_name.strip() == "":
         result = {'success':  False,
                   'message':  "Can't create indicator with an empty source field"}
     else:
@@ -654,7 +654,7 @@ def parse_row_to_bound_object_form(request, rowData, cache):
 
     bound_form = cache.get("object_form")
 
-    if bound_form == None:
+    if bound_form is None:
         bound_form = AddObjectForm(request.user, data)
         cache['object_form'] = bound_form
     else:

@@ -187,10 +187,10 @@ def get_target_details(email_address, user):
     email_list = target.find_emails(user)
     form = TargetInfoForm(user, initial=target.to_dict())
 
-    if form.fields.get(form_consts.Common.BUCKET_LIST_VARIABLE_NAME) != None:
+    if form.fields.get(form_consts.Common.BUCKET_LIST_VARIABLE_NAME) is not None:
         form.fields.pop(form_consts.Common.BUCKET_LIST_VARIABLE_NAME)
 
-    if form.fields.get(form_consts.Common.TICKET_VARIABLE_NAME) != None:
+    if form.fields.get(form_consts.Common.TICKET_VARIABLE_NAME) is not None:
         form.fields.pop(form_consts.Common.TICKET_VARIABLE_NAME)
 
     subscription = {

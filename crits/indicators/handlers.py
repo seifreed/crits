@@ -290,11 +290,11 @@ def get_indicator_type_value_pair(field):
     """
 
     # this is an object
-    if field.get("type") != None and field.get("value") != None:
+    if field.get("type") is not None and field.get("value") is not None:
         return (field.get("type"), field.get("value").lower().strip())
 
     # this is an email field
-    if field.get("field_type") != None and field.get("field_value") != None:
+    if field.get("field_type") is not None and field.get("field_value") is not None:
         return (field.get("field_type"), field.get("field_value").lower().strip())
 
     # otherwise the logic to extract the type/value pair from this
@@ -568,10 +568,10 @@ def handle_indicator_ind(value, source, ctype, threat_type, attack_type,
     if status is None:
         status = Status.NEW
 
-    if value == None or value.strip() == "":
+    if value is None or value.strip() == "":
         result = {'success': False,
                   'message': "Can't create indicator with an empty value field"}
-    elif ctype == None or ctype.strip() == "":
+    elif ctype is None or ctype.strip() == "":
         result = {'success': False,
                   'message': "Can't create indicator with an empty type field"}
     else:
@@ -911,11 +911,11 @@ def does_indicator_relationship_exist(field, indicator_relationships):
 
     type, value = get_indicator_type_value_pair(field)
 
-    if indicator_relationships != None:
-        if type != None and value != None:
+    if indicator_relationships is not None:
+        if type is not None and value is not None:
             for indicator_relationship in indicator_relationships:
 
-                if indicator_relationship == None:
+                if indicator_relationship is None:
                     logger.error('Indicator relationship is not valid: ' +
                                  str(indicator_relationship))
                     continue

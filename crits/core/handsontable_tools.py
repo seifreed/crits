@@ -36,7 +36,7 @@ def convert_handsontable_to_rows(request):
         cleanedRowData = {}
 
         # If the row data is null that means we should skip processing for this row
-        if rowData != None:
+        if rowData is not None:
             for columnKey, columnValue in rowData.items():
                 cleanedRowData[remove_html_tags(columnKey)] = columnValue
 
@@ -88,7 +88,7 @@ def form_to_dict(form):
         newItem['isRequired'] = field.field.required
 
         classes = field.field.widget.attrs.get('class')
-        if classes != None:
+        if classes is not None:
             if "bulkskip" not in classes:
                 newItem['classes'] = classes.split()
 
@@ -205,7 +205,7 @@ def parse_bulk_upload(request, parse_row_function, add_new_function, formdict, c
 
         # Make sure that the rowData has content, otherwise the client side
         # might have done some filtering to ignore rows that have no data.
-        if(rowData == None):
+        if(rowData is None):
             continue
 
         try:
@@ -258,7 +258,7 @@ def parse_bulk_upload(request, parse_row_function, add_new_function, formdict, c
 
                 for name, errorMessages in bound_form.errors.items():
                     entry = get_field_from_label(name, formdict)
-                    if entry == None:
+                    if entry is None:
                         continue
                     for message in errorMessages:
                         failedRows.append({'row': rowCounter,

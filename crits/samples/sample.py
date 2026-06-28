@@ -142,7 +142,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         Is this a Office file.
         """
 
-        ret = self.filedata.grid_id != None and self.filedata.read(8) == "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+        ret = self.filedata.grid_id is not None and self.filedata.read(8) == "\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
         if self.filedata.grid_id:
             self.filedata.seek(0)
         return ret
@@ -152,7 +152,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         Is this a PE file.
         """
 
-        ret = self.filedata.grid_id != None and self.filedata.read(2) == "MZ"
+        ret = self.filedata.grid_id is not None and self.filedata.read(2) == "MZ"
         if self.filedata.grid_id:
             self.filedata.seek(0)
         return ret
@@ -162,7 +162,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         Is this a PDF.
         """
 
-        ret = self.filedata.grid_id != None and "%PDF-" in self.filedata.read(1024)
+        ret = self.filedata.grid_id is not None and "%PDF-" in self.filedata.read(1024)
         if self.filedata.grid_id:
             self.filedata.seek(0)
         return ret

@@ -902,7 +902,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
             self.get_access_list(update=True)
         try:
             return [s.name for s in self.acl.get('sources')]
-        except:
+        except Exception:
             return []
 
     def check_source_tlp(self, object):
@@ -1110,7 +1110,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         for a in attrs:
             try:
                 attr = attr.get(a, False)
-            except:
+            except Exception:
                 return False
         return attr
 
@@ -1344,7 +1344,7 @@ Please contact a site administrator to resolve.
         ct = time.time()
         try:
             lt = time.mktime(user.login_attempts[-1]['date'].timetuple())
-        except:
+        except Exception:
             lt = 0
         if ct - lt < 10:
             logger.info("Multiple login attempts detected exceeding "

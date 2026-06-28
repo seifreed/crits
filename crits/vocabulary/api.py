@@ -51,7 +51,7 @@ class VocabResource(CRITsAPIResource):
         category = kwargs['pk']
         try:
             class_ = globals()[category]
-        except:
+        except Exception:
             msg = 'Vocabulary category "%s" does not exist' % category
             raise ImmediateHttpResponse(response=http.HttpBadRequest(msg))
 

@@ -55,13 +55,13 @@ class ForgeRelationshipForm(forms.Form):
         if 'forward_value' in cleaned_data:
             try:
                 cleaned_data['forward_value'] = cleaned_data['forward_value'].strip()
-            except:
+            except Exception:
                 pass
 
         if 'dest_id' in cleaned_data:
             try:
                 cleaned_data['dest_id'] = cleaned_data['dest_id'].strip()
-            except:
+            except Exception:
                 pass
 
         return cleaned_data

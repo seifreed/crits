@@ -497,37 +497,37 @@ def handle_email_fields(data, user, method, related_id=None,
         method = method + " - " + data.get('source_method', None)
     try:
         del data['source_method']
-    except:
+    except Exception:
         pass
     reference = data.get('source_reference', None)
     try:
         del data['source_reference']
-    except:
+    except Exception:
         pass
     tlp = data.get('source_tlp', 'amber')
     try:
         del data['source_tlp']
-    except:
+    except Exception:
         pass
     bucket_list = data.get('bucket_list', None)
     try:
         del data['bucket_list']
-    except:
+    except Exception:
         pass
     ticket = data.get('ticket', None)
     try:
         del data['ticket']
-    except:
+    except Exception:
         pass
     campaign = data.get('campaign', None)
     try:
         del data['campaign']
-    except:
+    except Exception:
         pass
     confidence = data.get('campaign_confidence', 'low')
     try:
         del data['campaign_confidence']
-    except:
+    except Exception:
         pass
 
     try:
@@ -542,7 +542,7 @@ def handle_email_fields(data, user, method, related_id=None,
                     data[x] = []
             elif not y:
                 data[x] = []
-    except:
+    except Exception:
         pass
 
     new_email = Email()
@@ -1720,7 +1720,7 @@ def parse_ole_file(file):
             date = _get_received_date(received) # date
             try:
                 current_date = datetime.datetime.fromtimestamp(mktime_tz(parsedate_tz(date))) # rfc2822 -> Time -> Datetime
-            except:
+            except Exception:
                 # Exception will occur if the date is not in the Received header. This could be
                 # where the originating IP is. e.g. Received: from 11.12.13.14 by rms-us019 with HTTP
                 current_date = datetime.datetime.min
@@ -1774,7 +1774,7 @@ def _get_received_from(received_header):
     info = received_header.split('by ')
     try:
         return info[0]
-    except:
+    except Exception:
         ''
 def _get_received_by(received_header):
     """
@@ -1785,7 +1785,7 @@ def _get_received_by(received_header):
     info = received_header.split('by ')
     try:
         return info[-1].split('for ')[0]
-    except:
+    except Exception:
         return ''
 
 def _get_received_for(received_header):
@@ -1798,7 +1798,7 @@ def _get_received_for(received_header):
     info = received_header.split('for ')
     try:
         return info[-1].split(';')[0]
-    except:
+    except Exception:
         return ''
 
 def _get_received_date(received_header):
@@ -1810,7 +1810,7 @@ def _get_received_date(received_header):
     date = received_header.split(';')
     try:
         return date[-1]
-    except:
+    except Exception:
         ''
 def _is_reserved_ip(ip):
     """

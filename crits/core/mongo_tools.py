@@ -161,7 +161,7 @@ def delete_file(sample_md5, collection=settings.COL_SAMPLES):
         try:
             fs.delete(objectid)
             return True
-        except:
+        except Exception:
             return None
     return success
 

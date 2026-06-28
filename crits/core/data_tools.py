@@ -607,7 +607,7 @@ def generate_qrcode(data, size):
     try:
         import qrcode
         import io
-    except:
+    except Exception:
         return None
     a = io.BytesIO()
     qr = qrcode.QRCode()

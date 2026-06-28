@@ -104,7 +104,7 @@ from crits.signatures.signature import SignatureDependency
 from crits.targets.forms import TargetInfoForm
 
 from crits.vocabulary.sectors import Sectors
-from crits.vocabulary.acls import *
+from crits.vocabulary.acls import GeneralACL, ReadACL
 
 logger = logging.getLogger(__name__)
 
@@ -1094,7 +1094,7 @@ def download_object(request):
             rel_limit = int(rel_limit)
             if total_limit < 0 or depth_limit < 0 or rel_limit < 0:
                 raise
-        except:
+        except Exception:
             return render(request, "error.html", {"error" : "Limits must be positive integers."})
 
         # Don't exceed the configured maximums. This is done in the view
@@ -1876,7 +1876,7 @@ def role_details(request, rid=None):
     # Silly Django :(
     try:
         roles = request.POST.getlist('roles', None)
-    except:
+    except Exception:
         roles = None
     analyst = request.user.username
     template = "role_detail.html"

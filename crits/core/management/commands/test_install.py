@@ -84,7 +84,7 @@ class Command(BaseCommand):
                     op.communicate()
                     if op.returncode:
                         print(CE('Could not find binary %s. Is it installed properly?' % i))
-                except:
+                except Exception:
                     print(CE('Could not find binary %s. Is it installed properly?' % i))
                     # Required to continue script, so totally fail if these
                     # are missing.
@@ -112,7 +112,7 @@ class Command(BaseCommand):
                                         port=settings.MONGO_PORT,
                                         read_preference=settings.MONGO_READ_PREFERENCE,
                                         ssl=settings.MONGO_SSL)
-            except:
+            except Exception:
                 raise CE('Could not connect to Mongo Database. Is it running'
                          ' and is CRITs configured to connect to it properly?')
 

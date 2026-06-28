@@ -45,7 +45,7 @@ def get_dashboard(user,dashId=None):
     elif user.defaultDashboard:
         try:
             dashboard = Dashboard.objects(id=user.defaultDashboard).first()
-        except:
+        except Exception:
             user.defaultDashboard = None
             user.save()
     if not dashboard:
@@ -530,7 +530,7 @@ def generate_search_for_saved_table(user, id=None,request=None):
             response['Result'] = "ERROR"
             response['Message'] = "Error finding table, please try again later."
             return response
-    except:
+    except Exception:
         savedSearch = SavedSearch()
         savedSearch.isDefaultOnDashboard = True
         savedSearch.name = id.replace("_", " ")
@@ -648,7 +648,7 @@ def setDefaultDashboard(user, dashId):
         user.defaultDashboard = dashId
         user.save()
         return name
-    except:
+    except Exception:
         return False
 
 def cloneDashboard(userId, dashboard, cloneSearches=False, skip=None):

@@ -94,7 +94,7 @@ from crits.indicators.indicator import Indicator
 
 from crits.core.totp import valid_totp
 
-from crits.vocabulary.acls import *
+from crits.vocabulary.acls import ActorACL
 
 
 logger = logging.getLogger(__name__)
@@ -389,7 +389,7 @@ def favorite_update(type_, id_, analyst):
 
     try:
         user.save()
-    except:
+    except Exception:
         pass
 
     return {'success': True}
@@ -1220,7 +1220,7 @@ def download_object_handler(total_limit, depth_limit, rel_limit, rst_fmt,
                 try:
                     exclude = [] if need_filedata else ['filedata']
                     json_docs.append((oid, otype, obj.to_json(exclude)))
-                except:
+                except Exception:
                     pass
 
     stamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -1954,7 +1954,7 @@ def check_query(qparams,user,obj):
         try:
             indx = key.index('.')
             field = key[:indx]
-        except:
+        except Exception:
             field = key
         # Check for mapping, reverse because we're going the other way
         invmap = dict((v,k) for k, v in obj._db_field_map.items())
@@ -2129,7 +2129,7 @@ def parse_query_request(request,col_obj):
     if resp['fields']:
         try:
             resp['fields'] = resp['fields'].split(',')
-        except:
+        except Exception:
             return render(request, "error.html", {"error": "Invalid fields specified"})
         goodfields = []
         for field in resp['fields']:
@@ -2141,7 +2141,7 @@ def parse_query_request(request,col_obj):
                 indx = field.index('.')
                 base = field[:indx]
                 extra = field[indx:]
-            except:
+            except Exception:
                 base = field
                 extra = ""
             # Check for mapping, reverse because we're going the other way
@@ -3044,7 +3044,7 @@ def email_timeline(query, analyst, sources):
                 try:
                     if "name" in email["campaign"][0]:
                         e['title'] += " (%s)" % email["campaign"][0]["name"]
-                except:
+                except Exception:
                     pass
             if "source" in email:
                 if "name" in email["source"][0]:

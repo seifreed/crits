@@ -311,7 +311,7 @@ def upload_file(request, related_md5=None):
                                                         response.get('message'))
                     try:
                         md5_response = [result[0].get('object').md5]
-                    except:
+                    except Exception:
                         md5_response = None
 
                 if response['success']:
@@ -434,22 +434,22 @@ def xor_searcher(request, sample_md5):
         if form.is_valid():
             try:
                 string = request.POST['string']
-            except:
+            except Exception:
                 string = None
             try:
                 if request.POST["skip_nulls"] == "on":
                     skip_nulls = 1
-            except:
+            except Exception:
                 skip_nulls = 0
             try:
                 if request.POST["is_key"] == "on":
                     is_key = 1
-            except:
+            except Exception:
                 is_key = 0
             if is_key:
                 try:
                     result = {"keys": [int(string)]}
-                except:
+                except Exception:
                     result = {"keys": []}
             else:
                 results = xor_search(md5=sample_md5,

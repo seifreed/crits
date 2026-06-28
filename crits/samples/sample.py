@@ -110,7 +110,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
             self.filetype = magic.from_buffer(data)
             if len(self.filetype) > 1000:
                 self.filetype = self.filetype[0:1000] + '<TRUNCATED>'
-        except:
+        except Exception:
             self.filetype = "Unavailable"
         try:
             mimetype = magic.from_buffer(data, mime=True)
@@ -118,7 +118,7 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
                 self.mimetype = mimetype.split(";")[0]
             if not mimetype:
                 self.mimetype = "unknown"
-        except:
+        except Exception:
             self.mimetype = "Unavailable"
         self.size = len(data)
         # this is a shard key. you can't modify it once it's set.
@@ -130,11 +130,11 @@ class Sample(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
         self.sha256 = sha256(data).hexdigest()
         try:
             self.ssdeep = pydeep.hash_bytes(data)
-        except:
+        except Exception:
             self.ssdeep = None
         try:
             self.impfuzzy = pyimpfuzzy.get_impfuzzy_data(data)
-        except:
+        except Exception:
             self.impfuzzy = None
 
     def is_office(self):

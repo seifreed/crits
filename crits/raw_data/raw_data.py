@@ -225,7 +225,7 @@ class RawData(CritsBaseAttributes, CritsSourceDocument, CritsActionsDocument,
             pd = parse(line_data, fuzzy=True)
             if pd:
                 eh.line_date = pd
-        except:
+        except Exception:
             eh.line_date = datetime.datetime.now()
         self.highlights.append(eh)
 

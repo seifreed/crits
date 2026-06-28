@@ -91,7 +91,7 @@ class Connector(object):
 
         try:
             from kombu import Connection
-        except:
+        except Exception:
             raise MissingDependency("Could not find Kombu. Is it installed?")
         if not uri:
             raise MissingConfiguration("Need an AMQP URI to connect to.")

@@ -6,12 +6,13 @@ except ImportError:
 
 from crits.core.data_tools import generate_qrcode
 from crits.core.totp import gen_user_secret
-from crits.vocabulary.acls import *
+from crits.vocabulary.acls import (
+    ActorACL, BackdoorACL, CampaignACL, CertificateACL, DomainACL, EmailACL,
+    EventACL, ExploitACL, GeneralACL, IndicatorACL, IPACL, PCAPACL, RawDataACL,
+    SampleACL, ScreenshotACL, SignatureACL, TargetACL,
+)
 
 from django.conf import settings
-#from django.contrib.auth.views import logout_then_login
-
-from crits.vocabulary.acls import GeneralACL
 
 def is_user_favorite(analyst, type_, id_):
     """

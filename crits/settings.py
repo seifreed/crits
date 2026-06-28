@@ -35,7 +35,7 @@ try:
     GIT_HASH_LONG = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=SITE_ROOT).strip()
     #get the git branch
     GIT_BRANCH = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd=SITE_ROOT).strip()
-except:
+except Exception:
     #if it is not a git repo, clear out all values and hide them
     GIT_HASH = ''
     GIT_HASH_LONG = ''

@@ -169,7 +169,7 @@ def generate_event_jtable(request, option):
             try:
                 oid = ObjectId(request.GET.get('related'))
                 query = {'relationships.value': oid}
-            except:
+            except Exception:
                 pass
 
         response = jtable_ajax_list(obj_type,

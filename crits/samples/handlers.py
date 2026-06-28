@@ -774,7 +774,7 @@ def handle_file(filename, data, source, source_method='', source_reference='',
                     retVal['success'] = False
                     retVal['message'] += pres.get('message', '')
                 return retVal
-        except:
+        except Exception:
             # Continue on adding this as a Sample
             pass
 
@@ -1144,7 +1144,7 @@ def handle_uploaded_file(f, source, source_method='', source_reference='', sourc
         if not filename:
             try:
                 filename = md5(data, usedforsecurity=False).hexdigest()
-            except:
+            except Exception:
                 filename = "unknown"
 
     if file_format == "zip" and f:

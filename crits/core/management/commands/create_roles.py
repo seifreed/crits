@@ -212,7 +212,7 @@ def migrate_roles():
             else:
                 print("Error migrating legacy roles for user %s. No legacy role found to migrate." % user)
                 sys.exit()
-        except:
+        except Exception:
             print("Error migrating legacy roles for user %s. No legacy role found to migrate." % user)
             sys.exit()
 

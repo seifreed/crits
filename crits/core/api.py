@@ -50,7 +50,7 @@ class CRITsApiKeyAuthentication(ApiKeyAuthentication):
         try:
             from crits.core.user import CRITsUser
             user = CRITsUser.objects(username=username).first()
-        except:
+        except Exception:
             return self._unauthorized()
 
         if not user:
@@ -181,7 +181,7 @@ class CRITsSerializer(Serializer):
                             filedata = data.obj.screenshot.read()
                             if filedata:
                                 files.append([filename, filedata])
-                except:
+                except Exception:
                     pass
             try:
                 if len(files):
@@ -448,7 +448,7 @@ class CRITsAPIResource(MongoEngineResource):
             v = v.strip()
             try:
                 v_int = int(v)
-            except:
+            except Exception:
                 # If can't be converted to an int use the string.
                 v_int = v
             if k == "c-_id" or k.find("c-_id__") == 0:
@@ -466,7 +466,7 @@ class CRITsAPIResource(MongoEngineResource):
                         querydict[field] = ObjectId(v)
                     elif op in ['$in', '$nin']:
                         querydict[field] = {op: [ObjectId(x) for x in v.split(',')]}
-                except:
+                except Exception:
                     pass
             elif k.startswith("c-"):
                 field = k[2:]
@@ -484,7 +484,7 @@ class CRITsAPIResource(MongoEngineResource):
                         if field in ('created', 'modified'):
                             try:
                                 val = parse(val, fuzzy=True)
-                            except:
+                            except Exception:
                                 pass
                         if op in ('$in', '$nin'):
                             if field == 'source.name':
@@ -507,13 +507,13 @@ class CRITsAPIResource(MongoEngineResource):
                                 for i in val:
                                     try:
                                         v_f.append(int(i))
-                                    except:
+                                    except Exception:
                                         pass
                                 val = v_f
                             else:
                                 try:
                                     val = int(val)
-                                except:
+                                except Exception:
                                     val = None
                         if val or val == 0:
                             if isinstance(val, str):
@@ -527,7 +527,7 @@ class CRITsAPIResource(MongoEngineResource):
                 elif field in ('created', 'modified'):
                     try:
                         querydict[field] = parse(v, fuzzy=True)
-                    except:
+                    except Exception:
                         querydict[field] = v
                 elif field == 'source.name':
                     v = remove_quotes(v)

@@ -224,7 +224,7 @@ def set_config_attribute(crits_config, attr, value):
                     'session_timeout', 'service_pool_size', 'total_max'):
             try:
                 value = int(value)
-            except:
+            except Exception:
                 raise CE('%s is an Integer' % attr)
         if attr == "log_level":
             if value not in ('INFO', 'WARN', 'DEBUG'):

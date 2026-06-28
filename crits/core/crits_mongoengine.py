@@ -393,7 +393,7 @@ class CritsDocument(BaseDocument):
         # here and how to stop it from happening.
         try:
             self.unsupported_attrs.__delattr__('get_tlp_display')
-        except:
+        except Exception:
             pass
 
         if hasattr(super(self.__class__, self).save(), 'w'):
@@ -585,7 +585,7 @@ class CritsDocument(BaseDocument):
                     if not hasattr(data, 'encode'):
                         try: # convert list of strings
                             data = ";".join(data)
-                        except: # Convert non-string data types
+                        except Exception: # Convert non-string data types
                             data = str(data)
                 row.append(data.encode('utf-8'))
             else:

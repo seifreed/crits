@@ -277,7 +277,7 @@ def ignore_parent(request, id):
     """
     try:
         Dashboard.objects(id=id).update_one(set__hasParentChanged=False)
-    except:
+    except Exception:
         return respondWithError("An error occured while updating dashboard. Please try again later.", True)
     return respondWithSuccess("success")
 

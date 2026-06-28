@@ -137,7 +137,7 @@ def valid_totp(user, token, secret, diff=2):
         return False
     try:
         token = int(token)
-    except:
+    except Exception:
         return False
     if secret:
         try:
@@ -145,7 +145,7 @@ def valid_totp(user, token, secret, diff=2):
             # secret, username or password
             # if this happens we fail authentication
             secret = decrypt_secret(secret, password, user)
-        except:
+        except Exception:
             return False
         now = time.time() // 30
         for i in range(diff * -1, diff + 1):

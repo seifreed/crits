@@ -304,7 +304,7 @@ def run_triage(obj, user):
                         execute=settings.SERVICE_MODEL,
                         custom_config={},
                         is_triage_run=True)
-        except:
+        except Exception:
             pass
     return
 
@@ -742,7 +742,7 @@ def update_analysis_results(task):
             new_dict['set__log'].append(le)
             try:
                 AnalysisResult.objects(id=ar.id).update_one(**new_dict)
-            except: # don't know what's wrong, try writing basic log only
+            except Exception: # don't know what's wrong, try writing basic log only
                 AnalysisResult.objects(id=ar.id).update_one(set__log=[le])
 
 # The service pools need to be defined down here because the functions

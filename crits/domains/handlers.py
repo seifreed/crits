@@ -674,9 +674,7 @@ def upsert_domain(domain, source, username=None, campaign=None,
     if related_id:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     # save
     try:

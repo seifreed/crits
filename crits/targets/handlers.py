@@ -110,9 +110,7 @@ def upsert_target(data, analyst):
     if related_id:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     try:
         target.save(username=analyst)
@@ -183,7 +181,7 @@ def get_target_details(email_address, user):
     if not target:
         target = Target()
         target.email_address = email_address.strip().lower()
-        form = TargetInfoForm(analyst, initial={'email_address': email_address})
+        form = TargetInfoForm(user, initial={'email_address': email_address})
     email_list = target.find_emails(user)
     form = TargetInfoForm(user, initial=target.to_dict())
 

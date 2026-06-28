@@ -359,9 +359,7 @@ def add_new_event(title, description, event_type, source_name, source_method,
     if related_id:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     try:
         event.save(username=user.username)

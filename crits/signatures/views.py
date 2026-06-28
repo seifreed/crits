@@ -67,11 +67,11 @@ def set_signature_type(request, id_):
         data_type = request.POST['data_type']
         type_ = request.POST['type']
         analyst = request.user
-        if user.has_access_to(SignatureACL.DATA_TYPE_EDIT):
+        if analyst.has_access_to(SignatureACL.DATA_TYPE_EDIT):
             return HttpResponse(json.dumps(update_signature_type(type_,
                                                                  id_,
                                                                 data_type,
-                                                                user)),
+                                                                analyst)),
                                 content_type="application/json")
         else:
             return HttpResponse(json.dumps({'success':False,

@@ -54,12 +54,8 @@ from django.utils.functional import SimpleLazyObject
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-
-# Importing these breaks on django 1.11
-#from django.contrib.auth.models import _user_has_perm, _user_get_all_permissions
-#from django.contrib.auth.models import _user_has_module_perms
-#from django.utils.translation import ugettext_lazy as _
 
 from crits.config.config import CRITsConfig
 from crits.core.crits_mongoengine import CritsDocument, CritsSchemaDocument
@@ -703,7 +699,11 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         return permissions
 
     def get_all_permissions(self, obj=None):
-        return _user_get_all_permissions(self, obj)
+        permissions = set()
+        for backend in auth.get_backends():
+            if hasattr(backend, "get_all_permissions"):
+                permissions.update(backend.get_all_permissions(self, obj))
+        return permissions
 
     def has_perm(self, perm, obj=None):
         """
@@ -719,7 +719,14 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
             return True
 
         # Otherwise we need to check the backends.
-        return _user_has_perm(self, perm, obj)
+        for backend in auth.get_backends():
+            if hasattr(backend, "has_perm"):
+                try:
+                    if backend.has_perm(self, perm, obj):
+                        return True
+                except PermissionDenied:
+                    return False
+        return False
 
     def has_module_perms(self, app_label):
         """
@@ -730,7 +737,14 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         if self.is_active and self.is_superuser:
             return True
 
-        return _user_has_module_perms(self, app_label)
+        for backend in auth.get_backends():
+            if hasattr(backend, "has_module_perms"):
+                try:
+                    if backend.has_module_perms(self, app_label):
+                        return True
+                except PermissionDenied:
+                    return False
+        return False
 
     def email_user(self, subject, message, from_email=None):
         """

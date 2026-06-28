@@ -349,9 +349,7 @@ def add_campaign(name, description, aliases, analyst,
     if related_id and related_type:
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
-            retVal['success'] = False
-            retVal['message'] = 'Related Object not found.'
-            return retVal
+            return {'success': False, 'message': 'Related Object not found.'}
 
     campaign.save(username=analyst)
 

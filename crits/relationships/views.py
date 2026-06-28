@@ -125,7 +125,7 @@ def update_relationship_confidence(request):
                       'message': 'Unknown confidence level.'}
             return HttpResponse(json.dumps(result), content_type="application/json")
 
-        elif not user.has_access_to(acl.RELATIONSHIPS_EDIT):
+        elif not user.has_access_to(acls.RELATIONSHIPS_EDIT):
             result = {'success': False,
                       'message': 'User does not have permission to edit relationship.'}
         else:

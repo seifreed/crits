@@ -508,7 +508,7 @@ def delete_signature_dependency(_id, username=None):
     """
     signature_dependency = SignatureDependency.objects(id=_id).first()
     if signature_dependency:
-        signature_dependency.delete(username=user.usernamename)
+        signature_dependency.delete(username=username)
         return {'success': True}
     else:
         return {'success': False}
@@ -528,7 +528,7 @@ def delete_signature(_id, username=None):
 
     signature = Signature.objects(id=_id).first()
     if signature:
-        signature.delete(username=user.usernamename)
+        signature.delete(username=username)
         return True
     else:
         return False

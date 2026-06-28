@@ -2403,7 +2403,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
         for ty in set(rel.to_dict()['type'] for rel in self.relationships):
             obj_class = class_from_type(ty)
             objids = [ty_o.to_dict()['value'] for ty_o in filter(lambda o: o.to_dict()['type'] == ty, self.relationships)]
-            if r.rel_type not in ['Campaign', 'Target']:
+            if ty not in ['Campaign', 'Target']:
                 obj = obj_class.objects(id__in=objids, source__name__in=sources)
             else:
                 obj = obj_class.objects(id__in=objids)

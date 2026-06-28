@@ -43,7 +43,10 @@ def add_location_objects(drop=False):
     count = 0
     for location in data:
         l = Location()
-        l.name = location['name']['official']
+        # Use the common name ("Germany") rather than the official one
+        # ("Federal Republic of Germany") so countries are findable under
+        # the names users actually search for.
+        l.name = location['name']['common']
         l.calling_code = get_value(location['callingCode'])
         l.cca2 = location['cca2']
         l.cca3 = location['cca3']

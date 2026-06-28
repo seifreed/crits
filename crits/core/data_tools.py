@@ -103,6 +103,10 @@ def create_zip(files, pw_protect=True):
         for f in files:
             filename = f[0]
             file_data = f[1]
+            # Skip entries whose binary could not be read (e.g. missing from
+            # GridFS) rather than crashing the whole download.
+            if file_data is None:
+                continue
 
             # make sure our desired path doesn't already exist (some files may
             # have the same name but different data)

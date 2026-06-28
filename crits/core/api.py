@@ -520,6 +520,11 @@ class CRITsAPIResource(MongoEngineResource):
                                 val = remove_quotes(val)
                             if op == '$eq':
                                 querydict[field] = val
+                            elif isinstance(querydict.get(field), dict):
+                                # Merge multiple operators on the same field so
+                                # e.g. __gte and __lte combine into a range
+                                # instead of the later overwriting the first.
+                                querydict[field][op] = val
                             else:
                                 querydict[field] = {op: val}
                 elif field in ('size', 'schema_version'):

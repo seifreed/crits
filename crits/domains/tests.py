@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import SimpleTestCase
 from django.test.client import RequestFactory
 
@@ -5,6 +6,7 @@ import crits.domains.views as views
 import crits.domains.handlers as handlers
 from crits.core.user import CRITsUser
 from crits.core.handlers import add_new_source
+from crits.core.management.commands.create_roles import add_uber_admin_role
 from crits.core.source_access import SourceAccess
 
 TSRC = "TestSource"
@@ -25,13 +27,17 @@ def prep_db():
 
     clean_db()
     # Add Source
-    add_new_source(TSRC, "RandomUser")
-    # Add User
+    add_new_source(TSRC, TUSER_NAME)
+    # Ensure the UberAdmin role exists with access to all sources (incl. the
+    # one just added) and all ACLs, so the test user can use the web views.
+    add_uber_admin_role(drop=False)
+    # Add User and grant the admin role.
     user = CRITsUser.create_user(
                           username=TUSER_NAME,
                           password=TUSER_PASS,
                           email=TUSER_EMAIL,
                           )
+    user.roles = [settings.ADMIN_ROLE]
     user.save()
 
 
@@ -57,6 +63,8 @@ class DomainHandlerTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
 
 
@@ -65,13 +73,16 @@ class DomainHandlerTests(SimpleTestCase):
 
     def testDomainAdd(self):
         data = {
-                'domain_reference': DOM_REF,
-                'domain_source': DOM_SRC,
-                'domain_method': DOM_METH,
+                'source_reference': DOM_REF,
+                'source_name': DOM_SRC,
+                'source_method': DOM_METH,
+                'source_tlp': 'red',
                 'domain': DOMAIN,
                 }
+        request = self.factory.post('/domains/add/', data)
+        request.user = self.user
         errors = []
-        (result, errors, retVal) = handlers.add_new_domain(data, self, errors)
+        (result, errors, retVal) = handlers.add_new_domain(data, request, errors)
 
 
 
@@ -84,16 +95,21 @@ class DomainViewTests(SimpleTestCase):
         prep_db()
         self.factory = RequestFactory()
         self.user = CRITsUser.objects(username=TUSER_NAME).first()
+        # Warm the ACL cache the way the view decorators do before handlers run.
+        self.user.get_access_list(update=True)
         self.user.save()
         # Add a test domain
         data = {
-                'domain_reference': DOM_REF,
-                'domain_source': DOM_SRC,
-                'domain_method': DOM_METH,
+                'source_reference': DOM_REF,
+                'source_name': DOM_SRC,
+                'source_method': DOM_METH,
+                'source_tlp': 'red',
                 'domain': DOMAIN,
                 }
+        request = self.factory.post('/domains/add/', data)
+        request.user = self.user
         errors = []
-        (result, errors, retVal) = handlers.add_new_domain(data, self, errors)
+        (result, errors, retVal) = handlers.add_new_domain(data, request, errors)
 
     def tearDown(self):
         clean_db()
@@ -114,7 +130,7 @@ class DomainViewTests(SimpleTestCase):
         self.req.user = self.user
         response = views.domains_listing(self.req)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("#domain_listing" in response.content)
+        self.assertTrue(b"#domain_listing" in response.content)
 
     def testDomainsjtList(self):
         self.req = self.factory.post('/domains/list/jtlist/',

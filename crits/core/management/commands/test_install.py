@@ -138,7 +138,7 @@ class Command(BaseCommand):
         else:
             print('Loaded modules:')
             # All loaded modules without dot in the name, with __path__, and with __version__
-            mods = [(m.__name__.lower(), getattr(m, '__version__', ''), m.__path__[0]) for m in sys.modules.values() if getattr(m, '__path__', '') and getattr(m, '__version__', '') and not '.' in m.__name__]
+            mods = [(m.__name__.lower(), getattr(m, '__version__', ''), m.__path__[0]) for m in sys.modules.values() if getattr(m, '__path__', '') and getattr(m, '__version__', '') and '.' not in m.__name__]
             mods=sorted(mods)
             for i, j, k in mods:
                 print(('%s: %s\r\n\t%s' %(i,j,k)))

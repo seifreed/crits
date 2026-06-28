@@ -113,13 +113,13 @@ class Command(BaseCommand):
         reinsert_config_option = options.get(REINSERT_CONFIG_VARIABLE)
 
         if reset_config_option == True:
-            force_reset_config();
+            force_reset_config()
         if create_config_option == True:
-            create_config_if_not_exist();
+            create_config_if_not_exist()
 
         if len(args) == 2 or reinsert_config_option == True:
             # Get the config
-            crits_config = create_config_if_not_exist();
+            crits_config = create_config_if_not_exist()
 
             if len(args) == 2:
                 attr = args[0]
@@ -188,10 +188,10 @@ def force_reset_config():
     """
 
     print("Resetting CRITs configuration settings.")
-    CRITsConfig.drop_collection();
+    CRITsConfig.drop_collection()
 
-    crits_config = CRITsConfig();
-    crits_config.save();
+    crits_config = CRITsConfig()
+    crits_config.save()
 
 def set_config_attribute(crits_config, attr, value):
     """
@@ -207,7 +207,7 @@ def set_config_attribute(crits_config, attr, value):
         Returns true if the attribute was able to be set. False otherwise.
     """
 
-    is_successful = False;
+    is_successful = False
 
     if hasattr(crits_config, attr):
         if attr in ("enable_api", "create_unknown_user", "debug", "ldap_auth",
@@ -227,7 +227,7 @@ def set_config_attribute(crits_config, attr, value):
             except:
                 raise CE('%s is an Integer' % attr)
         if attr == "log_level":
-            if not value in ('INFO', 'WARN', 'DEBUG'):
+            if value not in ('INFO', 'WARN', 'DEBUG'):
                 raise CE('log_level must be INFO, WARN, or DEBUG.')
         if attr in ('temp_dir', 'zip7_path', 'log_directory'):
             if not os.path.exists(value):

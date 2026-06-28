@@ -353,7 +353,7 @@ def add_new_domain(data, request, errors, rowData=None, is_validate_only=False, 
                 retVal['status'] = form_consts.Status.DUPLICATE
                 retVal['warning'] = message
         else:
-            result_cache = cache.get(form_consts.Domain.CACHED_RESULTS);
+            result_cache = cache.get(form_consts.Domain.CACHED_RESULTS)
             result_cache[domain.lower()] = True
 
     elif not errors:
@@ -494,7 +494,7 @@ def add_new_domain(data, request, errors, rowData=None, is_validate_only=False, 
                             objectDict = object_array_to_dict(objectData,
                                                               "Domain",
                                                               "")
-                            current_domain = None;
+                            current_domain = None
                     else:
                         objectDict = object_array_to_dict(objectData,
                                                           "Domain",
@@ -818,7 +818,7 @@ def parse_row_to_bound_domain_form(request, rowData, cache):
     bound_domain_form = None
 
     # TODO Add common method to convert data to string
-    domain_name = rowData.get(form_consts.Domain.DOMAIN_NAME, "").strip();
+    domain_name = rowData.get(form_consts.Domain.DOMAIN_NAME, "").strip()
     campaign = rowData.get(form_consts.Domain.CAMPAIGN, "")
     confidence = rowData.get(form_consts.Domain.CAMPAIGN_CONFIDENCE, "")
     source = rowData.get(form_consts.Domain.DOMAIN_SOURCE, "")

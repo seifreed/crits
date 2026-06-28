@@ -814,7 +814,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
                     if not success['success']:
                         return {'success': False, 'message': success['message']}
 
-                if not success or not 'object' in success:
+                if not success or 'object' not in success:
                     dmain = Domain.objects(domain=domain_or_ip).first()
                 else:
                     dmain = success['object']
@@ -841,7 +841,7 @@ def handle_indicator_insert(ind, source, source_reference=None, source_method=No
                 if not success['success']:
                     return {'success': False, 'message': success['message']}
 
-            if not success or not 'object' in success:
+            if not success or 'object' not in success:
                 ip = IP.objects(ip=indicator.value).first()
             else:
                 ip = success['object']

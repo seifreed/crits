@@ -420,7 +420,7 @@ def handle_signature_file(data, source_name, user=None,
         signature.add_bucket_list(bucket_list, user)
 
     if ticket:
-        signature.add_ticket(ticket, user);
+        signature.add_ticket(ticket, user)
 
     related_obj = None
     if related_id and related_type:
@@ -549,7 +549,7 @@ def add_new_signature_dependency(data_type, analyst):
     if not data_type:
         return False
 
-    data_type = str(data_type).strip();
+    data_type = str(data_type).strip()
 
     try:
         signature_dependency = SignatureDependency.objects(name=data_type).first()

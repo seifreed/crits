@@ -1,4 +1,8 @@
-import hmac, base64, struct, hashlib, time
+import hmac
+import base64
+import struct
+import hashlib
+import time
 from django.utils.crypto import pbkdf2
 from Crypto import Random
 from Crypto.Cipher import AES

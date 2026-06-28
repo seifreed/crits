@@ -443,7 +443,7 @@ def handle_raw_data_file(data, source_name, user=None,
         raw_data.add_bucket_list(bucket_list, user)
 
     if ticket:
-        raw_data.add_ticket(ticket, user);
+        raw_data.add_ticket(ticket, user)
 
     related_obj = None
     if related_id and related_type:

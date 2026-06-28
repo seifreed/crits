@@ -450,7 +450,7 @@ def update_user_preference(username, section, values):
     user = CRITsUser.objects(username=username).first()
 
     if user:
-        if not section in user.prefs:
+        if section not in user.prefs:
            setattr(user.prefs, section, {})
 
         # Something to think about.. do we want to do a replacement or a merge?
@@ -507,19 +507,19 @@ def toggle_user_preference(username, section, setting, is_enabled=False):
         otree = setting.split(".")
         param = otree.pop()
 
-        if not section in user.prefs:
+        if section not in user.prefs:
             setattr(user.prefs, section, {})
         opt = user.prefs[section]
 
         if len(otree):
             for subsect in otree:
-                if not subsect in opt:
+                if subsect not in opt:
                     opt[subsect] = {}
                     opt = opt[subsect]
                 else:
                     opt = opt[subsect]
 
-        if (not param in opt):
+        if (param not in opt):
             # if the preference doesn't exist, then try the fallback default value
             if is_enabled == True:
                 opt[param] = False

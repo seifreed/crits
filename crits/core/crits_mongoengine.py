@@ -1,5 +1,6 @@
 import datetime
-import json, yaml
+import json
+import yaml
 import io
 import csv
 
@@ -448,8 +449,8 @@ class CritsDocument(BaseDocument):
         #Make sure name is a valid field for MongoDB. Also, name cannot begin with
         #   underscore because that indicates a private MongoEngine attribute.
         if (not self._dynamic and hasattr(self, 'unsupported_attrs')
-            and not name in self._fields and not name.startswith('_')
-            and not name.startswith('$') and not '.' in name
+            and name not in self._fields and not name.startswith('_')
+            and not name.startswith('$') and '.' not in name
             and name not in ('save', 'delete')):
             if not self.unsupported_attrs:
                 self.unsupported_attrs = UnsupportedAttrs()
@@ -1127,9 +1128,9 @@ class EmbeddedTickets(BaseDocument):
 
         for ticket in self.tickets:
             if ticket_number == ticket.ticket_number:
-                return True;
+                return True
 
-        return False;
+        return False
 
     def add_ticket(self, tickets, analyst=None, date=None):
         """

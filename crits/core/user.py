@@ -358,8 +358,8 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         """
 
         if (not self._dynamic and hasattr(self, 'unsupported_attrs')
-            and not name in self._fields and not name.startswith('_')
-            and not name.startswith('$') and not '.' in name
+            and name not in self._fields and not name.startswith('_')
+            and not name.startswith('$') and '.' not in name
             and name not in ('backend')):
             if not self.unsupported_attrs:
                 self.unsupported_attrs = UnsupportedAttrs()
@@ -760,7 +760,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         :returns: None, str, dict
         """
 
-        if not section in self.prefs:
+        if section not in self.prefs:
             return default
 
         # Split the preference option into subtrees on '.'
@@ -775,7 +775,7 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
                 else:
                     return default
 
-        if not param in opt:
+        if param not in opt:
             return default
 
         return opt[param]
@@ -797,7 +797,8 @@ class CRITsUser(CritsDocument, CritsSchemaDocument, Document):
         Get information about this user from LDAP.
         """
 
-        import ldap, ldapurl
+        import ldap
+        import ldapurl
         resp = {"result": "ERROR"}
         if not config:
             config = CRITsConfig.objects().first()
@@ -1188,7 +1189,8 @@ class CRITsAuthBackend(object):
             if not config:
                 return None
             if config.ldap_auth:
-                import ldap, ldapurl
+                import ldap
+                import ldapurl
                 try:
                     # If you are using Oracle's server that's based on
                     # Netscape's code, and your users can't login after

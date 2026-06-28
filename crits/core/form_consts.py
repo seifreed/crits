@@ -58,10 +58,10 @@ class Status():
     Status fields/enumerations used in bulk upload.
     """
 
-    STATUS_FIELD = "status";
-    FAILURE = 0;
-    SUCCESS = 1;
-    DUPLICATE = 2;
+    STATUS_FIELD = "status"
+    FAILURE = 0
+    SUCCESS = 1
+    DUPLICATE = 2
 
 
 class Actor():

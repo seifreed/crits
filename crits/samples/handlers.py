@@ -3,7 +3,8 @@ import logging
 import os
 import pprint
 import subprocess
-import tempfile, shutil
+import tempfile
+import shutil
 import time
 
 from bson.objectid import ObjectId

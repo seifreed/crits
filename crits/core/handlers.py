@@ -458,7 +458,7 @@ def get_data_for_item(item_type, item_id):
     if not item_id or not item_type:
         response['Msg'] = "No item data provided"
         return response
-    if not item_type in type_to_fields:
+    if item_type not in type_to_fields:
         response['Msg'] = "Invalid item type: %s" % item_type
         return response
 
@@ -2468,7 +2468,7 @@ def jtable_ajax_delete(obj,request):
     """
 
     # Make sure we are supplied _id
-    if not "id" in request.POST:
+    if "id" not in request.POST:
         return False
     docid = request.POST['id']
     if not docid:

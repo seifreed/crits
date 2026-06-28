@@ -151,7 +151,7 @@ def bulk_add_md5_sample(request):
     objectformdict = form_to_dict(AddObjectForm(request.user))
 
     if request.method == "POST" and request.is_ajax():
-        response = process_bulk_add_md5_sample(request, formdict);
+        response = process_bulk_add_md5_sample(request, formdict)
 
         return HttpResponse(json.dumps(response,
                             default=json_handler),

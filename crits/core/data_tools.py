@@ -1,11 +1,13 @@
-import tempfile, shutil
+import tempfile
+import shutil
 import os
 import re
 import subprocess
 import time
 import datetime
 import csv
-import json, yaml
+import json
+import yaml
 import string
 
 from bson.objectid import ObjectId
@@ -603,7 +605,8 @@ def generate_qrcode(data, size):
     """
 
     try:
-        import qrcode, io
+        import qrcode
+        import io
     except:
         return None
     a = io.BytesIO()

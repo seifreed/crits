@@ -332,7 +332,7 @@ def save_data(userId, columns, tableName, searchTerm="", objType="", sortBy=None
         elif not newSavedSearch.col:
             newSavedSearch.col = 1
         if maxRows:
-            newSavedSearch.maxRows = maxRows;
+            newSavedSearch.maxRows = maxRows
         newSavedSearch.save()
         #if the old dashboard is empty, delete it
         if oldDashId:
@@ -695,7 +695,7 @@ def getDashboardsForUser(user):
             parents.append(dash.parent)
     #remove any parent from the list to prevent duplicate dashboards
     for dash in dashboards:
-        if not dash.id in parents:
+        if dash.id not in parents:
             userDashboards.append(dash)
     return userDashboards
 

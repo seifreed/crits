@@ -399,21 +399,25 @@ def make_stackstrings(md5=None, data=None):
     while x < len(data):
         if (data[x] == '\xc6') and ((data[x+1] == '\x45') or (data[x+1] == '\x84')):
             a = ord(data[x+3])
-            if (a <= 126 and a >= 32) or (a==9): strings += data[x+3]
+            if (a <= 126 and a >= 32) or (a==9):
+                strings += data[x+3]
             prev = x
             x += 4
         elif (data[x] == '\xc6') and (data[x+1] == '\x44'):
             a = ord(data[x+4])
-            if (a <= 126 and a >= 32) or (a==9): strings += data[x+4]
+            if (a <= 126 and a >= 32) or (a==9):
+                strings += data[x+4]
             prev = x
             x += 5
         elif (data[x] == '\xc6') and ((data[x+1] == '\x05') or (data[x+1] == '\x85')):
             a = ord(data[x+6])
-            if (a <= 126 and a >= 32) or (a==9): strings += data[x+6]
+            if (a <= 126 and a >= 32) or (a==9):
+                strings += data[x+6]
             prev = x
             x += 7
         else:
-            if ((x - prev) ==12): strings += '\n'
+            if ((x - prev) ==12):
+                strings += '\n'
             x += 1
     strings = strings.replace('\x00', '\r')
     return strings

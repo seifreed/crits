@@ -266,7 +266,7 @@ def set_dashboard_public(request):
         successMsg += "visible to "
     successMsg += "all users."
     response = setPublic(id, makePublic)
-    if type(response) == str:
+    if isinstance(response, str):
         return respondWithError(response, True)
     return respondWithSuccess(successMsg)
 
@@ -304,7 +304,7 @@ def rename_dashboard(request):
     name = request.GET.get('newName', None)
     try:
         response = renameDashboard(id, name, request.user.id)
-        if type(response) == str:
+        if isinstance(response, str):
             return respondWithError(response, True)
     except Exception as e:
         print(e)

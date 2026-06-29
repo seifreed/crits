@@ -1296,10 +1296,11 @@ class RelationshipsListField(ListField):
     """
     ListField that drops null relationship entries when loading a document.
 
-    A partial/legacy write could leave a ``None`` in the relationships array,
-    which made the whole document fail to deserialize ("'NoneType' object has
-    no attribute 'get'") and broke listing every TLO of that type
-    (crits#781, crits#845).
+    A partial/legacy write (e.g. an atomic ``update(add_to_set=...)`` that
+    bypasses document validation) could leave a ``None`` in the relationships
+    array, which made the whole document fail to deserialize ("'NoneType'
+    object has no attribute 'get'") and broke listing every TLO of that type
+    (crits#781, crits#845). Filtering on load rescues already-corrupted docs.
     """
 
     def to_python(self, value):

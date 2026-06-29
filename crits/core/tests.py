@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.test import SimpleTestCase
@@ -455,3 +456,42 @@ class GlobalSearchTests(SimpleTestCase):
         args = handlers.generate_global_search(request)
         names = [r['name'] for r in args['results']]
         self.assertEqual(names, ['Indicator'])
+
+
+class FavoriteToggleTests(SimpleTestCase):
+    """
+    Regression for crits#1064/#1016: the toggle_favorite view passed the user
+    object to favorite_update(), which looks the user up by username, so the
+    favorite was never stored ("Could not find user") and the button did
+    nothing.
+    """
+
+    FAV_ID = "57fba16d9755307005260872"
+
+    def setUp(self):
+        prep_db()
+        self.factory = RequestFactory()
+        self.user = CRITsUser.objects(username=TUSER_NAME).first()
+
+    def tearDown(self):
+        clean_db()
+
+    def testToggleStoresFavorite(self):
+        request = self.factory.post('/favorite/toggle/',
+                                    {'type': 'Sample', 'id': self.FAV_ID},
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = self.user
+        response = views.toggle_favorite(request)
+        self.assertTrue(json.loads(response.content.decode())['success'])
+        user = CRITsUser.objects(username=TUSER_NAME).first()
+        self.assertIn(self.FAV_ID, user.favorites['Sample'])
+
+    def testToggleRemovesFavorite(self):
+        handlers.favorite_update('Sample', self.FAV_ID, TUSER_NAME)
+        request = self.factory.post('/favorite/toggle/',
+                                    {'type': 'Sample', 'id': self.FAV_ID},
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = CRITsUser.objects(username=TUSER_NAME).first()
+        views.toggle_favorite(request)
+        user = CRITsUser.objects(username=TUSER_NAME).first()
+        self.assertNotIn(self.FAV_ID, user.favorites['Sample'])

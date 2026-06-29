@@ -178,7 +178,7 @@ def toggle_favorite(request):
         user = request.user
         return HttpResponse(json.dumps(favorite_update(type_,
                                                        id_,
-                                                       user)),
+                                                       user.username)),
                             content_type="application/json")
     else:
         return render(request, "error.html", {"error" : 'Expected AJAX POST.'})

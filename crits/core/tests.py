@@ -495,3 +495,29 @@ class FavoriteToggleTests(SimpleTestCase):
         views.toggle_favorite(request)
         user = CRITsUser.objects(username=TUSER_NAME).first()
         self.assertNotIn(self.FAV_ID, user.favorites['Sample'])
+
+
+class RelationshipsNullTests(SimpleTestCase):
+    """
+    Regression for crits#781/#845: a null entry in the relationships array must
+    not break loading/listing the document.
+    """
+
+    def setUp(self):
+        prep_db()
+
+    def tearDown(self):
+        clean_db()
+
+    def testNullRelationshipDroppedOnLoad(self):
+        obj = TestSourceObject()
+        obj.name = "relnull"
+        obj.value = "v"
+        obj.add_source(source=TSRC, analyst=TUSER_NAME, tlp='red')
+        obj.save(username=TUSER_NAME)
+        # Inject a null relationship entry the way a partial write would.
+        TestSourceObject._get_collection().update_one(
+            {'_id': obj.id}, {'$set': {'relationships': [None]}})
+        # Loading must not raise and must drop the null entry.
+        reloaded = TestSourceObject.objects(id=obj.id).first()
+        self.assertEqual(list(reloaded.relationships), [])

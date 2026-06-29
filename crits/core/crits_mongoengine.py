@@ -1292,6 +1292,22 @@ class EmbeddedRelationship(EmbeddedDocument, CritsDocumentFormatter):
     rel_reason = StringField()
     rel_confidence = StringField(default='unknown', required=True)
 
+class RelationshipsListField(ListField):
+    """
+    ListField that drops null relationship entries when loading a document.
+
+    A partial/legacy write could leave a ``None`` in the relationships array,
+    which made the whole document fail to deserialize ("'NoneType' object has
+    no attribute 'get'") and broke listing every TLO of that type
+    (crits#781, crits#845).
+    """
+
+    def to_python(self, value):
+        if isinstance(value, (list, tuple)):
+            value = [v for v in value if v is not None]
+        return super().to_python(value)
+
+
 class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
                           CritsSchemaDocument, CritsStatusDocument, EmbeddedTickets):
     """
@@ -1306,7 +1322,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
     locations = ListField(EmbeddedDocumentField(EmbeddedLocation))
     description = StringField()
     obj = ListField(EmbeddedDocumentField(EmbeddedObject), db_field="objects")
-    relationships = ListField(EmbeddedDocumentField(EmbeddedRelationship))
+    relationships = RelationshipsListField(EmbeddedDocumentField(EmbeddedRelationship))
     releasability = ListField(EmbeddedDocumentField(Releasability))
     screenshots = ListField(StringField())
     sectors = ListField(StringField())

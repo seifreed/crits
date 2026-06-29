@@ -105,6 +105,16 @@ class PcapHandlerTests(SimpleTestCase):
         self.assertEqual(pcap.md5, PCAP_MD5)
         self.assertEqual(pcap.filename, PCAP_FILENAME)
 
+    def testPcapCampaign(self):
+        # Regression for crits#732: a campaign supplied on upload must attach
+        # to the PCAP rather than being silently dropped.
+        result = handlers.handle_pcap_file(
+            PCAP_FILENAME, PCAP_DATA, TSRC, user=self.user,
+            method='', reference='', tlp='red', campaign='TestCampaign')
+        self.assertTrue(result['success'])
+        pcap = PCAP.objects(md5=PCAP_MD5).first()
+        self.assertIn('TestCampaign', [c.name for c in pcap.campaign])
+
 
 class PcapViewTests(SimpleTestCase):
     """

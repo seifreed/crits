@@ -12,7 +12,7 @@ from django.shortcuts import render
 
 from crits.core.class_mapper import class_from_id, class_from_value
 from crits.core.crits_mongoengine import create_embedded_source, json_handler
-from crits.core.crits_mongoengine import EmbeddedSource
+from crits.core.crits_mongoengine import EmbeddedSource, EmbeddedCampaign
 from crits.core.handlers import build_jtable, jtable_ajax_list, jtable_ajax_delete
 from crits.core.handlers import csv_export
 from crits.core.user_tools import user_sources, is_user_favorite
@@ -218,7 +218,8 @@ def generate_pcap_jtable(request, option):
 def handle_pcap_file(filename, data, source_name, user=None,
                      description=None, related_id=None, related_md5=None,
                      related_type=None, method='', reference='', tlp='',
-                     relationship=None, bucket_list=None, ticket=None):
+                     relationship=None, bucket_list=None, ticket=None,
+                     campaign=None, confidence='low'):
     """
     Add a PCAP.
 
@@ -250,6 +251,11 @@ def handle_pcap_file(filename, data, source_name, user=None,
     :type bucket_list: str(comma separated) or list.
     :param ticket: Ticket(s) to add to this PCAP.
     :type ticket: str(comma separated) or list.
+    :param campaign: Campaign(s) to attribute to this PCAP.
+    :type campaign: str or list of
+                    :class:`crits.core.crits_mongoengine.EmbeddedCampaign`
+    :param confidence: Confidence level of the campaign attribution.
+    :type confidence: str
     :param related_id: ID of object to create relationship with
     :type related_id: str
     :param related_type: Type of object to create relationship with
@@ -343,6 +349,16 @@ def handle_pcap_file(filename, data, source_name, user=None,
 
     if ticket:
         pcap.add_ticket(ticket, user)
+
+    # attribute the PCAP to a campaign if one was supplied (crits#732)
+    if campaign is not None:
+        campaign_array = campaign
+        if isinstance(campaign, str):
+            campaign_array = [EmbeddedCampaign(name=campaign,
+                                               confidence=confidence,
+                                               analyst=user.username)]
+        for campaign_item in campaign_array:
+            pcap.add_campaign(campaign_item)
 
     # save pcap
     pcap.save(username=user)

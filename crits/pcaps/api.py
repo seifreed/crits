@@ -75,6 +75,8 @@ class PCAPResource(CRITsAPIResource):
         related_type = bundle.data.get('related_type', None)
         bucket_list = bundle.data.get('bucket_list', None)
         ticket = bundle.data.get('ticket', None)
+        campaign = bundle.data.get('campaign', None)
+        confidence = bundle.data.get('campaign_confidence', 'low')
 
         if not user.has_access_to(PCAPACL.WRITE):
             content['message'] = 'User does not have permission to create Object.'
@@ -95,7 +97,9 @@ class PCAPResource(CRITsAPIResource):
                                   tlp=tlp,
                                   relationship=relationship,
                                   bucket_list=bucket_list,
-                                  ticket=ticket)
+                                  ticket=ticket,
+                                  campaign=campaign,
+                                  confidence=confidence)
 
         if result.get('message'):
             content['message'] = result.get('message')

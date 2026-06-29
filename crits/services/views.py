@@ -99,7 +99,6 @@ def enable(request, name):
     Enable a service.
     """
 
-    request.user._setup()
     result = set_enabled(name, True, request.user)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
@@ -110,7 +109,6 @@ def disable(request, name):
     Disable a service.
     """
 
-    request.user._setup()
     result = set_enabled(name, False, request.user)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
@@ -120,7 +118,6 @@ def enable_triage(request, name):
     Enable a service to run during triage.
     """
 
-    request.user._setup()
     result = set_triage(name, True, request.user)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
@@ -131,7 +128,6 @@ def disable_triage(request, name):
     Disable a service from running during triage.
     """
 
-    request.user._setup()
     result = set_triage(name, False, request.user)
     return HttpResponse(json.dumps(result), content_type='application/json')
 
@@ -142,7 +138,6 @@ def edit_config(request, name):
     Edit a service's configuration.
     """
 
-    request.user._setup()
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         results = do_edit_config(name, request.user, post_data=request.POST)
         if 'service' in results:
@@ -171,7 +166,6 @@ def get_form(request, name, crits_type, identifier):
 
     response = {}
     response['name'] = name
-    request.user._setup()
     username = request.user.username
 
     service = CRITsService.objects(name=name, status__ne="unavailable").first()
@@ -204,7 +198,6 @@ def refresh_services(request, crits_type, identifier):
     """
 
     response = {}
-    request.user._setup()
 
     # Verify user can see results.
     sources = request.user.get_sources_list()
@@ -255,7 +248,6 @@ def service_run(request, name, crits_type, identifier):
     Run a service.
     """
 
-    request.user._setup()
 
     if request.method == 'POST':
         custom_config = request.POST
@@ -289,7 +281,6 @@ def delete_task(request, crits_type, identifier, task_id):
     Delete a service task.
     """
 
-    request.user._setup()
     # Identifier is used since there's not currently an index on task_id
     delete_analysis(task_id, request.user)
     return refresh_services(request, crits_type, identifier)

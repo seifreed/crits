@@ -133,7 +133,6 @@ def add_update_ip(request, method):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         data = request.POST
         form = AddIPForm(request.user, None, data)
 

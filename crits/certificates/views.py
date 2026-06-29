@@ -30,7 +30,6 @@ def certificates_listing(request,option=None):
     :type option: str
     :returns: :class:`django.http.HttpResponse`
     """
-    request.user._setup()
     user = request.user
     if user.has_access_to(CertificateACL.READ):
         if option == "csv":
@@ -57,7 +56,6 @@ def certificate_details(request, md5):
     :type md5: str
     :returns: :class:`django.http.HttpResponse`
     """
-    request.user._setup()
 
     template = 'certificate_details.html'
     user = request.user

@@ -111,7 +111,6 @@ def signature_detail(request, _id):
     :type _id: str
     :returns: :class:`django.http.HttpResponse`
     """
-    request.user._setup()
     user = request.user
 
     if user.has_access_to(SignatureACL.READ):

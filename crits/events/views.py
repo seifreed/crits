@@ -119,7 +119,6 @@ def view_event(request, eventid):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
     user = request.user
 
     if user.has_access_to(EventACL.READ):

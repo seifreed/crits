@@ -40,7 +40,6 @@ def actor_identifiers_listing(request,option=None):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
     user = request.user
 
     if user.has_access_to(ActorACL.ACTOR_IDENTIFIERS_READ):
@@ -63,7 +62,6 @@ def actors_listing(request,option=None):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
     user = request.user
 
     if user.has_access_to(ActorACL.READ):
@@ -101,7 +99,6 @@ def actor_detail(request, id_):
     :returns: :class:`django.http.HttpResponse`
     """
     template = "actor_detail.html"
-    request.user._setup()
     user = request.user
 
     if user.has_access_to(ActorACL.READ):
@@ -128,7 +125,6 @@ def add_actor(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         data = request.POST
         form = AddActorForm(request.user, data)
@@ -190,7 +186,6 @@ def remove_actor(request, id_):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
     user = request.user
     if request.method == "POST":
         if user.has_access_to(ActorACL.DELETE):
@@ -238,7 +233,6 @@ def get_actor_identifier_type_values(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         type_ = request.POST.get('type', None)
         result = actor_identifier_type_values(type_, request.user)
         return HttpResponse(json.dumps(result),
@@ -258,7 +252,6 @@ def new_actor_identifier_type(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         identifier_type = request.POST.get('identifier_type', None)
 
@@ -288,7 +281,6 @@ def actor_tags_modify(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
 
 
@@ -355,7 +347,6 @@ def add_identifier(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         form = AddActorIdentifierForm(request.user.username, request.POST)
         if form.is_valid():
@@ -401,7 +392,6 @@ def attribute_identifier(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
 
         if user.has_access_to(ActorACL.ACTOR_IDENTIFIERS_ADD):
@@ -438,7 +428,6 @@ def edit_attributed_identifier(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         id_ = request.POST.get('id', None)
         identifier = request.POST.get('identifier_id', None)
@@ -472,7 +461,6 @@ def remove_attributed_identifier(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
 
         id_ = request.POST.get('object_type', None)
@@ -507,7 +495,6 @@ def edit_actor_name(request, id_):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         if user.has_access_to(ActorACL.NAME_EDIT):
             name = request.POST.get('name', None)
@@ -538,7 +525,6 @@ def edit_actor_aliases(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         aliases = request.POST.get('aliases', None)
         id_ = request.POST.get('oid', None)

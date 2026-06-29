@@ -36,7 +36,6 @@ def domain_detail(request, domain):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
 
     user = request.user
     if user.has_access_to(DomainACL.READ):

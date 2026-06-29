@@ -438,7 +438,7 @@ def set_backdoor_version(id_, version, user, **kwargs):
         # enumerated via this method.
         return {'success': False, 'message': "Could not find backdoor"}
 
-    backdoor.version = version.strip()
+    backdoor.version = version.strip() if version else ''
     backdoor.save(username=user)
     return {'success': True}
 

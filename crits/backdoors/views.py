@@ -34,7 +34,6 @@ def backdoors_listing(request,option=None):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
     user = request.user
     if user.has_access_to(BackdoorACL.READ):
         if option == "csv":
@@ -64,7 +63,6 @@ def backdoor_detail(request, id_):
     """
 
     template = "backdoor_detail.html"
-    request.user._setup()
     user = request.user
     if user.has_access_to(BackdoorACL.READ):
         (new_template, args) = get_backdoor_details(id_, user)
@@ -90,7 +88,6 @@ def add_backdoor(request):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         data = request.POST
         form = AddBackdoorForm(request.user, data)
@@ -152,7 +149,6 @@ def remove_backdoor(request, id_):
     """
 
     if request.method == "POST":
-        request.user._setup()
         user = request.user
         if user.has_access_to(BackdoorACL.DELETE):
             backdoor_remove(id_, user.username)
@@ -206,7 +202,6 @@ def edit_backdoor_aliases(request):
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
         aliases = request.POST.get('aliases', None)
         id_ = request.POST.get('oid', None)
-        request.user._setup()
         user = request.user
         if user.has_access_to(BackdoorACL.ALIASES_EDIT):
             result = update_backdoor_aliases(id_, aliases, user)
@@ -233,7 +228,6 @@ def edit_backdoor_version(request, id_):
     """
 
     if request.method == "POST" and (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-        request.user._setup()
         user = request.user
         version = request.POST.get('version', None)
         if version is None:

@@ -146,7 +146,6 @@ def generate_actor_jtable(request, option):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    request.user._setup()
     user = request.user
 
     obj_type = Actor
@@ -398,8 +397,9 @@ def add_new_actor(name, aliases=None, description=None, source=None,
     else:
         return {"success" : False, "message" : "Missing source information."}
 
-    if not isinstance(aliases, list):
-        aliases = aliases.split(',')
+    if aliases:
+        if not isinstance(aliases, list):
+            aliases = aliases.split(',')
         for alias in aliases:
             alias = alias.strip()
             if alias not in actor.aliases:

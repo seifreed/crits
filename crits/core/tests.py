@@ -1,5 +1,8 @@
+import io
 import json
 import re
+
+from django.core.management import call_command
 
 from django.test import SimpleTestCase
 from django.test.client import RequestFactory, Client
@@ -529,3 +532,40 @@ class RelationshipsNullTests(SimpleTestCase):
         # Loading must not raise and must drop the null entry.
         reloaded = TestSourceObject.objects(id=obj.id).first()
         self.assertEqual(list(reloaded.relationships), [])
+
+
+class FindCorruptDocumentsTests(SimpleTestCase):
+    """
+    Regression for crits#50: the find_corrupt_documents command must report a
+    document that fails to load (e.g. a relationship value that is not a valid
+    ObjectId) instead of letting it silently break a listing.
+    """
+
+    CMD_MD5 = "c" * 32
+
+    def setUp(self):
+        prep_db()
+
+    def tearDown(self):
+        from crits.samples.sample import Sample
+        Sample.objects(md5=self.CMD_MD5).delete()
+        clean_db()
+
+    def testReportsCorruptDocument(self):
+        from crits.samples.sample import Sample
+        sample = Sample()
+        sample.md5 = self.CMD_MD5
+        sample.filename = "corrupt.bin"
+        sample.add_source(source=TSRC, analyst=TUSER_NAME, tlp='red')
+        sample.save(username=TUSER_NAME)
+        # Inject a malformed relationship entry (a bare string instead of an
+        # embedded document) so the document fails to deserialize. This is not
+        # masked by the null filter, which only drops None entries.
+        Sample._get_collection().update_one(
+            {'_id': sample.id},
+            {'$set': {'relationships': ['justastring']}})
+        out = io.StringIO()
+        call_command('find_corrupt_documents', '--type', 'Sample', stdout=out)
+        output = out.getvalue()
+        self.assertIn(str(sample.id), output)
+        self.assertIn('corrupt', output)

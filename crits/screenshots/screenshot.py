@@ -136,7 +136,10 @@ class Screenshot(CritsBaseDocument, CritsSourceDocument, CritsSchemaDocument,
         if not im:
             return
         size = (128, 128)
-        im.thumbnail(size, Image.ANTIALIAS)
+        # Image.ANTIALIAS was removed in Pillow 10; resampling constants live
+        # under Image.Resampling on modern Pillow.
+        resample = getattr(Image, 'Resampling', Image).LANCZOS
+        im.thumbnail(size, resample)
         im.save(self.thumb, "PNG")
         fs = io.BytesIO()
         im.save(fs, "PNG")

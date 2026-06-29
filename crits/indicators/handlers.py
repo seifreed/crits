@@ -119,7 +119,7 @@ def generate_indicator_jtable(request, option):
         'no_sort': mapper['no_sort']
     }
     config = CRITsConfig.objects().first()
-    if not config.splunk_search_url:
+    if not config or not config.splunk_search_url:
         del jtopts['fields'][1]
     jtable = build_jtable(jtopts, request)
     jtable['toolbar'] = [

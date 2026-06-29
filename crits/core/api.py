@@ -335,6 +335,28 @@ class CRITsAPIResource(MongoEngineResource):
                                                  content_type="application/json",
                                                  status=status))
 
+    def validate_source(self, user, source, type_):
+        """
+        Ensure the named source exists and the user is allowed to write to it.
+        Posting to a non-existent (or unauthorized) source would otherwise
+        create a TLO that no one can see through the source-based ACL, the API
+        reporting success for an object that never shows up (crits#876). Raises
+        an immediate error response when the source is not in the user's list.
+
+        :param user: The user creating the object.
+        :type user: :class:`crits.core.user.CRITsUser`
+        :param source: The requested source name.
+        :type source: str
+        :param type_: The CRITs TLO type, for the error response.
+        :type type_: str
+        :raises: :class:`tastypie.exceptions.ImmediateHttpResponse`
+        """
+
+        if source not in user.get_sources_list():
+            self.crits_response({'return_code': 1,
+                                 'type': type_,
+                                 'message': "Invalid source: %s" % source})
+
     def create_response(self, request, data, response_class=HttpResponse,
                         **response_kwargs):
         """

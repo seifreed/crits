@@ -79,6 +79,8 @@ class IPResource(CRITsAPIResource):
             content['message'] = "User does not have permission to create Object."
             self.crits_response(content)
 
+        self.validate_source(user, name, 'IP')
+
         result = ip_add_update(ip,
                                ip_type,
                                source=name,

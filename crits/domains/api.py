@@ -104,6 +104,8 @@ class DomainResource(CRITsAPIResource):
         # The empty list is necessary. The function requires a list of
         # non-fatal errors so it can be added to if any other errors
         # occur. Since we have none, we pass the empty list.
+        self.validate_source(user, name, 'Domain')
+
         if user.has_access_to(DomainACL.WRITE):
             (result, errors, retVal) =  add_new_domain(data,
                                                        request,

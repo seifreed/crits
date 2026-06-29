@@ -102,6 +102,8 @@ class RawDataResource(CRITsAPIResource):
             content['message'] = 'User does not have permission to create Object.'
             self.crits_response(content)
 
+        self.validate_source(user, source, 'RawData')
+
         result = handle_raw_data_file(data, source, user,
                                       description, title, data_type,
                                       tool_name, tool_version, tool_details,

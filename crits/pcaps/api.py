@@ -79,7 +79,9 @@ class PCAPResource(CRITsAPIResource):
         if not user.has_access_to(PCAPACL.WRITE):
             content['message'] = 'User does not have permission to create Object.'
             self.crits_response(content)
-            
+
+        self.validate_source(user, source, 'PCAP')
+
         result = handle_pcap_file(filename,
                                   filedata,
                                   source,

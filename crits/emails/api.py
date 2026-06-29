@@ -90,6 +90,8 @@ class EmailResource(CRITsAPIResource):
 
             self.crits_response(content)
 
+        self.validate_source(user, source, 'Email')
+
         if type_ == 'eml':
             file_ = bundle.data.get('filedata', None)
             if not file_:

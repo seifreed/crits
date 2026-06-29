@@ -84,6 +84,8 @@ class SignatureResource(CRITsAPIResource):
             content['message'] = 'User does not have permission to create Object.'
             self.crits_response(content)
 
+        self.validate_source(user, source, 'Signature')
+
         result = handle_signature_file(data, source, user,
                                       description, title, data_type,
                                       data_type_min_version,

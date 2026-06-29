@@ -75,6 +75,8 @@ class EventResource(CRITsAPIResource):
             content['message'] = 'Not a valid Event Type.'
             self.crits_response(content)
 
+        self.validate_source(user, source, 'Event')
+
         if user.has_access_to(EventACL.WRITE):
             result = add_new_event(title,
                                    description,

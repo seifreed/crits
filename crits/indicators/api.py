@@ -76,6 +76,8 @@ class IndicatorResource(CRITsAPIResource):
         bucket_list = bundle.data.get('bucket_list', None)
         ticket = bundle.data.get('ticket', None)
 
+        self.validate_source(user, source, 'Indicator')
+
         if user.has_access_to(IndicatorACL.WRITE):
             result =  handle_indicator_ind(value,
                                            source,

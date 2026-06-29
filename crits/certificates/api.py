@@ -77,6 +77,8 @@ class CertificateResource(CRITsAPIResource):
         bucket_list = bundle.data.get('bucket_list', None)
         ticket = bundle.data.get('ticket', None)
 
+        self.validate_source(user, source, 'Certificate')
+
         if user.has_access_to(CertificateACL.WRITE):
             result = handle_cert_file(filename,
                                       filedata,

@@ -66,6 +66,8 @@ class ActorResource(CRITsAPIResource):
         bucket_list = data.get('bucket_list', None)
         ticket = data.get('ticket', None)
 
+        self.validate_source(user, source, 'Actor')
+
         if user.has_access_to(ActorACL.WRITE):
             result = add_new_actor(name,
                                    aliases,

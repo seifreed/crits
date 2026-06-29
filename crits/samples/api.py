@@ -108,6 +108,8 @@ class SampleResource(CRITsAPIResource):
             content['message'] = 'User does not have permission to create Object.'
             self.crits_response(content)
 
+        self.validate_source(user, source, 'Sample')
+
         sample_md5 = handle_uploaded_file(filedata,
                                           source,
                                           method,

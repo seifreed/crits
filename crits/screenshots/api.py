@@ -94,6 +94,8 @@ class ScreenshotResource(CRITsAPIResource):
             content['message'] = 'User does not have permission to create Object.'
             self.crits_response(content)
 
+        self.validate_source(user, source, 'Screenshot')
+
         result = add_screenshot(description, tags, source, method, reference,
                                 tlp, user.username, screenshot, screenshot_ids, oid, otype)
 

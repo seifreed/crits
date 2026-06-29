@@ -408,3 +408,26 @@ class DashboardViewTests(SimpleTestCase):
         self.req.user.mark_active()
         response = views.dashboard(self.req)
         self.assertEqual(response.status_code, 200)
+
+
+class ApiSourceValidationTests(SimpleTestCase):
+    """
+    Regression for crits#876: the API rejects a POST to a source the user
+    cannot write to (CRITsAPIResource.validate_source) instead of silently
+    creating an invisible TLO. The check keys on user.get_sources_list(), so
+    this verifies that invariant. (The Tastypie resource itself can't be
+    imported here -- the API layer is an optional, uninstalled dependency.)
+    """
+
+    def setUp(self):
+        prep_db()
+        self.user = CRITsUser.objects(username=TUSER_NAME).first()
+
+    def tearDown(self):
+        clean_db()
+
+    def testGrantedSourceListed(self):
+        self.assertIn(TSRC, self.user.get_sources_list())
+
+    def testUnknownSourceNotListed(self):
+        self.assertNotIn(TUNKSRC, self.user.get_sources_list())

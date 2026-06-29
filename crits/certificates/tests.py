@@ -66,6 +66,16 @@ class CertificateHandlerTests(SimpleTestCase):
         self.assertTrue(result['success'])
         self.assertEqual(Certificate.objects(md5=CERT_MD5).count(), 1)
 
+    def testCertCampaign(self):
+        # Regression for crits#732: a campaign on upload must attach.
+        result = handlers.handle_cert_file(CERT_FILENAME, CERT_DATA, TSRC,
+                                           user=self.user, method='',
+                                           reference='', tlp='red',
+                                           campaign='TestCampaign')
+        self.assertTrue(result['success'])
+        cert = Certificate.objects(md5=CERT_MD5).first()
+        self.assertIn('TestCampaign', [c.name for c in cert.campaign])
+
     def testCertGet(self):
         add_test_cert(self.user)
         cert = Certificate.objects(md5=CERT_MD5).first()

@@ -76,6 +76,8 @@ class CertificateResource(CRITsAPIResource):
         related_type = bundle.data.get('related_type', None)
         bucket_list = bundle.data.get('bucket_list', None)
         ticket = bundle.data.get('ticket', None)
+        campaign = bundle.data.get('campaign', None)
+        confidence = bundle.data.get('campaign_confidence', 'low')
 
         self.validate_source(user, source, 'Certificate')
 
@@ -93,7 +95,9 @@ class CertificateResource(CRITsAPIResource):
                                       tlp=tlp,
                                       relationship=relationship,
                                       bucket_list=bucket_list,
-                                      ticket=ticket)
+                                      ticket=ticket,
+                                      campaign=campaign,
+                                      confidence=confidence)
         else:
             result = {'success':False,
                       'message':'User does not have permission to create Object.'}

@@ -16,7 +16,7 @@ try:
 except ImportError:
     from mongoengine.errors import ValidationError
 
-from crits.core.crits_mongoengine import EmbeddedSource, create_embedded_source, json_handler
+from crits.core.crits_mongoengine import EmbeddedSource, EmbeddedCampaign, create_embedded_source, json_handler
 from crits.core.handlers import build_jtable, jtable_ajax_list, jtable_ajax_delete
 from crits.core.class_mapper import class_from_id
 from crits.core.handlers import csv_export
@@ -298,7 +298,8 @@ def handle_raw_data_file(data, source_name, user=None,
                          tool_name=None, tool_version=None, tool_details=None,
                          link_id=None, method='', reference='', tlp='',
                          copy_rels=False, bucket_list=None, ticket=None,
-                         related_id=None, related_type=None, relationship_type=None):
+                         related_id=None, related_type=None, relationship_type=None,
+                         campaign=None, confidence='low'):
     """
     Add RawData.
 
@@ -451,6 +452,16 @@ def handle_raw_data_file(data, source_name, user=None,
         related_obj = class_from_id(related_type, related_id)
         if not related_obj:
             return {'success': False, 'message': 'Related Object not found.'}
+
+    # attribute the raw data to a campaign if one was supplied (crits#732)
+    if campaign is not None:
+        campaign_array = campaign
+        if isinstance(campaign, str):
+            campaign_array = [EmbeddedCampaign(name=campaign,
+                                               confidence=confidence,
+                                               analyst=user.username)]
+        for campaign_item in campaign_array:
+            raw_data.add_campaign(campaign_item)
 
     raw_data.save(username=user.username)
 

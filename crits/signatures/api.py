@@ -72,6 +72,8 @@ class SignatureResource(CRITsAPIResource):
         reference = bundle.data.get('reference', None)
         bucket_list = bundle.data.get('bucket_list', None)
         ticket = bundle.data.get('ticket', None)
+        campaign = bundle.data.get('campaign', None)
+        confidence = bundle.data.get('campaign_confidence', 'low')
 
         if not title:
             content['message'] = "Must provide a title."
@@ -96,7 +98,9 @@ class SignatureResource(CRITsAPIResource):
                                       source_tlp=tlp,
                                       copy_rels=copy_rels,
                                       bucket_list=bucket_list,
-                                      ticket=ticket)
+                                      ticket=ticket,
+                                      campaign=campaign,
+                                      confidence=confidence)
 
         if result.get('message'):
             content['message'] = result.get('message')

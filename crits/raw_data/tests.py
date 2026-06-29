@@ -100,6 +100,15 @@ class RawDataHandlerTests(SimpleTestCase):
         self.assertTrue(result['success'])
         self.assertEqual(RawData.objects(title=RD_TITLE).count(), 1)
 
+    def testRawDataCampaign(self):
+        # Regression for crits#732: a campaign on upload must attach.
+        result = handlers.handle_raw_data_file(
+            RD_DATA, TSRC, user=self.user, title=RD_TITLE, data_type=TDT,
+            method='', reference='', tlp='red', campaign='TestCampaign')
+        self.assertTrue(result['success'])
+        rd = RawData.objects(title=RD_TITLE).first()
+        self.assertIn('TestCampaign', [c.name for c in rd.campaign])
+
     def testRawDataGet(self):
         add_test_raw_data(self.user)
         rd = RawData.objects(title=RD_TITLE).first()

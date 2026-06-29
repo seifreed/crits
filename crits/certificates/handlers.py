@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from crits.core.class_mapper import class_from_id, class_from_value
-from crits.core.crits_mongoengine import EmbeddedSource
+from crits.core.crits_mongoengine import EmbeddedSource, EmbeddedCampaign
 from crits.core.crits_mongoengine import create_embedded_source, json_handler
 from crits.core.handlers import build_jtable, jtable_ajax_list, jtable_ajax_delete
 from crits.core.handlers import csv_export
@@ -216,7 +216,7 @@ def handle_cert_file(filename, data, source_name, user=None,
                      description=None, related_md5=None, method='',
                      reference='', tlp=None, relationship=None, bucket_list=None,
                      ticket=None, related_id=None, related_type=None,
-                     relationship_type=None):
+                     relationship_type=None, campaign=None, confidence='low'):
     """
     Add a Certificate.
 
@@ -339,6 +339,16 @@ def handle_cert_file(filename, data, source_name, user=None,
     # add file to GridFS
     if not isinstance(cert.filedata.grid_id, ObjectId):
         cert.add_file_data(data)
+
+    # attribute the certificate to a campaign if one was supplied (crits#732)
+    if campaign is not None:
+        campaign_array = campaign
+        if isinstance(campaign, str):
+            campaign_array = [EmbeddedCampaign(name=campaign,
+                                               confidence=confidence,
+                                               analyst=user.username)]
+        for campaign_item in campaign_array:
+            cert.add_campaign(campaign_item)
 
     # save cert
     cert.save(username=user)

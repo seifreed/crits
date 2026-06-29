@@ -4,6 +4,7 @@ from django.test.client import RequestFactory
 
 from . import views
 import crits.signatures.handlers as handlers
+from crits.signatures.signature import Signature
 from crits.core.user import CRITsUser
 from crits.core.handlers import add_new_source
 from crits.core.management.commands.create_roles import add_uber_admin_role
@@ -54,6 +55,9 @@ def clean_db():
     user = CRITsUser.objects(username=TUSER_NAME).first()
     if user:
         user.delete()
+    # Drop signatures so documents don't leak across tests (each add creates a
+    # new versioned Signature, which otherwise pollutes title lookups).
+    Signature.objects(title=SIGNATURE_TITLE).delete()
 
 
 class SignatureHandlerTests(SimpleTestCase):
@@ -80,6 +84,15 @@ class SignatureHandlerTests(SimpleTestCase):
         source_name = TSRC
         user = self.user
         (status) = handlers.handle_signature_file(data, source_name, user, description, title, data_type, source_tlp='red')
+
+    def testSignatureCampaign(self):
+        # Regression for crits#732: a campaign on upload must attach.
+        handlers.handle_signature_file(SIGNATURE_DATA, TSRC, self.user,
+                                       SIGNATURE_DESCRIPTION, SIGNATURE_TITLE,
+                                       TDT, source_tlp='red',
+                                       campaign='TestCampaign')
+        sig = Signature.objects(title=SIGNATURE_TITLE).first()
+        self.assertIn('TestCampaign', [c.name for c in sig.campaign])
 
 
 class SignatureViewTests(SimpleTestCase):

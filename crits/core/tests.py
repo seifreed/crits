@@ -431,3 +431,27 @@ class ApiSourceValidationTests(SimpleTestCase):
 
     def testUnknownSourceNotListed(self):
         self.assertNotIn(TUNKSRC, self.user.get_sources_list())
+
+
+class GlobalSearchTests(SimpleTestCase):
+    """
+    Regression for crits#992: a global search with a "type:" filter must only
+    return that TLO type, not a tab (and inline-list GET) for every type.
+    """
+
+    def setUp(self):
+        prep_db()
+        self.factory = RequestFactory()
+        self.user = CRITsUser.objects(username=TUSER_NAME).first()
+
+    def tearDown(self):
+        clean_db()
+
+    def testTypeFilterLimitsResults(self):
+        request = self.factory.get('/search/',
+                                   {'q': 'type:indicator field:value full:none',
+                                    'search_type': 'global'})
+        request.user = self.user
+        args = handlers.generate_global_search(request)
+        names = [r['name'] for r in args['results']]
+        self.assertEqual(names, ['Indicator'])

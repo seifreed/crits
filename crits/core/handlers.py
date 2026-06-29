@@ -3729,6 +3729,10 @@ def generate_global_search(request):
     from crits.services.analysis_result import AnalysisResult
 
     results = []
+    # Defaults so the template still renders if every type is ignored (e.g. an
+    # unmatched "type:" filter); these are overwritten by the first real query.
+    term = searchtext
+    urlparams = ''
     for col_obj,url in [
                     [Actor, "crits-actors-views-actors_listing"],
                     [AnalysisResult, "crits-services-views-analysis_results_listing"],
@@ -3753,9 +3757,10 @@ def generate_global_search(request):
         if resp['Result'] == "ERROR":
             return resp
         elif resp['Result'] == "IGNORE":
-            results.append({'count': 0,
-                            'url': url,
-                            'name': ctype})
+            # A "type:" filter excluded this TLO type. Skip it entirely so the
+            # results page doesn't render a tab (and fire an inline-list GET)
+            # for every other type (crits#992).
+            continue
         else:
             formatted_query = resp['query']
             term = resp['term']

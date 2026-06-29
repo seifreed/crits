@@ -1627,35 +1627,46 @@ def parse_ole_file(file):
         stream.close()
         return data
 
+    # Decode a stream to text. chardet returns encoding=None for empty or
+    # undetectable streams (e.g. a blank subject), and bytes.decode(None) raises
+    # TypeError -- which would crash the whole .msg upload -- so fall back to
+    # UTF-8 and replace undecodable bytes.
+    def decode_stream(entry):
+        raw = get_stream_data(entry)
+        enc = chardet.detect(raw).get('encoding') or 'utf-8'
+        try:
+            return raw.decode(enc, 'replace')
+        except (LookupError, TypeError):
+            return raw.decode('utf-8', 'replace')
+
     # Parse the OLE streams and get attachments, subject, body, headers, and class
     # The email dict is what will be put into MongoDB for CRITs
     attachments = {}
     email = {}
     email['to'] = []
     for entry in ole.listdir():
-        msg_encoding = chardet.detect(get_stream_data(entry))
         if 'attach' in entry[0]:
             # Attachments are keyed by directory entry in the stream
             # e.g. '__attach_version1.0_#00000000'
             if entry[0] not in attachments:
                 attachments[entry[0]] = {}
             if msg['attachment_name'] in entry[-1]:
-                attachments[entry[0]].update({'name': get_stream_data(entry).decode(msg_encoding['encoding'])})
+                attachments[entry[0]].update({'name': decode_stream(entry)})
             if msg['attachment_data'] in entry[-1]:
                 attachments[entry[0]].update({'data': get_stream_data(entry)})
             if msg['attachment_type'] in entry[-1]:
-                attachments[entry[0]].update({'type': get_stream_data(entry).decode(msg_encoding['encoding'])})
+                attachments[entry[0]].update({'type': decode_stream(entry)})
         else:
             if msg['subject'] in entry[-1]:
-                email['subject'] = get_stream_data(entry).decode(msg_encoding['encoding'])
+                email['subject'] = decode_stream(entry)
             if msg['body'] in entry[-1]:
-                email['raw_body'] = get_stream_data(entry).decode(msg_encoding['encoding'])
+                email['raw_body'] = decode_stream(entry)
             if msg['header'] in entry[-1]:
-                email['raw_header'] = get_stream_data(entry).decode(msg_encoding['encoding'])
+                email['raw_header'] = decode_stream(entry)
             if msg['recipient_email'] in entry[-1]:
-                email['to'].append(get_stream_data(entry).decode(msg_encoding['encoding']).lower())
+                email['to'].append(decode_stream(entry).lower())
             if msg['message_class'] in entry[-1]:
-                message_class = get_stream_data(entry).decode(msg_encoding['encoding']).lower()
+                message_class = decode_stream(entry).lower()
     ole.close()
 
     # Process headers to extract data

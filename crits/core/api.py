@@ -23,6 +23,12 @@ from crits.core.user_tools import get_acl_object
 
 from crits.vocabulary.acls import GeneralACL
 
+# TLO and embedded-action date fields whose query values must be parsed into
+# datetimes so range operators ($gt/$gte/$lt/$lte) compare correctly (crits#783).
+DATE_QUERY_FIELDS = ('created', 'modified', 'actions.date',
+                     'actions.begin_date', 'actions.end_date',
+                     'actions.performed_date')
+
 # The following leverages code from the Tastypie library.
 class CRITsApiKeyAuthentication(ApiKeyAuthentication):
     """
@@ -481,7 +487,7 @@ class CRITsAPIResource(MongoEngineResource):
                 if op_index is not None:
                     if op in ('$gt', '$gte', '$lt', '$lte', '$ne', '$in', '$nin', '$exists', '$eq'):
                         val = v
-                        if field in ('created', 'modified'):
+                        if field in DATE_QUERY_FIELDS:
                             try:
                                 val = parse(val, fuzzy=True)
                             except Exception:
@@ -529,7 +535,7 @@ class CRITsAPIResource(MongoEngineResource):
                                 querydict[field] = {op: val}
                 elif field in ('size', 'schema_version'):
                     querydict[field] = v_int
-                elif field in ('created', 'modified'):
+                elif field in DATE_QUERY_FIELDS:
                     try:
                         querydict[field] = parse(v, fuzzy=True)
                     except Exception:

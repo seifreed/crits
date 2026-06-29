@@ -872,6 +872,26 @@ class CritsActionsDocument(BaseDocument):
         else:
             return [a['action_type'] for a in self._data['actions']]
 
+class NullFilteredListField(ListField):
+    """
+    ListField that drops null entries when loading a document.
+
+    A partial/legacy write (e.g. an atomic ``update(add_to_set=...)`` that
+    bypasses document validation) could leave a ``None`` inside a list of
+    embedded documents. On load MongoEngine then calls
+    ``EmbeddedDocumentField.to_python(None)`` and raises "'NoneType' object has
+    no attribute 'get'", wrapped as "Invalid data to create a <X> instance",
+    which breaks listing every object that has such a document
+    (crits#781, crits#845, crits#873). Filtering on load rescues the document
+    minus the bogus entry.
+    """
+
+    def to_python(self, value):
+        if isinstance(value, (list, tuple)):
+            value = [v for v in value if v is not None]
+        return super().to_python(value)
+
+
 # Embedded Documents common to most classes
 class EmbeddedSource(EmbeddedDocument, CritsDocumentFormatter):
     """
@@ -903,7 +923,7 @@ class EmbeddedSource(EmbeddedDocument, CritsDocumentFormatter):
                     return True
             return False
 
-    instances = ListField(EmbeddedDocumentField(SourceInstance))
+    instances = NullFilteredListField(EmbeddedDocumentField(SourceInstance))
     name = StringField()
 
 class CritsSourceDocument(BaseDocument):
@@ -1292,23 +1312,6 @@ class EmbeddedRelationship(EmbeddedDocument, CritsDocumentFormatter):
     rel_reason = StringField()
     rel_confidence = StringField(default='unknown', required=True)
 
-class RelationshipsListField(ListField):
-    """
-    ListField that drops null relationship entries when loading a document.
-
-    A partial/legacy write (e.g. an atomic ``update(add_to_set=...)`` that
-    bypasses document validation) could leave a ``None`` in the relationships
-    array, which made the whole document fail to deserialize ("'NoneType'
-    object has no attribute 'get'") and broke listing every TLO of that type
-    (crits#781, crits#845). Filtering on load rescues already-corrupted docs.
-    """
-
-    def to_python(self, value):
-        if isinstance(value, (list, tuple)):
-            value = [v for v in value if v is not None]
-        return super().to_python(value)
-
-
 class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
                           CritsSchemaDocument, CritsStatusDocument, EmbeddedTickets):
     """
@@ -1323,7 +1326,7 @@ class CritsBaseAttributes(CritsDocument, CritsBaseDocument,
     locations = ListField(EmbeddedDocumentField(EmbeddedLocation))
     description = StringField()
     obj = ListField(EmbeddedDocumentField(EmbeddedObject), db_field="objects")
-    relationships = RelationshipsListField(EmbeddedDocumentField(EmbeddedRelationship))
+    relationships = NullFilteredListField(EmbeddedDocumentField(EmbeddedRelationship))
     releasability = ListField(EmbeddedDocumentField(Releasability))
     screenshots = ListField(StringField())
     sectors = ListField(StringField())

@@ -533,6 +533,19 @@ class RelationshipsNullTests(SimpleTestCase):
         reloaded = TestSourceObject.objects(id=obj.id).first()
         self.assertEqual(list(reloaded.relationships), [])
 
+    def testNullSourceInstanceDroppedOnLoad(self):
+        # Regression for crits#873: a null in an EmbeddedSource.instances list
+        # must not break loading the document either.
+        obj = TestSourceObject()
+        obj.name = "srcnull"
+        obj.value = "v"
+        obj.add_source(source=TSRC, analyst=TUSER_NAME, tlp='red')
+        obj.save(username=TUSER_NAME)
+        TestSourceObject._get_collection().update_one(
+            {'_id': obj.id}, {'$set': {'source.0.instances': [None]}})
+        reloaded = TestSourceObject.objects(id=obj.id).first()
+        self.assertEqual(list(reloaded.source[0].instances), [])
+
 
 class FindCorruptDocumentsTests(SimpleTestCase):
     """

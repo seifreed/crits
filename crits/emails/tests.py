@@ -83,6 +83,28 @@ Content-Transfer-Encoding: quoted-printable
 --1837502048-920500242-1346120536=:82002--
 """
 
+# Multipart email with an inline text body and a single real attachment.
+# Used to verify the body is not also extracted as an attachment (crits#821).
+EML_WITH_ATTACHMENT = """From: a@example.com
+To: b@example.com
+Subject: attachment test
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=BOUND
+
+--BOUND
+Content-Type: text/plain
+
+This is the inline email body text.
+--BOUND
+Content-Type: application/octet-stream; name="evil.bin"
+Content-Disposition: attachment; filename="evil.bin"
+Content-Transfer-Encoding: base64
+
+TVqQAAEvilPayloadAAAA
+--BOUND--
+"""
+
+
 def prep_db():
     """
     Prep the database for the test.
@@ -115,6 +137,9 @@ def clean_db():
     user = CRITsUser.objects(username=TUSER_NAME).first()
     if user:
         user.delete()
+    # Attachments from test emails become Samples; clear them too.
+    from crits.samples.sample import Sample
+    Sample.drop_collection()
 
 
 class EmailHandlerTests(SimpleTestCase):
@@ -132,6 +157,16 @@ class EmailHandlerTests(SimpleTestCase):
 
     def tearDown(self):
         clean_db()
+
+    def testEmailAttachmentNotBody(self):
+        # The real attachment must become a Sample, but the inline text body
+        # must NOT be extracted as a spurious attachment/Sample (crits#821).
+        from crits.samples.sample import Sample
+        result = handlers.handle_eml(EML_WITH_ATTACHMENT, TSRC, "", "Test",
+                                     "red", self.user)
+        self.assertEqual(result['status'], True)
+        self.assertEqual(Sample.objects.count(), 1)
+        self.assertEqual(Sample.objects.first().filename, "evil.bin")
 
     def testEmailRawAdd(self):
         result = handlers.handle_pasted_eml(EML_DATA, TSRC, "", "Test", "red", self.user)

@@ -1144,30 +1144,30 @@ def handle_eml(data, sourcename, reference, method, tlp, user, campaign=None,
     for part in msg.walk():
         if part.get_content_maintype() == 'multipart':
             continue
-        if part.get_content_maintype() == "text":
+
+        filename = part.get_filename()
+        # A part is an attachment if it carries a filename or is explicitly
+        # marked as such; inline body parts (typically text with no filename)
+        # are not attachments and must not be turned into Samples.
+        is_attachment = (part.get_content_disposition() == 'attachment'
+                         or filename is not None)
+
+        if part.get_content_maintype() == "text" and not is_attachment:
             content = part.get_payload(decode=True)
             if content:
-                try:
-                    message_part = str(content)
-                except UnicodeDecodeError:
-                    message_part = str(content, errors="replace")
+                msg_import["raw_body"] += content.decode('utf-8', 'replace') + "\n"
+            continue
 
-                msg_import["raw_body"] = msg_import["raw_body"] + \
-                                         message_part + "\n"
+        if not is_attachment:
+            continue
 
         # Check for attachment in mail parts
-        filename = part.get_filename()
         attach = part.get_payload(decode=True)
         if attach is not None and len(attach):
             md5 = hashlib.md5(attach, usedforsecurity=False).hexdigest()
             mtype = magic.from_buffer(attach)
 
-            if filename is not None:
-                try:
-                    filename = str(filename)
-                except UnicodeDecodeError:
-                    filename = str(filename, errors="replace")
-            else:
+            if filename is None:
                 filename = md5
 
             result['attachments'][md5] = {

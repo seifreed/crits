@@ -185,7 +185,7 @@ def format_file(data, file_format):
 
     if file_format == "base64":
         import base64
-        data = base64.b64encode(data)
+        data = base64.b64encode(data).decode('ascii')
         ext = ".b64"
     elif file_format == "zlib":
         import zlib
@@ -194,7 +194,9 @@ def format_file(data, file_format):
     elif file_format == "raw":
         ext = ""
     elif file_format == "invert":
-        data = ''.join([chr(ord(c) ^ 0xff) for c in data])
+        if isinstance(data, str):
+            data = data.encode('latin-1', 'ignore')
+        data = bytes(b ^ 0xff for b in data)
         ext = ".ff"
     return (data, ext)
 
@@ -634,7 +636,8 @@ def generate_qrcode(data, size):
     qr.add_data(data)
     img = qr.make_image().resize(size)
     img.save(a, 'PNG')
-    qr_img = a.getvalue().encode('base64').replace('\n', '')
+    import base64
+    qr_img = base64.b64encode(a.getvalue()).decode('ascii')
     a.close()
     return qr_img
 

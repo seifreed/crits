@@ -98,3 +98,14 @@ class ObjectHandlerTests(SimpleTestCase):
         result, retVal = handlers.add_new_handler_object(
             data, None, request, obj=self.sample)
         self.assertTrue(result)
+
+    def testAddObjectWithIndicator(self):
+        # Regression for crits#1068: adding an object with "add indicator"
+        # checked must thread the source through to handle_indicator_ind
+        # instead of failing with "Missing source information".
+        result = handlers.add_object('Sample', str(self.sample.id), OBJ_TYPE,
+                                     TSRC, '', '', 'red', self.user,
+                                     value=OBJ_VALUE, add_indicator=True)
+        self.assertTrue(result['success'])
+        self.assertNotIn('Missing source information',
+                         result.get('message', ''))

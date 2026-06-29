@@ -450,8 +450,10 @@ def login(request):
     :returns: :class:`django.http.HttpResponse`
     """
 
-    # Gather basic request information
-    crits_config = CRITsConfig.objects().first()
+    # Gather basic request information. Fall back to an unsaved default config
+    # so the login page still renders on a fresh install with no CRITsConfig
+    # yet, instead of crashing on crits_config.crits_message (crits#811).
+    crits_config = CRITsConfig.objects().first() or CRITsConfig()
     url = request.GET.get('next')
     user_agent = request.META.get('HTTP_USER_AGENT', '')
     remote_addr = request.META.get('REMOTE_ADDR', '')

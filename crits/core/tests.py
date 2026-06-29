@@ -367,6 +367,14 @@ class LoginTests(SimpleTestCase):
             self.assertTrue(redirs[0][0] in redir_url + path)
             self.assertEqual(redirs[0][1], 302)
 
+    def testLoginPageWithoutConfig(self):
+        # Regression for crits#811: the login page must render even when no
+        # CRITsConfig exists yet (fresh install), instead of crashing on
+        # crits_config.crits_message.
+        CRITsConfig.drop_collection()
+        response = self.client.get('/login/')
+        self.assertEqual(response.status_code, 200)
+
     def testBasicLogin(self):
         pass
 

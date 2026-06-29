@@ -109,6 +109,18 @@ class IndicatorHandlerTests(SimpleTestCase):
         self.assertEqual(ind.value, IND_VALUE)
         self.assertEqual(ind.ind_type, IND_TYPE)
 
+    def testCSVImport(self):
+        # The CSV/text importer ran csv.DictReader over BytesIO, which raises
+        # in Py3 ("iterator should return strings, not bytes").
+        csv_blob = ("Indicator,Type,Threat Type,Attack Type\n"
+                    "csv-indicator.example.com,Domain,Unknown,Unknown\n")
+        result = handlers.handle_indicator_csv(csv_blob, 'ti', self.user, TSRC,
+                                               source_tlp='red', add_domain=True)
+        self.assertTrue(result['success'])
+        self.assertEqual(
+            Indicator.objects(value='csv-indicator.example.com').count(), 1)
+        Indicator.objects(value='csv-indicator.example.com').delete()
+
 
 class IndicatorViewTests(SimpleTestCase):
     """

@@ -4,7 +4,7 @@ import json
 import logging
 import urllib.parse as urlparse
 
-from io import BytesIO
+from io import StringIO
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 try:
@@ -373,8 +373,11 @@ def handle_indicator_csv(csv_data, ctype, user, source, source_method=None,
     if ctype == "file":
         cdata = csv_data.read()
     else:
-        cdata = csv_data.encode('ascii')
-    data = csv.DictReader(BytesIO(cdata), skipinitialspace=True)
+        cdata = csv_data
+    # csv in Py3 needs text, not bytes: an uploaded file reads as bytes.
+    if isinstance(cdata, bytes):
+        cdata = cdata.decode('utf-8', 'replace')
+    data = csv.DictReader(StringIO(cdata), skipinitialspace=True)
     result = {'success': True}
     result_message = ""
     # Compute permitted values in CSV
